@@ -22,6 +22,7 @@ npm run test:unit
 | パス | 内容 |
 | --- | --- |
 | `Unit/Material/` | カード定義データ（`src/modules/php/Material/`）の件数・ID の網羅・002 の主要な値の抜き取り |
+| `Unit/Scoring/` | 名声計算（`src/modules/php/Scoring/`）: 001 §12-1 の計算例（合計 184）、褒賞の同順位・比較内容 0、24 面の比較値、終了時の手札の換金 |
 | `bootstrap.php` | Composer のオートロード |
 | `phpunit.xml.dist` | PHPUnit の設定 |
 
