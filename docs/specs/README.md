@@ -20,5 +20,6 @@
 | 009 | [状態遷移の設計](009-state-machine.md) | Approved | T-009 |
 | 010 | [データモデル・通知の設計](010-data-model.md) | Approved | T-010 |
 | 011 | [カード効果の実装方針](011-card-effects.md) | Approved | T-011 |
+| 012 | [UI・アセットの設計](012-ui-assets.md) | Approved | T-012 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。
