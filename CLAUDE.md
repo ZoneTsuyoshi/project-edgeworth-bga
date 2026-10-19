@@ -73,7 +73,7 @@ git fetch --prune && git pull --ff-only origin main
 - 編集するのは `faq` シートのみ。列は `main_card_ids, sub_card_ids, question, answer, importance, category, status, note`。
 - 作者の回答で確定した裁定を追記するときの `status` は `追加`（既存行を直すときは `修正`）。作者の確認前の下書きは `要確認` にする（公開ページには出ない）。
 - 編集は openpyxl で `faq` シートの行だけを変更する。他のシートの数式・書式を壊さないよう、保存前後で他シートに差分がないことを確認する。Excel で開いている場合は編集しない。
-- サイト側リポジトリへのコミット・`faq.json` の再生成・公開は作者の指示があるときだけ行う（このリポジトリの Git ルールの対象外）。
+- FAQ を足すたびに `faq.json` を再生成し、`faq.xlsx` と `faq.json` だけをサイト側の `gh-pages` にコミット・push して随時公開してよい（作者の方針、2026-10-19。このリポジトリの Git ルールの対象外）。エラッタは `errata.html` に手で追記する。
 
 ## ゲームの用語
 

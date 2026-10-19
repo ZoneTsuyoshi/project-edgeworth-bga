@@ -43,7 +43,18 @@ PROJECT EDGEWORTH の FAQ の原本は、サイト側リポジトリの `../danj
    ```
 
 4. 追加した行を読み戻して確認し、作者に「どの行を追加・修正したか」を報告する。
-5. サイト側のコミット・`faq.json` の再生成（`uv run --with openpyxl python scripts/convert_edgeworth_faq.py`）・公開は、作者の指示があるときだけ行う。
+5. FAQ を追加・修正するたびに、すぐ公開する（作者の方針、2026-10-19）。サイトは `gh-pages` ブランチで直接運用している。
+
+   ```bash
+   cd ../danjiri-concerto.github.io
+   uv run --with openpyxl python scripts/convert_edgeworth_faq.py
+   git diff --stat   # faq.xlsx と faq.json だけが変わっていることを確認
+   git add project-edgeworth/data/faq.xlsx project-edgeworth/data/faq.json
+   git commit -m "..."
+   git push origin gh-pages
+   ```
+
+   作者の作業中のファイル（未追跡の画像など）はステージしない。
 
 ## 注意
 
