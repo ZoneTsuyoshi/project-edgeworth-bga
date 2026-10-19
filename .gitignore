@@ -27,3 +27,7 @@ id_ed25519*
 
 # Claude Code のローカル設定
 .claude/settings.local.json
+
+# BGA 配布の開発用スタブ（再配布不可。コミットしない。仕様書 005 §2.6）
+/tools/bga/_ide_helper.php
+/tools/bga/bga-framework.d.ts

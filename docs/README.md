@@ -10,6 +10,7 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 | [specs/](specs/README.md) | 仕様書。実装の前に必ずここへ作成する |
 | [development/git-workflow.md](development/git-workflow.md) | Git 運用ルール（ブランチ・ワークツリー・コミット・PR・後始末） |
 | [development/task-workflow.md](development/task-workflow.md) | タスクの進め方とサブエージェントへの委託方法 |
+| [development/cicd.md](development/cicd.md) | CI/CD の方針（lint の段階導入、マージの運用、Studio 同期の予定） |
 | [development/rule-questions.md](development/rule-questions.md) | 作者への質問（処理順・同時処理・アナログ特有の操作）と回答 |
 | [development/faq-workflow.md](development/faq-workflow.md) | FAQ（サイト側の `faq.xlsx`）の起票・改修の手順 |
 | [publishing/game-description.md](publishing/game-description.md) | 英語のゲーム紹介文と BGG 登録の手順 |

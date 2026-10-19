@@ -60,7 +60,7 @@ gh pr create --base main --head <type>/<slug> --title "<コミットと同じ形
 
 - タイトルは Conventional Commits 形式（squash merge 時のコミットメッセージになる）。
 - 本文には、目的・変更内容・確認方法・関連する仕様書 / タスク ID を書く。
-- CI（lint）が通っていること。
+- PR を作る前に `npm run lint` をローカルで実行する。CI（`Lint gate`）が通っていること。
 - マージ方法は squash merge。CI が通り、ユーザー（リポジトリオーナー）から異論がなければメインエージェントがマージと後始末まで行う。
 - 仕様書の PR と実装の PR は分ける。実装の PR は、対応する仕様書がマージ済みであること。
 
@@ -85,4 +85,5 @@ git pull --ff-only origin main
 
 - Settings → General → **Automatically delete head branches** を有効化（リモートブランチの削除漏れ防止）
 - Settings → General → マージ方法は **Squash merging** のみ許可
-- Settings → Branches（または Rulesets）で `main` を保護: PR 必須、ステータスチェック（lint）必須、force push 禁止
+- `main` の保護は設定しない。代わりに運用で担保する: **CI（`Lint gate`）が通らない PR はメインエージェントがマージしない**（マージ前に `gh pr checks` で確認する。サブエージェントはマージしない）。詳細は [cicd.md](cicd.md)
+- 将来 `main` を保護する場合: ワークフローが 1 回以上実行された後に、Settings → Branches（または Rulesets）で必須チェックに `Lint gate` を指定する

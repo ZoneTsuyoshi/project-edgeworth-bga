@@ -1,0 +1,19 @@
+{
+  "name": "project-edgeworth-bga",
+  "private": true,
+  "description": "PROJECT EDGEWORTH の Board Game Arena 実装（開発用ツール。src/ には含めない）",
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
+  "scripts": {
+    "lint": "npm run lint:md && npm run lint:repo && npm run lint:data",
+    "lint:md": "markdownlint-cli2",
+    "lint:repo": "node scripts/lint/check-repo.mjs",
+    "lint:data": "node scripts/lint/check-data-unchanged.mjs",
+    "lint:links": "lychee --config lychee.toml \"./**/*.md\""
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.23.3"
+  },
+  "type": "module"
+}

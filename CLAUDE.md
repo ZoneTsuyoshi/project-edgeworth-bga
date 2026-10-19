@@ -127,4 +127,4 @@ git fetch --prune && git pull --ff-only origin main
 
 ## CI/CD
 
-minimum-journey-bga の構成（lint の CI、`main` へのマージで `src/` を BGA Studio へ SFTP 同期する CD）を流用する予定。導入はタスク T-004・T-005。
+minimum-journey-bga の構成（lint の CI、`main` へのマージで `src/` を BGA Studio へ SFTP 同期する CD）を流用する予定。導入はタスク T-004・T-005。方針と運用は [docs/development/cicd.md](docs/development/cicd.md)。`main` の保護は設定しないため、**CI（`Lint gate`）が通らない PR はマージしない**（`gh pr checks` で確認。サブエージェントはマージしない）。

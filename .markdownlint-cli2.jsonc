@@ -1,4 +1,4 @@
-// M1: Markdown の書式（仕様書 004）。実行: npm run lint:md
+// M1: Markdown の書式（仕様書 005 §2.1）。実行: npm run lint:md
 {
   "globs": ["**/*.md"],
   // data/（原本）、.worktrees/、node_modules/、vendor/ は対象外
