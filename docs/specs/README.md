@@ -18,5 +18,6 @@
 | 007 | [効果の処理順と同時処理](007-effect-order.md) | Approved | T-007 |
 | 008 | [アナログ特有の操作の BGA での表現](008-analog-operations.md) | Approved | T-008 |
 | 009 | [状態遷移の設計](009-state-machine.md) | Approved | T-009 |
+| 011 | [カード効果の実装方針](011-card-effects.md) | Approved | T-011 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。
