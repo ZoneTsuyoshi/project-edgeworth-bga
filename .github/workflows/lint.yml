@@ -1,4 +1,4 @@
-# CI（lint）第 1 段階。仕様書: docs/specs/005-ci-lint.md
+# CI（lint）第 1〜2 段階。仕様書: docs/specs/005-ci-lint.md
 # 必須チェックは gate（表示名 "Lint gate"）のみ。段階が進んだら gate の needs にジョブを足す。
 name: Lint
 
@@ -100,11 +100,94 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: npm run lint:data
 
+  # PHP の構文（parallel-lint）と規約（phpcs）。src/ に PHP が無い間はスキップして成功する（仕様書 005 §3）
+  php:
+    name: PHP
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        if: ${{ hashFiles('src/**/*.php') != '' }}
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      # vendor/ はキャッシュしない（setup-php の注意）。Composer のダウンロードキャッシュのみ
+      - name: Get Composer cache directory
+        if: ${{ hashFiles('src/**/*.php') != '' }}
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        if: ${{ hashFiles('src/**/*.php') != '' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        if: ${{ hashFiles('src/**/*.php') != '' }}
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # php-parallel-lint（構文）と PHP_CodeSniffer（規約）。静的解析（PHPStan）は第 2b 段階
+      - name: composer lint
+        if: ${{ hashFiles('src/**/*.php') != '' }}
+        run: composer lint
+
+  node:
+    name: JS / CSS / JSONC
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 先行ステップが失敗しても続けて、1 回の実行で全エラーを見えるようにする。
+      # 対象ファイルが無いときは各ツールが対象 0 件で成功する（ESLint は設定ファイルなどを常に検査する）
+      - name: ESLint (JS and JSONC)
+        if: ${{ !cancelled() }}
+        run: npm run lint:js
+
+      - name: declare(strict_types=1) in PHP
+        if: ${{ !cancelled() }}
+        run: npm run lint:strict
+
+      - name: pe prefix for framework subclasses
+        if: ${{ !cancelled() }}
+        run: npm run lint:prefix
+
+      - name: Self-test of lint scripts
+        if: ${{ !cancelled() }}
+        run: npm run test:lint
+
+      - name: Stylelint
+        if: ${{ !cancelled() }}
+        run: npm run lint:css
+
   gate:
     name: Lint gate
     if: ${{ always() }}
-    # 段階が進むたびにジョブを追加する（第 2 段階: php, node。第 2b 段階: static。第 3 段階: assets）
-    needs: [markdown, secrets, repo]
+    # 段階が進むたびにジョブを追加する（第 2b 段階: static。第 3 段階: assets）
+    needs: [markdown, secrets, repo, php, node]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
