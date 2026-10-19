@@ -2,7 +2,11 @@
 
 BoardGameGeek（BGG）のゲーム登録と、BGA の Game Metadata Manager の説明文に使う英語の紹介文。ルールの内容はルールブック（`data/rulebooks/`）と公式ページ <https://danjiri-concerto.github.io/project-edgeworth/> に基づく。
 
-2026-10-19 時点で BGG に PROJECT EDGEWORTH の登録はない（検索で確認）。
+2026-10-19 に作者が BGG へ申請済み（申請前の検索では登録なし）。承認後に BGG_ID をここと `src/gameinfos.jsonc` に記録する。
+
+| 項目 | 値 |
+| --- | --- |
+| BGG_ID | 承認待ち |
 
 ## 登録の手順
 
@@ -72,6 +76,8 @@ With double-sided modular boards, 99 unique project cards, and player-specific s
 | Mechanism | End Game Bonuses | 褒賞・ミッション・地域種類数の名声はゲーム終了時 |
 
 ## 作者に確認すること
+
+申請時に作者が決めた値は未記録（必要になったら確認する）。
 
 | No. | 質問 | 案 |
 | --- | --- | --- |
