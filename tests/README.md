@@ -45,8 +45,10 @@ npm run test:integration
 | `Integration/Flow/` | `OrbitPhase`（DB への反映・着陸猶予）、`RoundEnd`（終了判定・進行度の最高値）、`FinalScoring`（fame_detail の保存）。MariaDB が要る |
 | `Unit/Flow/Action/` | 計画・アクションフェイズのルール層の純粋な部品: 支払い可否（売却の最小枚数）、配備・通信確立コストの内訳、既定のフック（修正なし） |
 | `Integration/Flow/Action/` | 計画・アクションフェイズのルール層（`ActionPhases`）を `GameSetup` で始めたゲームと MariaDB で確かめる: 計画の回収と公開、I〜V の選択・コスト・処理、売却、通信確立の同時処理・先駆コスト・区域ボーナス、`StepRunner` の同時選択の流れ。`ConfigurableHooks` でフック（修正・禁止）を再現 |
+| `Unit/Effects/` | 効果エンジン（`src/modules/php/Effects/`・`Material/` の `EffectSpec` など。011 の E-0）: 列挙の件数（フック 28・部品 29・条件 13）と代表 10 枚の定義が 002・007 §10 と一致すること、資源の衝突の判定（S01〜S04・S07・S08）、デフォルトの順、窓の解決（順序の問い・[Use] / [Skip]・売却を含む支払い・連鎖・使用済み・安全弁 200・多段・zombie・保存と復元・通信確立のステージ。S01〜S10 のうちエンジンで検証できるもの）、答えの検証、修正の問い合わせと `ActionHooks`・`OrbitModifiers` への接続 |
 | `Integration/Data/` | データ層（`dbmodel.sql`、各リポジトリ、グローバル値、プレイヤーの値）。MariaDB が要る |
 | `Support/` | 結合テストの共通部品: `PdoDatabase`（`Database` の PDO 実装）、`Schema`（`dbmodel.sql` を流す）、`DatabaseTestCase`、`ArrayGlobals`（BGA の globals の代用）、`SeededRandom`、`BgaStubs`（BGA のクラスの最小スタブ） |
+| `Support/Effects/` | 効果エンジンのテスト用の基盤（011 §11-1）: `FakeGame`（`GameView` / `GameMutator` のメモリ実装）、`ArrayCatalog`、`TestSpecs`（疑似カードの `EffectSpec`）、`ScriptedResultPart`（クロージャの結果部品）、`SampleParts`（代表 10 枚の簡易な部品） |
 | `bootstrap.php` | Composer のオートロードと BGA スタブの読み込み |
 | `phpunit.xml.dist` | PHPUnit の設定（テストスイート `unit` と `integration`） |
 | `run-unit.sh`・`run-integration.sh` | Docker でそれぞれのスイートを実行 |

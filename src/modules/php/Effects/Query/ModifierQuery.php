@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * © だんじり協奏曲 (Danjiri Concerto)
+ * https://x.com/danjiriconcerto
+ */
+
+declare(strict_types=1);
+
+namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+
+use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionContext;
+use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
+use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
+use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
+use Bga\Games\ProjectEdgeworth\Material\EffectKind;
+use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\ProjectEdgeworth\Material\HookKind;
+use Bga\Games\ProjectEdgeworth\Material\PartCategory;
+
+/**
+ * 修正の問い合わせ（011 §3-2）の共通の骨組み。プレイヤーの効果のカードから、そのフックの修正・禁止を集めて畳み込む。
+ *
+ * - 稼働条件 `ACTIVE_ONLY` は、数量を決める時点・コミット前の状態で評価する（007 §3-2。宿主の `active` を見る）。
+ * - 起動（`ACTIVATED`）の修正は、`$useMods` に宿主の鍵（`EffectHost::key()`）が入っているものだけ畳み込む（007 §5-1、011 §6-3）。
+ *   使用済みの宿主は、そもそも `$useMods` に入れられない（呼び出し側の選択肢から外す）。ここでは使用済みを理由に落とすことはしない。
+ * - 配備コストの自己修正（P026、`params['scope'] = 'SELF_CARD'`）は、配備しようとするカード自身（まだ衛星に付いていない）を
+ *   `$selfHost` で渡したときだけ働く。すでに衛星にある P026 は他のカードの配備コストを変えない（011 エッジケース）。
+ */
+final class ModifierQuery
+{
+    public function __construct(
+        private readonly GameView $view,
+        private readonly EffectCatalog $catalog,
+        private readonly PartRegistry $parts,
+        private readonly ConditionEvaluator $conditions,
+    ) {
+    }
+
+    /**
+     * @param list<string> $useMods 使う起動の修正の宿主の鍵
+     */
+    public function fold(Hook $hook, QueryContext $query, mixed $base, array $useMods = [], ?EffectHost $selfHost = null): mixed
+    {
+        $value = $base;
+        foreach ($this->candidates($hook, $query, $useMods, $selfHost, PartCategory::Modifier) as [$spec, $host]) {
+            $part = $this->parts->modifier($spec->part);
+            if ($part->appliesTo($query, $spec, $host)) {
+                $value = $part->modify($query, $spec, $host, $value);
+            }
+        }
+
+        return $value;
+    }
+
+    /** `ALLOWED`: 禁止効果が 1 つでも効いていれば真 */
+    public function forbidden(QueryContext $query): bool
+    {
+        foreach ($this->candidates(Hook::Allowed, $query, [], null, PartCategory::Forbid) as [$spec, $host]) {
+            if ($this->parts->forbid($spec->part)->forbids($query, $spec, $host)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param list<string> $useMods
+     * @return list<array{EffectSpec, EffectHost}>
+     */
+    private function candidates(Hook $hook, QueryContext $query, array $useMods, ?EffectHost $selfHost, PartCategory $category): array
+    {
+        if ($hook->kind() !== HookKind::Query) {
+            throw new \InvalidArgumentException("{$hook->value} is not a query hook");
+        }
+        $hosts = $this->view->hosts($query->playerId);
+        $found = [];
+        foreach ([...$hosts, ...($selfHost === null ? [] : [$selfHost])] as $host) {
+            $spec = $this->catalog->specFor($host->cardKey);
+            if ($spec === null || $spec->hook !== $hook || $spec->part->category() !== $category) {
+                continue;
+            }
+            $self = ($spec->params['scope'] ?? null) === 'SELF_CARD';
+            if ($self !== ($host === $selfHost)) {
+                continue;
+            }
+            if ($spec->kind === EffectKind::Activated && !in_array($host->key(), $useMods, true)) {
+                continue;
+            }
+            if ($spec->activeOnly && !$host->active) {
+                continue;
+            }
+            if (!$this->conditions->holds($spec, new ConditionContext($host, null, $query))) {
+                continue;
+            }
+            $found[] = [$spec, $host];
+        }
+
+        return $found;
+    }
+}
