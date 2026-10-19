@@ -1,6 +1,6 @@
 # CI/CD の方針
 
-> ステータス: **lint は第 1〜2 段階を導入済み、BGA Studio への同期は未着手**。lint は [../specs/005-ci-lint.md](../specs/005-ci-lint.md) に基づく段階導入で、このドキュメントは方針を示し、具体的な設計は仕様書を正とします。同期（T-006）の仕様書はまだありません。
+> ステータス: **lint は第 1〜2 段階、アセット（スプライト）の検査は第 3 段階を導入済み、BGA Studio への同期は未着手**。lint は [../specs/005-ci-lint.md](../specs/005-ci-lint.md) に基づく段階導入で、このドキュメントは方針を示し、具体的な設計は仕様書を正とします。同期（T-006）の仕様書はまだありません。
 
 ## 全体像
 
@@ -40,12 +40,24 @@ GitHub Actions のワークフロー `Lint`（[../../.github/workflows/lint.yml]
 
 別のワークフロー `Test`（[../../.github/workflows/test.yml](../../.github/workflows/test.yml)、ジョブ表示名 `PHPUnit`）が `composer test` を実行します（DB 不要。ローカルは `npm run test:unit`）。仕様書 005 §2.12 の提案に沿って lint とは分けており、**`Lint gate` には含めません**（lint は `workflow_call` で同期ワークフローからも呼ばれるため、テストの失敗で同期が止まる範囲を別に決めたい）。ただし失敗した PR はマージしないので、マージ前の `gh pr checks` で `PHPUnit` も確認します。
 
+### アセット（スプライト）
+
+別のワークフロー `Assets`（[../../.github/workflows/assets.yml](../../.github/workflows/assets.yml)、ジョブ表示名 `Sprites`）が、`data/` の原本から webp のスプライトを生成して検査します。`data/`・スプライト生成スクリプト・`package.json`・ワークフロー自身を変えた PR と `main` への push だけで動きます（それ以外の PR では実行されず、表示も出ません）。
+
+| 手順 | コマンド | 内容 |
+| --- | --- | --- |
+| 生成 | `npm run build:sprites` | `src/img/pe_*.webp`（base 9 + pieces）、`src/img/zoom/pe_zoom_*.webp`（6）、配置情報 `src/modules/js/cards/sprites.js` と `build/sprites/manifest.json`。生成の最後に検査も走る。`-- --flat-zoom` で zoom も `img/` 直下に出す（012 未確定事項 No.9。Studio でサブフォルダを確認するまでの逃げ道）、`-- --verify-determinism` で 2 回生成して一致を確かめる |
+| 検査 | `npm run check:sprites` | 1 ファイル 2,000,000 B 以下、総量 15,000,000 B 以下（10,000,000 B 超で警告）、1 辺 4096 px 以下、ファイル名 `^pe_[a-z0-9_]+\.webp$`、`img/` 直下 10 個以上で警告、配置情報が並び順の規則と一致、JS の配置情報がマニフェストと一致 |
+
+- 生成物はコミットしません（`.gitignore` 対象。`lint:repo` が追跡されていたら失敗させます）。ローカルでは初回に 1〜2 分かかります（約 200 枚の原本を読む）。
+- **`Lint gate` には入れていません**（005 未確定事項 No.6 の暫定案の範囲）。理由は、(1) lint は `workflow_call` で同期ワークフローからも呼ばれ、生成の遅さ（約 1 分）や原本の読み込み失敗で同期が止まる範囲を広げたくない、(2) 同期（T-006）は同期の直前に `npm run build:sprites` を自分で実行して同じ検査を通す設計で、二重に検査する必要が薄い、(3) `PHPUnit` と同じく、`gh pr checks` で確認すれば足りる。マージ前に `Sprites` が成功であることを確かめます。gate への編入は T-006 の同期ワークフローの設計時に再検討します。
+
 ### 今後の段階（仕様書 005 §3。第 2 段階は導入済み）
 
 | 段階 | 追加する検査 | 前提 |
 | --- | --- | --- |
 | 第 2b 段階 | PHPStan、`tsc`（BGA のスタブを Studio から取得） | T-006 の接続が確立し、Secrets / Variables が登録済み |
-| 第 3 段階 | アセットの上限 | T-012 のスプライト生成がマージ済み |
+| 第 3 段階 | アセットの上限（A1） | 導入済み（下の「アセット（スプライト）」。`Lint gate` には未編入） |
 
 ## マージの運用
 

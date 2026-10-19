@@ -78,7 +78,7 @@ for (const file of files) {
   }
   if (file.startsWith('src/ts/')) fail(file, 'src/ に非推奨のディレクトリは置けません（ts/）');
   // 3. コミット禁止のスプライト生成物
-  if (file.startsWith('src/img/cards_')) {
+  if (/^src\/img\/(zoom\/)?pe_[^/]*\.webp$/.test(file) || file === 'src/modules/js/cards/sprites.js') {
     fail(file, 'スプライト生成物はコミットできません（.gitignore 対象）');
   }
   if (!safeName.test(file)) {

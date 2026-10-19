@@ -17,7 +17,9 @@
     "lint:links": "lychee --config lychee.toml \"./**/*.md\"",
     "lint:cards": "node scripts/check-card-definitions.mjs",
     "test:lint": "node --test \"scripts/lint/*.test.mjs\"",
-    "test:unit": "bash tests/run-unit.sh"
+    "test:unit": "bash tests/run-unit.sh",
+    "build:sprites": "node scripts/build-sprites.mjs",
+    "check:sprites": "node scripts/check-sprites.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -25,6 +27,7 @@
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "markdownlint-cli2": "^0.23.3",
+    "sharp": "^0.35.5",
     "stylelint": "^17.16.0",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^7.0.2"
