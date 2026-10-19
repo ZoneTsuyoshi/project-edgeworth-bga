@@ -10,6 +10,7 @@
 
 | No. | タイトル | ステータス | 対応タスク |
 | --- | --- | --- | --- |
+| 001 | [ゲームルール仕様](001-game-rules.md) | Approved | T-001 |
 | 002 | [カードデータ仕様](002-card-data.md) | Approved | T-002 |
 | 003 | [盤面データ](003-board-data.md) | Approved | T-003 |
 
