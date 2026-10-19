@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * © だんじり協奏曲 (Danjiri Concerto)
+ * https://x.com/danjiriconcerto
+ */
+
+declare(strict_types=1);
+
+// BGA のフレームワーク本体が無い環境で、データ層が型として使うクラスだけを最小限に用意する。
+// 本物は BGA Studio 上でだけ読み込まれる。ここでの定義は tests/ の中だけで使う（bootstrap.php から読み込む）。
+
+namespace Bga\GameFramework\Db {
+    if (!class_exists(Globals::class, false)) {
+        abstract class Globals
+        {
+            abstract public function get(string $name, mixed $defaultValue = null, ?string $class = null): mixed;
+
+            abstract public function set(string $name, mixed $value): void;
+
+            abstract public function inc(string $name, int $step): int;
+        }
+    }
+}
+
+namespace {
+    // BGA の翻訳マーク用の関数。本物は何もせず文字列を返す
+    if (!function_exists('clienttranslate')) {
+        function clienttranslate(string $text): string
+        {
+            return $text;
+        }
+    }
+}

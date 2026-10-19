@@ -18,6 +18,7 @@
     "lint:cards": "node scripts/check-card-definitions.mjs",
     "test:lint": "node --test \"scripts/lint/*.test.mjs\"",
     "test:unit": "bash tests/run-unit.sh",
+    "test:integration": "bash tests/run-integration.sh",
     "build:sprites": "node scripts/build-sprites.mjs",
     "check:sprites": "node scripts/check-sprites.mjs"
   },

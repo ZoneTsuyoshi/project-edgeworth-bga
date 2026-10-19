@@ -36,9 +36,14 @@ GitHub Actions のワークフロー `Lint`（[../../.github/workflows/lint.yml]
 - `php` ジョブは `src/` に PHP が無い間、手順をスキップして成功します。`node` ジョブは対象ファイルが無くても成功します。
 - `tsconfig.json` は第 2b 段階（`tsc`）用で、今は置いてあるだけです。
 
-### 単体テスト（PHPUnit）
+### 単体テストと結合テスト（PHPUnit）
 
-別のワークフロー `Test`（[../../.github/workflows/test.yml](../../.github/workflows/test.yml)、ジョブ表示名 `PHPUnit`）が `composer test` を実行します（DB 不要。ローカルは `npm run test:unit`）。仕様書 005 §2.12 の提案に沿って lint とは分けており、**`Lint gate` には含めません**（lint は `workflow_call` で同期ワークフローからも呼ばれるため、テストの失敗で同期が止まる範囲を別に決めたい）。ただし失敗した PR はマージしないので、マージ前の `gh pr checks` で `PHPUnit` も確認します。
+別のワークフロー `Test`（[../../.github/workflows/test.yml](../../.github/workflows/test.yml)）に 2 つのジョブがあります。
+
+- `PHPUnit`: `composer test`（スイート `unit`。DB 不要。ローカルは `npm run test:unit`）
+- `PHPUnit (MariaDB)`: `composer test:integration`（スイート `integration`。`services` で MariaDB 11 を立て、`src/dbmodel.sql` を流してデータ層を検査する。ローカルは `npm run test:integration`）
+
+仕様書 005 §2.12 の提案に沿って lint とは分けており、**`Lint gate` には含めません**（lint は `workflow_call` で同期ワークフローからも呼ばれるため、テストの失敗で同期が止まる範囲を別に決めたい）。ただし失敗した PR はマージしないので、マージ前の `gh pr checks` で `PHPUnit` と `PHPUnit (MariaDB)` も確認します。
 
 ### アセット（スプライト）
 
@@ -61,7 +66,7 @@ GitHub Actions のワークフロー `Lint`（[../../.github/workflows/lint.yml]
 
 ## マージの運用
 
-- **`main` の保護は設定しません。** 代わりに、**`Lint gate` が通らない PR はメインエージェントがマージしません。** マージ前に `gh pr checks <PR 番号>` で `Lint gate` と `PHPUnit` が成功であることを確かめます。サブエージェントはマージしません。Dependabot の PR も同じです。
+- **`main` の保護は設定しません。** 代わりに、**`Lint gate` が通らない PR はメインエージェントがマージしません。** マージ前に `gh pr checks <PR 番号>` で `Lint gate`・`PHPUnit`・`PHPUnit (MariaDB)` が成功であることを確かめます。サブエージェントはマージしません。Dependabot の PR も同じです。
 - `main` への push でも lint は実行されます。直接 push や運用ミスを事後に検知するためです。
 
 ## CD: BGA Studio への自動同期（未導入）

@@ -1,4 +1,4 @@
-# 単体テスト（PHPUnit。DB 不要）。仕様書 005 §2.12 の提案: lint とは別のワークフローにし、Lint gate には含めない。
+# 単体テスト（PHPUnit。DB 不要）と結合テスト（PHPUnit + MariaDB）。仕様書 005 §2.12 の提案: lint とは別のワークフローにし、Lint gate には含めない。
 # 失敗した PR は、Lint gate が成功でもマージしない（gh pr checks で "PHPUnit" も確認する）
 name: Test
 
@@ -51,3 +51,58 @@ jobs:
 
       - name: composer test
         run: composer test
+
+  # データ層（src/modules/php/Data/）の結合テスト。services の MariaDB に src/dbmodel.sql を流して実行する
+  integration:
+    name: PHPUnit (MariaDB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: test
+          MARIADB_DATABASE: edgeworth_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: edgeworth_test
+      DB_USER: root
+      DB_PASSWORD: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.4'
+          coverage: none
+          extensions: pdo_mysql
+          tools: composer
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: composer test:integration
+        run: composer test:integration
