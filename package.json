@@ -6,11 +6,13 @@
     "node": "^22.13.0 || >=24"
   },
   "scripts": {
-    "lint": "npm run lint:md && npm run lint:repo && npm run lint:data",
+    "lint": "npm run lint:md && npm run lint:repo && npm run lint:data && npm run lint:cards",
     "lint:md": "markdownlint-cli2",
     "lint:repo": "node scripts/lint/check-repo.mjs",
     "lint:data": "node scripts/lint/check-data-unchanged.mjs",
-    "lint:links": "lychee --config lychee.toml \"./**/*.md\""
+    "lint:links": "lychee --config lychee.toml \"./**/*.md\"",
+    "lint:cards": "node scripts/check-card-definitions.mjs",
+    "test:unit": "bash tests/run-unit.sh"
   },
   "devDependencies": {
     "markdownlint-cli2": "^0.23.3"

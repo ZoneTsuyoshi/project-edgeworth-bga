@@ -31,3 +31,6 @@ id_ed25519*
 # BGA 配布の開発用スタブ（再配布不可。コミットしない。仕様書 005 §2.6）
 /tools/bga/_ide_helper.php
 /tools/bga/bga-framework.d.ts
+
+# PHPUnit のキャッシュ
+.phpunit.result.cache
