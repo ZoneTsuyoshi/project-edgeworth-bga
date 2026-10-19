@@ -228,6 +228,7 @@ final class CardEffects
                 [],
                 [new ResourceTouch(ResourceSymbol::HandDraw), new ResourceTouch(ResourceSymbol::CompositionRead, $host)],
             ),
+            ...CardEffectsE1::specs(),
         ];
     }
 }

@@ -9,12 +9,19 @@ declare(strict_types=1);
 
 namespace Bga\Games\ProjectEdgeworth\Effects\Query;
 
+use Bga\Games\ProjectEdgeworth\Board\Direction;
 use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
 use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
 use Bga\Games\ProjectEdgeworth\Material\ProjectType;
 
 /**
  * 修正の問い合わせの文脈（011 §3-2）。どの数量を決める時点か（配備先の衛星、配備するカード、区域、モード）を持つ。
+ *
+ * - `cell`: 問い合わせの区域。対象区域の問い合わせ（`LINK_TARGETS`）と循環フェイズの問い合わせ（`FUEL_CONSUME`・`NEAR_MISS`）では
+ *   衛星の直下の区域、通信確立コストでは通信確立する区域。
+ * - `direction`: 衛星の向き（`LINK_TARGETS` の右・左・前・後の拡張が使う）。
+ * - `ownActionChoice`: そのアクション選択ボーナスを自分でそのアクションを選んで得ているか（K12。R016〜R020 の宣言で得たなら偽）。
+ *   null は「自分で選んだ」として扱う（宣言で得たボーナスを扱う結線は E-3）。
  */
 final readonly class QueryContext
 {
@@ -27,6 +34,8 @@ final readonly class QueryContext
         public ?StepMode $mode = null,
         public ?ForbiddenAction $action = null,
         public int $attachedCount = 0,
+        public ?Direction $direction = null,
+        public ?bool $ownActionChoice = null,
     ) {
     }
 }

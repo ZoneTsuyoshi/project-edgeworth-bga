@@ -25,7 +25,8 @@ use Bga\Games\ProjectEdgeworth\Material\PartCategory;
  * 修正の問い合わせ（011 §3-2）の共通の骨組み。プレイヤーの効果のカードから、そのフックの修正・禁止を集めて畳み込む。
  *
  * - 稼働条件 `ACTIVE_ONLY` は、数量を決める時点・コミット前の状態で評価する（007 §3-2。宿主の `active` を見る）。
- * - 起動（`ACTIVATED`）の修正は、`$useMods` に宿主の鍵（`EffectHost::key()`）が入っているものだけ畳み込む（007 §5-1、011 §6-3）。
+ * - 起動（`ACTIVATED`）の修正のうち [Use] / [Skip] を聞くもの（`optional`）は、`$useMods` に宿主の鍵（`EffectHost::key()`）が
+ *   入っているものだけ畳み込む（007 §5-1、011 §6-3）。聞かないもの（R011・R014。`optional` が偽）は常に畳み込む。
  *   使用済みの宿主は、そもそも `$useMods` に入れられない（呼び出し側の選択肢から外す）。ここでは使用済みを理由に落とすことはしない。
  * - 配備コストの自己修正（P026、`params['scope'] = 'SELF_CARD'`）は、配備しようとするカード自身（まだ衛星に付いていない）を
  *   `$selfHost` で渡したときだけ働く。すでに衛星にある P026 は他のカードの配備コストを変えない（011 エッジケース）。
@@ -88,7 +89,8 @@ final class ModifierQuery
             if ($self !== ($host === $selfHost)) {
                 continue;
             }
-            if ($spec->kind === EffectKind::Activated && !in_array($host->key(), $useMods, true)) {
+            // 選択（[Use] / [Skip]）のある起動の修正だけが `$useMods` を要る。選択のない起動の修正（R011・R014 など `optional` が偽）は常に効く
+            if ($spec->kind === EffectKind::Activated && $spec->optional && !in_array($host->key(), $useMods, true)) {
                 continue;
             }
             if ($spec->activeOnly && !$host->active) {

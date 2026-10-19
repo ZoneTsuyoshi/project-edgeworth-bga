@@ -59,7 +59,7 @@ final class EngineActionHooks implements ActionHooks
 
     public function extraLinkTargets(int $playerId, Satellite $satellite, StepMode $mode): array
     {
-        return $this->queries->linkTargets(new QueryContext($playerId, $satellite->id, mode: $mode), [], $this->useMods);
+        return $this->queries->linkTargets(new QueryContext($playerId, $satellite->id, cell: $satellite->cell, mode: $mode, direction: $satellite->direction), [], $this->useMods);
     }
 
     public function pioneerWaived(int $playerId, Satellite $satellite): bool
