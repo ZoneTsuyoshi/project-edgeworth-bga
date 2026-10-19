@@ -13,5 +13,6 @@
 | 001 | [ゲームルール仕様](001-game-rules.md) | Approved | T-001 |
 | 002 | [カードデータ仕様](002-card-data.md) | Approved | T-002 |
 | 003 | [盤面データ](003-board-data.md) | Approved | T-003 |
+| 004 | [BGA プロジェクト構成・技術方針](004-bga-architecture.md) | Approved | T-004 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。
