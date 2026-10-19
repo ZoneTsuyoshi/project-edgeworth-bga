@@ -43,6 +43,8 @@ npm run test:integration
 | `Integration/Setup/` | `GameSetup` の結合テスト（2〜4 人、全オプション、枚数、初期資金、種を固定した再現性）と発射拠点の配置の問い合わせ（`LaunchPadPlacement`） |
 | `Unit/Flow/` | 循環フェイズのルール（`src/modules/php/Flow/`）: 移動・燃料・ニアミス・着陸の計算（RB p.18〜19 の例、FAQ の循環・燃料の裁定）、燃料の表現、終了判定と進行度 |
 | `Integration/Flow/` | `OrbitPhase`（DB への反映・着陸猶予）、`RoundEnd`（終了判定・進行度の最高値）、`FinalScoring`（fame_detail の保存）。MariaDB が要る |
+| `Unit/Flow/Action/` | 計画・アクションフェイズのルール層の純粋な部品: 支払い可否（売却の最小枚数）、配備・通信確立コストの内訳、既定のフック（修正なし） |
+| `Integration/Flow/Action/` | 計画・アクションフェイズのルール層（`ActionPhases`）を `GameSetup` で始めたゲームと MariaDB で確かめる: 計画の回収と公開、I〜V の選択・コスト・処理、売却、通信確立の同時処理・先駆コスト・区域ボーナス、`StepRunner` の同時選択の流れ。`ConfigurableHooks` でフック（修正・禁止）を再現 |
 | `Integration/Data/` | データ層（`dbmodel.sql`、各リポジトリ、グローバル値、プレイヤーの値）。MariaDB が要る |
 | `Support/` | 結合テストの共通部品: `PdoDatabase`（`Database` の PDO 実装）、`Schema`（`dbmodel.sql` を流す）、`DatabaseTestCase`、`ArrayGlobals`（BGA の globals の代用）、`SeededRandom`、`BgaStubs`（BGA のクラスの最小スタブ） |
 | `bootstrap.php` | Composer のオートロードと BGA スタブの読み込み |
