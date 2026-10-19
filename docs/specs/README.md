@@ -14,6 +14,7 @@
 | 002 | [カードデータ仕様](002-card-data.md) | Approved | T-002 |
 | 003 | [盤面データ](003-board-data.md) | Approved | T-003 |
 | 004 | [BGA プロジェクト構成・技術方針](004-bga-architecture.md) | Approved | T-004 |
+| 005 | [CI（lint）](005-ci-lint.md) | Approved | T-005 |
 | 008 | [アナログ特有の操作の BGA での表現](008-analog-operations.md) | Approved | T-008 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。
