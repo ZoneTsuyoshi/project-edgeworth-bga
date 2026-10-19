@@ -41,6 +41,8 @@ npm run test:integration
 | `Unit/Scoring/` | 名声計算（`src/modules/php/Scoring/`）: 001 §12-1 の計算例（合計 184）、褒賞の同順位・比較内容 0、24 面の比較値、終了時の手札の換金 |
 | `Unit/Setup/` | セットアップの部品: オプションの解釈（人数との組み合わせ検査）、褒賞 2 面の選び方（★/★★・Cube/Other・✕は Advanced のみ）、初期資金、プレイヤーの色 |
 | `Integration/Setup/` | `GameSetup` の結合テスト（2〜4 人、全オプション、枚数、初期資金、種を固定した再現性）と発射拠点の配置の問い合わせ（`LaunchPadPlacement`） |
+| `Unit/Flow/` | 循環フェイズのルール（`src/modules/php/Flow/`）: 移動・燃料・ニアミス・着陸の計算（RB p.18〜19 の例、FAQ の循環・燃料の裁定）、燃料の表現、終了判定と進行度 |
+| `Integration/Flow/` | `OrbitPhase`（DB への反映・着陸猶予）、`RoundEnd`（終了判定・進行度の最高値）、`FinalScoring`（fame_detail の保存）。MariaDB が要る |
 | `Integration/Data/` | データ層（`dbmodel.sql`、各リポジトリ、グローバル値、プレイヤーの値）。MariaDB が要る |
 | `Support/` | 結合テストの共通部品: `PdoDatabase`（`Database` の PDO 実装）、`Schema`（`dbmodel.sql` を流す）、`DatabaseTestCase`、`ArrayGlobals`（BGA の globals の代用）、`SeededRandom`、`BgaStubs`（BGA のクラスの最小スタブ） |
 | `bootstrap.php` | Composer のオートロードと BGA スタブの読み込み |
