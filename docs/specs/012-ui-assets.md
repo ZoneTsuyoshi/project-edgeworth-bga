@@ -409,7 +409,8 @@ BGA 標準のパネル（名前・色・時計）に、次のカウンターを�
 
 - **形式は WebP（非可逆、品質 80、アルファあり）**。盤面のタイルとコマは**ロスレス**（絵が平坦で、ロスレスの方が小さいか同等）。PNG・JPG は使わない（Img: webp を「できる限り使う」。PNG/JPG は配備時に自動で WebP へ非可逆変換され、まれに問題になるので、手元で作った WebP を使う）。
 - **2 段の解像度**: 通常表示用（base）は `img/` 直下、拡大表示用（zoom）は `img/zoom/` に置く（Img: サブフォルダの画像は既定では先読みされない。拡大を使うまで読み込まない）。**サブフォルダの使用は 004 §3「サブディレクトリなし」と食い違う**ため、Studio で確認する（未確定事項 No.9）。確認できなければ `img/` 直下に置き、先読みの総量が増える点を許容する（`dontPreloadImage` で外す案もある。GameJs）。
-- **生成物はコミットしない**。`data/` の原本から CI で生成する（004 §3、§12、姉妹と同じ作者の方針）。生成コマンドは `npm run build:sprites`、検査は `npm run check:sprites`。出力は `src/img/pe_*.webp` と `src/img/zoom/pe_*.webp`、対応表は `build/sprites/manifest.json`。`.gitignore` に `/src/img/pe_*.webp`、`/src/img/zoom/`、`/build/` を追加する。
+- **【2026-10-20 リポジトリ公開に伴い変更】生成物はコミットする。** `data/` は Git 管理外（作者の手元だけ）になり CI で生成できないため、`src/img/pe_*.webp`・`src/img/zoom/`・`sprites.js` をコミットし、CI と同期はコミット済みの画像を検査・転送するだけにする（`.gitignore` に残すのは `/build/` のみ。ただし CI の検査が読む `build/sprites/manifest.json` もコミットする）。原本を変えたら手元で `npm run build:sprites` して PR にする。以下は当時の方針。
+- **（旧）生成物はコミットしない**。`data/` の原本から CI で生成する（004 §3、§12、姉妹と同じ作者の方針）。生成コマンドは `npm run build:sprites`、検査は `npm run check:sprites`。出力は `src/img/pe_*.webp` と `src/img/zoom/pe_*.webp`、対応表は `build/sprites/manifest.json`。`.gitignore` に `/src/img/pe_*.webp`、`/src/img/zoom/`、`/build/` を追加する。
 - **BGA 側のスプライトの制約**【確認】（Img、Checklist）: スプライトの寸法は **4096 × 4096 px 以下**（超えるとモバイルで表示されない）。Img の一般推奨は「画像は十数個以内、各 2 MB まで」。Checklist は「各画像 4 MB まで、総量 15 MB まで、超えるなら圧縮」。**食い違いは小さい方（1 ファイル 2 MB）を採る**（004 §13）。
 
 #### 7.2 スプライトの構成

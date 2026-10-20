@@ -76,11 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # R1 は基準コミットとの差分を取るため全履歴が要る
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node
@@ -92,13 +90,6 @@ jobs:
       - name: Forbidden files and src/ hygiene
         if: ${{ !cancelled() }}
         run: npm run lint:repo
-
-      # pull_request は base.sha、push は before との差分。workflow_dispatch は基準が無いので検査しない
-      - name: data/ must not be modified
-        if: ${{ !cancelled() && github.event_name != 'workflow_dispatch' }}
-        env:
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-        run: npm run lint:data
 
   # PHP の構文（parallel-lint）と規約（phpcs）。src/ に PHP が無い間はスキップして成功する（仕様書 005 §3）
   php:

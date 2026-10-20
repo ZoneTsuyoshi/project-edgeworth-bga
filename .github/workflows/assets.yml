@@ -1,4 +1,4 @@
-# スプライトの生成と容量・寸法の検査（仕様書 005 第 3 段階の A1、012 §7.5）。
+# コミット済みスプライトの容量・寸法・名前の検査（仕様書 005 第 3 段階の A1、012 §7.5）。生成はしない（data/ は公開リポジトリに無い。2026-10-20）。
 # lint とは別のワークフローにし、Lint gate には含めない（005 未確定事項 No.6 の暫定案。理由は docs/development/cicd.md）。
 # 失敗した PR はマージしないので、マージ前の gh pr checks で "Sprites" も確認する。
 name: Assets
@@ -7,20 +7,20 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'data/**'
-      - 'scripts/build-sprites.mjs'
+      - 'src/img/**'
+      - 'src/modules/js/cards/sprites.js'
       - 'scripts/check-sprites.mjs'
-      - 'scripts/lib/sprite-layout.mjs'
+      - 'scripts/lib/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/assets.yml'
   push:
     branches: [main]
     paths:
-      - 'data/**'
-      - 'scripts/build-sprites.mjs'
+      - 'src/img/**'
+      - 'src/modules/js/cards/sprites.js'
       - 'scripts/check-sprites.mjs'
-      - 'scripts/lib/sprite-layout.mjs'
+      - 'scripts/lib/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/assets.yml'
@@ -52,10 +52,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      # 生成の最後に同じ検査が走るが、検査を単独の手順にして失敗箇所を見やすくする
-      - name: Build sprites
-        run: npm run build:sprites
 
       - name: Check sprites (size, dimensions, names)
         run: npm run check:sprites

@@ -17,8 +17,8 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 
 ## 一次情報
 
-- ルールブック: [../data/rulebooks/](../data/rulebooks/)（ページ画像）
-- カード画像: [../data/cards/](../data/cards/)
+- ルールブック: `data/rulebooks/`（ページ画像。作者の手元だけにあり、Git では管理しない）
+- カード画像: `data/cards/`（同上）
 - FAQ: <https://danjiri-concerto.github.io/project-edgeworth/faq.html>（原本は `../danjiri-concerto.github.io/project-edgeworth/data/faq.xlsx`）
 - エラッタ: <https://danjiri-concerto.github.io/project-edgeworth/errata.html>
 - BGA Studio 公式ドキュメント: <https://en.doc.boardgamearena.com/Studio>

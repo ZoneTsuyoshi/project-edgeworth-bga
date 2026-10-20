@@ -12,7 +12,7 @@
 3. **仕様書が先。** 実装の前に `docs/specs/` に仕様書を作成し、PR でユーザーの承認を得る。仕様書のない実装はしない。
 4. **各タスクはサブエージェント（sonnet）に委託する。** メインエージェントは分解・指示・レビュー・Git 操作の統括を担当する。
 5. **PR マージ後は、該当のワークツリー・ローカルブランチ・リモートブランチを削除する。**
-6. **`data/` は原本。編集・移動・削除しない。** 加工が必要なら `src/` 側に生成物を作る。
+6. **`data/` は作者の手元だけにあり、Git 管理外（`.gitignore`）。コミットしない。** 編集・移動・削除もしない。加工が必要なら `src/` 側に生成物を作る（BGA 用の縮小画像 `src/img/` と `sprites.js` はコミットする。原本を変えたら手元で `npm run build:sprites` して PR にする）。
 7. **認証情報をコミットしない。** BGA Studio の認証情報（SSH 秘密鍵とユーザー名）は GitHub Secrets のみに置く。ホスト・ポート・リモートパス・known_hosts のような公開情報は GitHub Variables に置いてよい。
 8. **ルールの不明点は推測で埋めない。** 効果の処理順、同時処理、アナログ特有の意思表示（同時公開・傾けて使用済みを示すなど）の BGA での表現は、必ず作者に質問して決める（[docs/development/rule-questions.md](docs/development/rule-questions.md)）。
 
@@ -119,7 +119,7 @@ git fetch --prune && git pull --ff-only origin main
 
 ## BGA 実装の方針
 
-- BGA Studio に同期するゲーム本体は `src/` 配下に置き、`src/` の中身が BGA 側プロジェクトフォルダと 1 対 1 に対応するようにする。`docs/` や `data/` は同期しない。
+- BGA Studio に同期するゲーム本体は `src/` 配下に置き、`src/` の中身が BGA 側プロジェクトフォルダと 1 対 1 に対応するようにする。`docs/` や `data/` は同期しない（`data/` はそもそもリポジトリに無い）。
 - BGA フレームワークの構成（ファイル構成、状態クラス、通知、PHP バージョンなど）は更新が速い。記憶に頼らず、仕様書作成時に [BGA Studio の公式ドキュメント](https://en.doc.boardgamearena.com/Studio) で最新を確認する。minimum-journey-bga の仕様書 003 も参考にする。
 - BGA Studio のプロジェクト名は **`projectedgeworth`**（作成済み・変更不可）。BGA のファイル名・クラス名・名前空間はこの名前に従う。
 - UI 文言は英語を原文とし、BGA の翻訳機構で日本語化する（BGA の標準作法）。
