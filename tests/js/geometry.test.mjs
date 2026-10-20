@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
-  boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
+  BASE_CENTER, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
 import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
@@ -114,4 +114,9 @@ test('キューブのマスの中心が、区域タイル原本の 4 つの正�
   assert.ok(SLOT_CENTERS[0].x < SLOT_CENTERS[1].x && SLOT_CENTERS[0].y === SLOT_CENTERS[1].y);
   assert.ok(SLOT_CENTERS[2].y > SLOT_CENTERS[0].y && SLOT_CENTERS[2].x === SLOT_CENTERS[0].x);
   assert.ok(SLOT_CENTERS[3].x === SLOT_CENTERS[1].x && SLOT_CENTERS[3].y === SLOT_CENTERS[2].y);
+});
+
+test('発射拠点コマは区域の左上のマス（slot 0）の中心に置く。キューブは slot 1 以降（作者回答 2026-10-20）', () => {
+  assert.deepEqual(BASE_CENTER, SLOT_CENTERS[0]);
+  assert.ok(BASE_CENTER.x < SLOT_CENTERS[1].x && BASE_CENTER.y < SLOT_CENTERS[2].y);
 });

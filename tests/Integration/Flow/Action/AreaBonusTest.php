@@ -58,6 +58,40 @@ final class AreaBonusTest extends ActionTestCase
         $this->assertSame(43, $this->maya(101));
     }
 
+    public function testLaunchBaseCellGivesNoTopBonusToAnyone(): void
+    {
+        // 発射拠点は slot 0 を占める（作者回答 2026-10-20）: 最初の通信確立でも 2 番目の扱い
+        $forest = $this->cellOf(AreaType::FOREST);
+        $mountain = $this->cellOf(AreaType::MOUNTAIN);
+        $this->pad(103, $forest);
+        $this->pad(102, $mountain);
+        $a = $this->place(101, 0, $forest);
+        $b = $this->place(101, 1, $mountain);
+        $handBefore = count($this->handOf(101));
+        $link = $this->phases->link();
+
+        $result = $link->resolve(StepMode::Main, [101 => $this->link($forest, $a)]);
+        $this->assertSame(0, $result->outcomeOf(101)?->details['bonus']->maya);
+        $this->assertSame(40 - 5 - 3, $this->maya(101));
+        $this->assertSame(1, $this->phases->services()->links->inCell($forest)[0]->slot);
+
+        $result = $link->resolve(StepMode::Bonus, [101 => $this->link($mountain, $b)]);
+        $this->assertSame([], $result->outcomeOf(101)?->details['bonus']->drawn);
+        $this->assertCount($handBefore, $this->handOf(101));
+    }
+
+    public function testDeepSeaOnALaunchBaseCellRecoversOneFuelForTheFirstLinker(): void
+    {
+        $deep = $this->cellOf(AreaType::DEEP_SEA);
+        $satellites = $this->phases->services()->satellites;
+        $this->pad(103, $deep);
+        $a = $this->place(101, 0, $deep);
+        $satellites->addFuelUsed($a, 2, 2);
+        $first = $this->phases->link()->resolve(StepMode::Main, [101 => $this->link($deep, $a)]);
+        $this->assertSame(1, $first->outcomeOf(101)?->details['bonus']->fuelRecovered);
+        $this->assertSame(1, $satellites->get($a)->fuelUsed);
+    }
+
     public function testSimultaneousLinkersAllGetTheTopBonus(): void
     {
         $forest = $this->cellOf(AreaType::FOREST);

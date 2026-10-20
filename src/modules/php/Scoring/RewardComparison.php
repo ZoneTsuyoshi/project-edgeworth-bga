@@ -99,7 +99,7 @@ final class RewardComparison
         return $max;
     }
 
-    /** T007: 自分のキューブが区域の 1 番目（slot 0）以外にある区域の数（FAQ 行 82）。発射拠点は数えない */
+    /** T007: 自分のキューブが区域の 1 番目（slot 0）以外にある区域の数（FAQ 行 82）。他人の発射拠点がある区域は slot 0 が発射拠点なので、そこのキューブは必ず 2 番目以降。自分の発射拠点は数えない（作者回答 2026-10-20） */
     private static function notFirst(PlayerState $player): int
     {
         $n = 0;

@@ -19,11 +19,11 @@ final class CubeSlots
     }
 
     /**
-     * 置くマス。区域にあるキューブ数 n（重ねた分も 1 つずつ数える）に対し slot n。
+     * 置くマス。区域で埋まっているマスの数 n（キューブは重ねた分も 1 つずつ、発射拠点コマは slot 0 を占めるので 1 つ）に対し slot n。
      * 空きがなければ null。
      */
-    public static function nextSlot(int $existingCubeCount): ?int
+    public static function nextSlot(int $occupiedCount): ?int
     {
-        return $existingCubeCount >= 0 && $existingCubeCount < self::SLOT_COUNT ? $existingCubeCount : null;
+        return $occupiedCount >= 0 && $occupiedCount < self::SLOT_COUNT ? $occupiedCount : null;
     }
 }

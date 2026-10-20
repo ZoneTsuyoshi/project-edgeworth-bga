@@ -90,6 +90,18 @@ final class RewardComparisonTest extends TestCase
         $this->assertSame(3, RewardComparison::value('T007', $p, $board));
     }
 
+    public function testT007CountsACubeOnAnotherPlayersLaunchBaseCellAsNotFirst(): void
+    {
+        $board = Fixtures::board();
+        // 他人の発射拠点が slot 0 を占める区域では、最初に確立したキューブも slot 1（2 番目以降）。自分の発射拠点は数えない
+        $p = Fixtures::player(
+            1,
+            cubes: [new LinkedCube($this->c(1, 2), 1), new LinkedCube($this->c(0, 3), 0)],
+            pad: $this->c(3, 10),
+        );
+        $this->assertSame(1, RewardComparison::value('T007', $p, $board));
+    }
+
     public function testT008AdjacentToAnyLaunchPadExcludingOwn(): void
     {
         $board = Fixtures::board();

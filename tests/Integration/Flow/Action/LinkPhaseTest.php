@@ -130,8 +130,22 @@ final class LinkPhaseTest extends ActionTestCase
         $this->phases->link()->resolve(StepMode::Main, [101 => $this->link($land, $sat)]);
         $this->assertSame(32, $this->maya(101));
         $this->assertSame($before102 + 3, $this->maya(102));
-        // 発射拠点はキューブ置き場を占有しない: 最初のキューブは左上（slot 0）
-        $this->assertSame(0, $this->phases->services()->links->inCell($land)[0]->slot);
+        // 発射拠点は左上（slot 0）を占める（作者回答 2026-10-20）: 最初のキューブは右上（slot 1）
+        $this->assertSame(1, $this->phases->services()->links->inCell($land)[0]->slot);
+    }
+
+    public function testSimultaneousLinksOnALaunchBaseCellStackOnSlotOneAndALaterOneSkipsTheStack(): void
+    {
+        $land = $this->cellOf(AreaType::LAND);
+        $a = $this->place(101, 0, $land);
+        $b = $this->place(102, 0, $land);
+        $this->pad(103, $land);
+        // 103 の発射拠点がある区域に 101・102 が同時に確立: 重ねて slot 1。発射拠点の持ち主 103 に先駆コスト 3 ずつ
+        $this->phases->link()->resolve(StepMode::Main, [101 => $this->link($land, $a), 102 => $this->link($land, $b)]);
+        $slots = array_map(static fn($l): int => $l->slot, $this->phases->services()->links->inCell($land));
+        $this->assertSame([1, 1], $slots);
+        $this->assertSame(40 - 5 - 3, $this->maya(101));
+        $this->assertSame(40 + 6, $this->maya(103));
     }
 
     public function testPioneerCostIsThreePerOtherPlayerWithACube(): void

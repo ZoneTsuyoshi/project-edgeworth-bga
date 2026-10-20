@@ -23,6 +23,9 @@ export const SLOT_CENTERS = [
   { x: 0.8126, y: 0.645 },
 ];
 
+/** 発射拠点コマの中心。区域の左上のマス（slot 0）を占める（作者回答 2026-10-20、003 §5）。キューブは発射拠点のある区域では slot 1 以降に置かれる */
+export const BASE_CENTER = SLOT_CENTERS[0];
+
 /** マスの大きさ（区域の幅に対する割合。91 px / 435 px） */
 export const SLOT_SIZE = 0.209;
 

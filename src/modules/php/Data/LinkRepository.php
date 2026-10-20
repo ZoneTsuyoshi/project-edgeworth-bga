@@ -26,7 +26,8 @@ final class LinkRepository
 
     /**
      * 通信確立を 1 回のコミットとして一斉に置く。
-     * 同じコミットで同じ区域に置くキューブは同じスロット n（= コミット前にその区域にあった数）で、段を 0, 1, 2… と席順（配列順）に割り当てる。
+     * 同じコミットで同じ区域に置くキューブは同じスロット n（= コミット前にその区域で埋まっているマスの数）で、段を 0, 1, 2… と席順（配列順）に割り当てる。
+     * 発射拠点コマがある区域は slot 0 が埋まっている（作者回答 2026-10-20、003 §5）ので、キューブは slot 1 から置く。
      * 1 人 16 個まで・同じ区域に自分は 1 つまで・スロットは 0〜3 まで。違反すると例外（呼び出し側の DB トランザクションで巻き戻す）。
      *
      * @param list<array{playerId: int, cell: int}> $placements 席順
@@ -36,7 +37,7 @@ final class LinkRepository
     {
         $before = [];
         foreach ($placements as $p) {
-            $before[$p['cell']] ??= $this->countInCell($p['cell']);
+            $before[$p['cell']] ??= $this->occupiedSlots($p['cell']);
         }
         $levels = [];
         $ids = [];
@@ -97,6 +98,15 @@ final class LinkRepository
     public function countFor(int $playerId): int
     {
         return (int) $this->db->value("SELECT COUNT(*) FROM `link` WHERE `link_player` = $playerId");
+    }
+
+    /**
+     * 区域で埋まっているマスの数（キューブ + 発射拠点コマ。発射拠点は slot 0 を占める）。
+     */
+    public function occupiedSlots(int $cell): int
+    {
+        $pads = (int) $this->db->value("SELECT COUNT(*) FROM `player` WHERE `pad_cell` = $cell");
+        return $this->countInCell($cell) + ($pads > 0 ? 1 : 0);
     }
 
     public function countInCell(int $cell): int

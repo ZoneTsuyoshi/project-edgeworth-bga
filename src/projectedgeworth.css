@@ -596,14 +596,12 @@ html[data-theme="dark"] .pe-modal-body {
     background: linear-gradient(to right, #7fe08a calc(var(--pe-fuel-ratio, 1) * 100%), rgb(255 255 255 / 25%) 0);
 }
 
-/* 発射拠点: 区域の下部中央。持ち主の色を足元の輪に出す。キューブのマスを占めない（012 §3.6） */
+/* 発射拠点: 区域の左上のマス（slot 0）の中心に置く。持ち主の色を足元の輪に出す（012 §3.6）。left / top は PieceLayer が指定 */
 .pe-base-piece {
     position: absolute;
-    bottom: 5%;
-    left: 50%;
     aspect-ratio: 164 / 228;
     background-repeat: no-repeat;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
 }
 
 .pe-base-piece::before {

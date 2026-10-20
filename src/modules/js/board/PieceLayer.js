@@ -6,14 +6,14 @@
  * コマは区域の外側の絶対配置の箱（CSS 変数の位置）に入れ、位置の変更を transition で動かす。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { cellOriginUnits, cellRowCol, cubeStackOffset, nearestAngle, neighbor, SATELLITE_ROTATION, satelliteStackOffset, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
+import { cellOriginUnits, cellRowCol, cubeStackOffset, nearestAngle, neighbor, SATELLITE_ROTATION, satelliteStackOffset, BASE_CENTER, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
 import { applySprite, COLOR_LETTERS, pieceSprite } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
 
 /** 衛星コマの幅（区域の幅に対する割合。012 §3.6） */
 const SATELLITE_WIDTH = 0.45;
 /** 発射拠点コマの幅 */
-const BASE_WIDTH = 0.3;
+const BASE_WIDTH = 0.2;
 /** キューブの一辺（区域の幅に対する割合。マスの約 8 割） */
 const CUBE_SIZE = SLOT_SIZE * 0.9;
 /** 移動の 1 段階の長さ（ミリ秒。012 §3.7: 0.25 秒ずつ） */
@@ -152,7 +152,7 @@ export class PieceLayer {
     // ---- 発射拠点 ----
 
     /**
-     * 発射拠点（区域の下部中央。持ち主の色を縁に出す。012 §3.6）。
+     * 発射拠点（区域の左上のマス = slot 0 に置く。持ち主の色を縁に出す。012 §3.6、作者回答 2026-10-20）。
      * @param {number} playerId
      * @param {number} cell
      * @param {number} colorIndex
@@ -163,7 +163,7 @@ export class PieceLayer {
         const piece = el('span', {
             class: 'pe-base-piece',
             dataset: { color: COLOR_LETTERS[colorIndex] ?? 'b', player: playerId },
-            style: { width: `${BASE_WIDTH * 100}%` },
+            style: { width: `${BASE_WIDTH * 100}%`, left: `${BASE_CENTER.x * 100}%`, top: `${BASE_CENTER.y * 100}%` },
             title: _('Launch base'),
         });
         applySprite(piece, pieceSprite(`base_${COLOR_LETTERS[colorIndex] ?? 'b'}`), this.env.imgUrl);

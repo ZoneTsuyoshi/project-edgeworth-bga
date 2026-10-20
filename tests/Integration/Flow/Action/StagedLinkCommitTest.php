@@ -77,6 +77,18 @@ final class StagedLinkCommitTest extends ActionTestCase
         $this->assertCount(1, StagedLinkConverter::events($commit, 2));
     }
 
+    public function testStagedLinkOnALaunchBaseCellStartsAtSlotOne(): void
+    {
+        // 作者回答 2026-10-20: 発射拠点が slot 0 を占める。効果による通信確立も slot 1 から
+        $sea = $this->cellOf(AreaType::SEA);
+        $this->pad(103, $sea);
+        $a = $this->sat(101, 0)->id;
+        $b = $this->sat(102, 0)->id;
+        $committer = $this->phases->link()->committer();
+        $committer->commit(StagedLinkConverter::requests([$this->stage(101, $a, $sea, true), $this->stage(102, $b, $sea, true)]));
+        $this->assertSame([1, 1], array_map(static fn($l): int => $l->slot, $this->phases->services()->links->inCell($sea)));
+    }
+
     public function testAnUnaffordableRequestIsDroppedAndRaisesNoLinkedEvent(): void
     {
         $sea = $this->cellOf(AreaType::SEA);

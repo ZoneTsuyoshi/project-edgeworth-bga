@@ -44,6 +44,22 @@ final class LinkRepositoryTest extends DatabaseTestCase
         $this->assertSame(3, $placed[0]->round);
     }
 
+    public function testLaunchBaseOccupiesSlotZeroSoCubesStartAtSlotOne(): void
+    {
+        // 作者回答 2026-10-20: 発射拠点コマは区域の左上（slot 0）を占める
+        $this->addPlayers([1, 2, 3, 4]);
+        $this->db->execute('UPDATE `player` SET `pad_cell` = 12 WHERE `player_id` = 1');
+        $first = $this->links->commit([['playerId' => 2, 'cell' => 12], ['playerId' => 3, 'cell' => 12]], 1, 1);
+        $this->assertSame([1, 1], array_map(static fn($l): int => $l->slot, $first));
+        // 後から来る人は、発射拠点 + 重ねた 2 つ = 3 マス分飛ばして slot 3
+        $later = $this->links->commit([['playerId' => 4, 'cell' => 12]], 1, 2);
+        $this->assertSame(3, $later[0]->slot);
+        $this->assertSame(3, $this->links->countInCell(12));
+        $this->assertSame(4, $this->links->occupiedSlots(12));
+        // 発射拠点のない区域は従来どおり slot 0
+        $this->assertSame(0, $this->links->commit([['playerId' => 2, 'cell' => 13]], 1, 3)[0]->slot);
+    }
+
     public function testFifthCubeInACellThrows(): void
     {
         foreach ([1, 2, 3, 4] as $i => $player) {
