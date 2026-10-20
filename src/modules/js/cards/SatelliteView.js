@@ -320,8 +320,9 @@ export class SatelliteView {
                     style: { left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, width: `${slot.w * 100}%`, height: `${slot.h * 100}%` },
                 }));
             });
-            if (info?.activated) {
-                node.append(gearIcon(c.activation === 1, info.activeOnly && !this.active));
+            // 紙のカードに歯車は印刷済み。簡略表示のアイコンは出さず、使用済みのときだけ × を効果タイプの歯車の位置に重ねる
+            if (info?.activated && c.activation === 1) {
+                node.append(el('span', { class: 'pe-paper-used', title: _('Used this round'), role: 'img', 'aria-label': _('Used this round') }, ['×']));
             }
             this.tooltip.bind(node, key);
         } catch {
@@ -366,6 +367,11 @@ export class SatelliteView {
     renderFuel() {
         const cap = this.sat.fuelCapacity;
         const g = fuelGauge(this.sat.fuelUsed, cap);
+        const label = this.renderFuelLabel(g, cap);
+        if (this.detail) {
+            // 詳細表示は紙の燃料庫に置いた燃料コマで示すので、ゲージの枠は出さず文字だけ
+            return el('div', { class: 'pe-fuel' }, [label]);
+        }
         const slots = el('div', { class: 'pe-fuel-row', role: 'img', 'aria-label': `${_('Fuel')} ${g.remaining} / ${cap}` });
         for (let i = 0; i < cap; i++) {
             const slot = el('span', { class: `pe-fuel-cell${i === 0 ? ' pe-fuel-initial' : ''}` });
@@ -379,10 +385,18 @@ export class SatelliteView {
             out.append(this.createFuelPiece('pe-fuel-piece'));
         }
         slots.append(out);
-        const label = el('span', { class: `pe-fuel-label${g.outOfFuel ? ' pe-out-of-fuel' : ''}${g.remaining <= 1 && !g.outOfFuel ? ' pe-fuel-low' : ''}` }, [
+        return el('div', { class: 'pe-fuel' }, [slots, label]);
+    }
+
+    /**
+     * @param {{ remaining: number, outOfFuel: boolean }} g
+     * @param {number} cap
+     * @returns {HTMLElement}
+     */
+    renderFuelLabel(g, cap) {
+        return el('span', { class: `pe-fuel-label${g.outOfFuel ? ' pe-out-of-fuel' : ''}${g.remaining <= 1 && !g.outOfFuel ? ' pe-fuel-low' : ''}` }, [
             g.outOfFuel ? _('Out of fuel') : `${_('Fuel')} ${g.remaining} / ${cap}`,
         ]);
-        return el('div', { class: 'pe-fuel' }, [slots, label]);
     }
 
     /** 稼働状態・向き・衛星カードの起動効果（詳細 / 簡略の切り替えは画面全体で 1 つ。GameView。作者回答 2026-10-20） */
