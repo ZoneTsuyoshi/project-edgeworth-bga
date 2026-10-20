@@ -207,6 +207,12 @@ export class SatelliteView {
     /** 衛星カード（横長）。拡大表示を結びつける */
     renderSatelliteCard() {
         const card = createCard(this.env, this.sat.card, { classes: ['pe-sat-card'] });
+        // 待機中の衛星は、衛星コマを衛星カードの右下の衛星の形の枠に置く（稼働中はコマが盤面にある。作者要望 2026-10-20 その 3）
+        if (!this.active) {
+            const piece = el('span', { class: 'pe-sat-standby-piece', 'aria-hidden': 'true' });
+            applySprite(piece, pieceSprite(`satellite_${(this.sat.shape ?? 'HAMMER').toLowerCase()}_${COLOR_LETTERS[this.sat.colorIndex] ?? 'b'}`), this.env.imgUrl);
+            card.append(piece);
+        }
         this.tooltip.bind(card, this.sat.card, { chips: () => this.deployedKeys() });
         return card;
     }

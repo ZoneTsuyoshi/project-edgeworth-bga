@@ -899,6 +899,19 @@ html[data-theme="dark"] .pe-modal-body {
     width: var(--pe-satellite-w);
 }
 
+.pe-sat-standby-piece {
+    /* 衛星カード右下の衛星の形の枠（原本 1000 × 716 の x 865〜975、y 445〜700）に、上向きに重ねる。コマの画像は左向きなので 90 度回す */
+    position: absolute;
+    top: 71.9%;
+    left: 81.45%;
+    width: 21.1%;
+    aspect-ratio: 232 / 132;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+    pointer-events: none;
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / 60%));
+}
+
 .pe-sat-simple {
     display: flex;
     flex-direction: column;
@@ -1337,6 +1350,31 @@ html[data-theme="dark"] .pe-modal-body {
 
 .pe-icon-maya {
     width: 22px;
+}
+
+.pe-regions {
+    display: inline-flex;
+    gap: 1px;
+    align-items: center;
+}
+
+/* 通信確立していない地域は薄く、している地域は濃く（作者要望 2026-10-20 その 3） */
+.pe-region {
+    display: inline-flex;
+    padding: 1px;
+    border-radius: 3px;
+    opacity: 0.3;
+}
+
+.pe-region-linked {
+    background: var(--pe-pc, #888);
+    opacity: 1;
+}
+
+.pe-icon-region {
+    width: 15px;
+    height: 16px;
+    background-size: contain;
 }
 
 .pe-icon-disk {
