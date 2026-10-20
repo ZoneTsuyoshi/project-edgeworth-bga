@@ -47,7 +47,7 @@ final class EffectsWiringTest extends MachineTestCase
     }
 
     /** 新しいリクエスト（再読み込み）と同じく、DB とグローバル値から効果エンジンも状態機械も作り直す */
-    private function boot(): void
+    private function boot(bool $publicFame = false): void
     {
         $this->effects = new EffectRuntime($this->db, $this->globals);
         $this->machine = new Machine(new FlowContext(
@@ -56,6 +56,7 @@ final class EffectsWiringTest extends MachineTestCase
             new SeededRandom(5),
             static fn(int $id): string => "Player$id",
             effects: $this->effects,
+            publicFame: $publicFame,
         ));
         $this->walker = new StateWalker($this->machine);
     }
@@ -216,6 +217,40 @@ final class EffectsWiringTest extends MachineTestCase
         self::assertTrue($all[0]->args['early']);
         $after = (new PublicView($this->machine->ctx))->build(102)['playerData'][101];
         self::assertSame($hand + 1, $after['handCount']);
+    }
+
+    /** ゲームオプション 105: 窓の最中は N36 を送らず、publicFame は窓開始時の値。窓を閉じた後に最新値の N36 が届く */
+    public function testPublicFameStaysAtWindowOpenValueUntilTheBarrier(): void
+    {
+        $this->startEffects();
+        $this->boot(true);
+        $sat = $this->satId(101, SatelliteShape::Hammer);
+        $this->launch($sat, 14);
+        $this->deployTo($sat, 5);
+        $this->phase(FlowPhase::Budget, 1, [102]);
+
+        $waiting = $this->walker->run(StateId::BUDGET_DRIVER);
+        self::assertSame(StateId::EFFECT_WINDOW_RESOLVE, $waiting);
+        $openFame = (new PublicView($this->machine->ctx))->build(101)['publicFame'];
+        $entry = (int) $this->machine->windows()->resolveArgs()['_private'][101]['questions'][0]['entryId'];
+        $this->playerValues->setMaya(101, 100);
+
+        $sentBefore = count($this->walker->noticesNamed('publicFameUpdated'));
+        $this->machine->windows()->use(101, $entry, [], []);
+        self::assertCount($sentBefore, $this->walker->noticesNamed('publicFameUpdated'), '窓の最中は N36 を送らない');
+        foreach ([101, 102, 999] as $viewer) {
+            self::assertSame($openFame, (new PublicView($this->machine->ctx))->build($viewer)['publicFame'], "viewer {$viewer}");
+        }
+
+        $this->boot(true);
+        $this->walker->play($this->walker->run(StateId::EFFECT_WINDOW_RESOLVE), [], [StateId::PLANNING_PLOT]);
+        $names = $this->walker->noticeNames();
+        $closedAt = array_search('windowClosed', $names, true);
+        $fameAt = array_search('publicFameUpdated', $names, true);
+        self::assertIsInt($fameAt);
+        self::assertGreaterThan($closedAt, $fameAt);
+        $latest = (new PublicView($this->machine->ctx))->build(102)['publicFame'];
+        self::assertNotSame($openFame, $latest);
     }
 
     /** [Skip] は使用済みにならず、払いもしない（N28） */

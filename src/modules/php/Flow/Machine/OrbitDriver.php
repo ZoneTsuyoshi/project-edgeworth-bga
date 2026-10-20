@@ -85,7 +85,7 @@ final class OrbitDriver
                             'landing',
                         ));
                     }
-                    $notes->add($this->ctx->counters());
+                    $notes->add(...$this->ctx->sync());
                     break;
                 case 'finish':
                     $orbit->finish();

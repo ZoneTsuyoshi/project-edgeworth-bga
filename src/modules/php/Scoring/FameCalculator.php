@@ -31,13 +31,14 @@ final class FameCalculator
      *
      * @param list<PlayerState> $players
      * @param list<string> $rewardIds このゲームで使う褒賞カード（2 枚）
+     * @param bool $cashOutHands false なら手札を換金せず、ゲーム中の所持金のまま計算する（途中経過の公開用）
      * @return array<int, FameResult> プレイヤー ID => 結果
      */
-    public static function calculate(array $players, ScoringBoard $board, array $rewardIds): array
+    public static function calculate(array $players, ScoringBoard $board, array $rewardIds, bool $cashOutHands = true): array
     {
         $cashed = [];
         foreach ($players as $p) {
-            $cashed[] = $p->withHandCashedOut();
+            $cashed[] = $cashOutHands ? $p->withHandCashedOut() : $p;
         }
 
         $pads = [];

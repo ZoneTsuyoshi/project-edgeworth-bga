@@ -14,6 +14,7 @@ use Bga\Games\projectedgeworth\Board\BoardPlacement;
 use Bga\Games\projectedgeworth\Setup\GameOptions;
 use Bga\Games\projectedgeworth\Setup\RewardSelection;
 use Bga\Games\projectedgeworth\Setup\SatellitePlanOption;
+use Bga\Games\projectedgeworth\Setup\PublicFame;
 use Bga\Games\projectedgeworth\Setup\StartingHand;
 use PHPUnit\Framework\TestCase;
 
@@ -34,6 +35,7 @@ final class GameOptionsTest extends TestCase
         $this->assertSame(RewardSelection::InitialGame, $o->rewardSelection);
         $this->assertSame(SatellitePlanOption::Moon, $o->satellitePlan);
         $this->assertSame(StartingHand::None, $o->startingHand);
+        $this->assertSame(PublicFame::Hidden, $o->publicFame);
     }
 
     public function testAllSixBoardLayouts(): void
@@ -60,6 +62,14 @@ final class GameOptionsTest extends TestCase
         $this->assertSame(SatellitePlanOption::PlayerVariable, $o->satellitePlan);
         $this->assertSame(StartingHand::Mulligan, $o->startingHand);
         $this->assertSame(RewardSelection::Random, self::options(3, [102 => 3])->rewardSelection);
+    }
+
+    public function testPublicFameOption(): void
+    {
+        $this->assertSame(PublicFame::Visible, self::options(2, [105 => 2])->publicFame);
+        $this->assertSame(PublicFame::Hidden, self::options(2, [105 => 1])->publicFame);
+        $this->expectException(\InvalidArgumentException::class);
+        self::options(2, [105 => 3]);
     }
 
     public function testBoardSizeByPlayerCount(): void

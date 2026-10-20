@@ -56,7 +56,7 @@ final class OutcomeNotices
                 $notices = array_merge($notices, $this->outcome($actionNo, $mode, $outcome, $autoPlayers, $tracker));
             }
         }
-        $notices[] = $this->ctx->counters();
+        array_push($notices, ...$this->ctx->sync());
         return array_values(array_filter($notices));
     }
 

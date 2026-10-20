@@ -333,7 +333,7 @@ final class WindowFlow
         $notices = [...$notices, ...$this->notices()->release(), $this->notices()->closed($windowId)];
         $exit = $this->close();
 
-        return new WindowExit($exit->resume, [...$notices, $this->ctx->counters(), ...$exit->notices]);
+        return new WindowExit($exit->resume, [...$notices, ...$this->ctx->sync(), ...$exit->notices]);
     }
 
     /**

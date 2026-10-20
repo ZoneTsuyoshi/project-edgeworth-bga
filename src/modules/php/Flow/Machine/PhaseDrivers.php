@@ -37,12 +37,13 @@ final class PhaseDrivers
                 foreach ($phase->applyMain() as $playerId => $gain) {
                     $notes->add($this->ctx->notices->mayaChanged($playerId, $gain, $players->maya($playerId), 'budget'));
                 }
-                $notes->add($this->ctx->counters());
+                $notes->add(...$this->ctx->sync());
             } elseif ($op === 'bonus') {
                 $gains = $phase->applyBonus();
                 foreach ($gains as $playerId => $gain) {
                     $notes->add($this->ctx->notices->mayaChanged($playerId, $gain, $players->maya($playerId), 'bonus'));
                 }
+                $notes->add(...array_slice($this->ctx->sync(), 1));
             }
             return null;
         });
@@ -139,7 +140,7 @@ final class PhaseDrivers
                         $this->ctx->discardCount(),
                     ));
                 }
-                $notes->add($this->ctx->counters());
+                $notes->add(...$this->ctx->sync());
                 $this->ctx->record(...ActionEvents::proposalDrawn(array_map('count', $drawn)));
                 return null;
             }

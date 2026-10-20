@@ -206,6 +206,7 @@ src/
 | 102 | Award cards | 1: Initial Game / 2: Random (1: Cube, 1: Other) / 3: Random | 1 | なし | 001 §3-3、Q-04 |
 | 103 | Satellite plan | 1: MOON / 2: Player-variable | 1 | なし | 001 §3-4、Q-05 |
 | 104 | Starting hand | 1: None / 2: Mulligan / 3: Draft | 1 | 値 3（Draft）は実装するまで `values` に含めない（キーは予約） | 001 §3-5、Q-06 |
+| 105 | Public fame (except missions) | 1: Hidden / 2: Visible | 1 | なし。`level: additional`。Visible のときだけ、ゲーム中にミッション V を除く名声を公開する（`getAllDatas.publicFame`、通知 N36。010 未確定事項 No.2、作者回答 2026-10-20） | 010 未確定 2 |
 
 - 101 を 2 人または 3 人のときだけ表示するのは `displaycondition` の `maxplayers`（人数が 3 以下のとき表示）で表す。2x2 は 2 人だけなので、3 人のときに選べないよう `startcondition` を併用する（001 §3-2 の表）。人数の組み合わせの検証はサーバー側（`setupNewGame`）でも二重に行う。
 - 100 は 6 択を 1 つのオプションで持つ（作者が示した名称のとおり。Q-02）。面（Standard / Advanced）と並べ方（Earth / Random w/o Flip / Random w/ Flip）を 2 つのオプションに分ける案もあるが、作者の回答の形を優先する。内部では `BoardFace`（STANDARD / ADVANCED）と `BoardPlacement`（EARTH / RANDOM_NO_FLIP / RANDOM_FLIP）の 2 つの enum に分解して扱う。

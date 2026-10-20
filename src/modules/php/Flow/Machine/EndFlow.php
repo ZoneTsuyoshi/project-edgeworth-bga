@@ -12,7 +12,6 @@ namespace Bga\Games\projectedgeworth\Flow\Machine;
 use Bga\Games\projectedgeworth\Data\CardLocation;
 use Bga\Games\projectedgeworth\Data\FlowPhase;
 use Bga\Games\projectedgeworth\Data\MissionRepository;
-use Bga\Games\projectedgeworth\Data\RegionRepository;
 use Bga\Games\projectedgeworth\Flow\EndCondition;
 use Bga\Games\projectedgeworth\Flow\FinalScoring;
 use Bga\Games\projectedgeworth\Flow\RoundEnd;
@@ -35,16 +34,7 @@ final class EndFlow
 
     private function finalScoring(): FinalScoring
     {
-        $s = $this->ctx->services;
-        return new FinalScoring(
-            $s->satellites,
-            $s->cards,
-            $s->links,
-            new MissionRepository($this->ctx->db),
-            new RegionRepository($this->ctx->db),
-            $s->players,
-            $s->globals,
-        );
+        return $this->ctx->finalScoring();
     }
 
     /**
@@ -103,7 +93,7 @@ final class EndFlow
             $maya = $services->players->addMaya($playerId, $gain);
             $notes->add($this->ctx->notices->handCashedOut($playerId, $hand, $gain, $maya));
         }
-        $notes->add($this->ctx->counters());
+        $notes->add(...$this->ctx->sync());
         return new DriverResult('scoring', $notes->all());
     }
 

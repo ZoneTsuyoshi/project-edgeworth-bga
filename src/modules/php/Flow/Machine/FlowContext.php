@@ -14,6 +14,9 @@ use Bga\Games\projectedgeworth\Data\CardLocation;
 use Bga\Games\projectedgeworth\Data\Database;
 use Bga\Games\projectedgeworth\Data\GlobalValues;
 use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\MissionRepository;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Flow\FinalScoring;
 use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
 use Bga\Games\projectedgeworth\Flow\Action\ActionPhases;
 use Bga\Games\projectedgeworth\Effects\Runtime\EffectRuntime;
@@ -46,6 +49,8 @@ final class FlowContext
         WindowGate $gate = new NoEffectWindowGate(),
         ?ActionHooks $hooks = null,
         public readonly ?EffectRuntime $effects = null,
+        /** ゲームオプション 105 が Visible か（ミッション以外の名声を公開する） */
+        public readonly bool $publicFame = false,
     ) {
         $this->gate = $effects === null ? $gate : $effects->gate;
         $this->orbitMods = $effects === null ? new NoOrbitModifiers() : $effects->orbitMods;
@@ -61,6 +66,34 @@ final class FlowContext
     public function record(\Bga\Games\projectedgeworth\Effects\Context\GameEvent ...$events): void
     {
         $this->effects?->ledger->record(...$events);
+    }
+
+    public function finalScoring(): FinalScoring
+    {
+        $s = $this->services;
+        return new FinalScoring(
+            $s->satellites,
+            $s->cards,
+            $s->links,
+            new MissionRepository($this->db),
+            new RegionRepository($this->db),
+            $s->players,
+            $s->globals,
+        );
+    }
+
+    /**
+     * 値が変わりうる処理の最後に送る再同期の通知: N33 と、ゲームオプション 105 が Visible のときの N36。
+     *
+     * @return list<Notice>
+     */
+    public function sync(): array
+    {
+        // 窓の最中は他人の変化をバリアまで見せない（010 §9.4）ので、N36 は窓を閉じた後（windowClosed の後）だけ送る
+        if (!$this->publicFame || $this->globals->windowId() !== null) {
+            return [$this->counters()];
+        }
+        return [$this->counters(), $this->notices->publicFameUpdated($this->finalScoring()->publicFame())];
     }
 
     /**

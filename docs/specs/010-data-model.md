@@ -385,7 +385,7 @@ ALTER TABLE `player` ADD `fame_detail` TEXT NULL DEFAULT NULL;
 | `pad_cell` | int / null | 発射拠点の区域（§5.4） | 11 `SetupLaunchPadPlace` | 公開 |
 | `fame_detail` | text / null | 名声の内訳（JSON。§11） | 121 `FinalScoring` | ゲーム終了時に全員へ |
 
-- `player_score` は 121 で名声の合計を `playerScore->set` する（D12）。**ゲーム中は更新しない**（0 のまま。名声は終了時に計算するため。001 §12、未確定 2）。`player_score_aux` は使わない（同点は同順位。Q-08）。
+- `player_score` は 121 で名声の合計を `playerScore->set` する（D12）。**ゲーム中は更新しない**（0 のまま。途中の名声はゲームオプション 105 が Visible のとき `publicFame` / N36 で別に送る。001 §12、未確定 2）。`player_score_aux` は使わない（同点は同順位。Q-08）。
 
 #### 7.2 グローバル値（`$this->bga->globals`）
 
@@ -429,7 +429,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | 通信確立した地域の種類 | `link` と `pad_cell` の区域の地域の異なる数 | 公開 |
 | 選ばれたアクション | `bonus_holders` のキー集合 | 公開 |
 | 予約済みマヤ | `SUM(staged_link.stage_reserved)` | 本人のみ |
-| 名声の途中値 | 計算しない（ゲーム中は表示しない。未確定 2） | — |
+| 名声の途中値 | 既定では計算しない。ゲームオプション 105 が Visible のときだけ、ミッション V を除いて計算して公開する（`getAllDatas.publicFame`、N36。未確定 2） | 公開（Visible のときだけ） |
 
 ### 8. `getAllDatas`
 
@@ -490,7 +490,8 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
   },
   "bonusHolders": { "3": [2310001] },
   "window": null,
-  "finalScores": null
+  "finalScores": null,
+  "publicFame": { "101": { "total": 12, "detail": { "total": 12, "I": { "points": 8, "budget": 8 } } } }
 }
 ```
 
@@ -502,6 +503,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | `playerData[pid].satellites[].cards` | 配備されたカード（段の昇順）。`activation` は起動効果の使用済み（公開。008 §4） | — |
 | `playerData[pid].cubesLeft` | 残りキューブ（窓の外ではステージは空） | 窓の最中は §9.4 のスナップショットから |
 | `window` | 窓の最中だけ `{ "id": "DE" }`。プールの中身は含めない | — |
+| `publicFame` | ゲームオプション 105 が Visible のときだけ入れるキー（Hidden ではキー自体がない）。プレイヤー ID => `{ total, detail }`。`detail` は §11 の I〜IX から**ミッション V を除いた**もの（`fame_detail` と同じキー名。`total` を含む）。ゲーム中の途中の名声: 手札は換金せず所持金のまま、IX は終了判定で満たした人だけ、VIII は現在の比較値での順位。窓（状態 30〜32）の最中は全員に窓開始時の値（`window_snapshot` の `publicFame`）を返す。DB には保存せず、`FinalScoring` と同じ入口（DB から `PlayerState` を組み立てて `FameCalculator`）で毎回計算する | Hidden ではキーなし |
 | `finalScores` | ゲーム終了後（状態 121 以降）だけ、全員の `fame_detail`（§11）と全員のミッション（番号・達成状況） | それ以外は null |
 
 - 山札の中身、`drawn` の他人分、他人の手札、`mission_card` の他人分、`choice`、`pool`、`staged_link`、`held_notif` は戻り値に含まれない。コードレビューでは、`getAllDatas` が `project_card` や `player` を丸ごと読んで整形していないこと（専用の読み出し `PublicView` を使っていること）を確認する。
@@ -630,8 +632,10 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "drawnCount", "cubesLeft"}}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
 | N34 | `effectQuestions` | 本人 | 31 の args の `_private[playerId]` と同じ形（`windowId`、`pending`、`questions`、`hand`、`sellValue`）。答えた後で問いが無ければ `questions` は空 | `''` | 31 の `actUseEffect` / `actSkipEffect` / `actOrderEffects` の直後。31 の args は入場時のものなので、クライアントが残りの問い（ORDER の次の EFFECT、二段階の効果の二段目など）を知る。保留に積まず即時に送る（本人の問いは公開情報ではない） |
 | N35 | `effectWaiting` | 全員 | `waiting`（`[{ "player_id", "sources": [カードキー] }]`。31 の args の公開部分と同じ） | `''` | N34 と同時、および zombie の処理の後。待機表示「Waiting for X (CARD_NAME)」（008 §5-1）を更新する。カードは公開情報 |
+| N36 | `publicFameUpdated` | 全員 | `fame`（`{ID: {"total", "detail"}}`。`getAllDatas.publicFame` と同じ形。ミッション V を除く） | `''` | ゲームオプション 105 が Visible のときだけ。N33 を送る箇所（各 GAME 状態の処理の最後とアクションの最後、予算ボーナスの後）で、値が変わりうるとき N33 の直後に送る。窓の最中は送らず、バリアの公開（N26 windowClosed）の後の N33 と同時に最新値を送る。Hidden では送らない |
 
 - 窓の外の GAME 状態（コミット）で出す通知は、その場で `notify->all` を呼ぶ（リクエストの終わりに順序どおり届く）。**窓の中（状態 31）の他人に見える通知**は §10.5 の規則に従う。
+- N36 は全員宛て。ゲームオプション 105 が Visible のときだけ送る。
 - 通知のうち「本人」宛てなのは N3・N9・N22・N25・N34 の 5 種。他は全員宛て。
 - N8 + N9 の対、N10、N12 は他の通知と一緒に使われる共通部品（例: 山岳ボーナス = N8 + N9、森林ボーナス = N12、深海 = N19）。区域ボーナスを個別の通知にしない。
 
@@ -890,7 +894,7 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 | No. | 質問 | 暫定案 | 回答 |
 | --- | --- | --- | --- |
 | 1 | 窓の最中（効果の解決中）に、他のプレイヤーがページを再読み込みしたとき、その窓で起きている他人の変化（マヤ、手札枚数、引いた枚数、配備の変化）を見せないために、窓の開始時点の公開情報のスナップショット（`window_snapshot`、§9.4）から返す方式でよいか。簡易案は、通知だけを保留し、再読み込みでは最新の DB の値が見えてしまうことを許す（実装は簡単だが、007 §7-2 の「窓の途中は公開しない」を再読み込みでは守れない） | スナップショット方式（007 に忠実） | 暫定案で了承（2026-10-19、作者からの指摘なし） |
-| 2 | ゲーム中の名声（途中値）をプレイヤーに見せるか。001 §12 の名声は終了時に計算する内容が多く（ミッション形状、褒賞の順位など）、途中値の計算は複雑。BGA の標準スコア欄はゲーム中 0 のままになる（姉妹プロジェクトと同様に CSS で隠す）。参考表示を出したい場合は別途設計 | ゲーム中は表示しない。`playerScore` は 121 で一度だけ書く。スコア欄の 0 は 012 で隠す | 暫定案で了承（2026-10-19、作者からの指摘なし） |
+| 2 | ゲーム中の名声（途中値）をプレイヤーに見せるか。001 §12 の名声は終了時に計算する内容が多く（ミッション形状、褒賞の順位など）、途中値の計算は複雑。BGA の標準スコア欄はゲーム中 0 のままになる（姉妹プロジェクトと同様に CSS で隠す）。参考表示を出したい場合は別途設計 | ゲーム中は表示しない。`playerScore` は 121 で一度だけ書く。スコア欄の 0 は 012 で隠す | 暫定案で了承（2026-10-19、作者からの指摘なし）。**作者回答 2026-10-20: オプションで公開**。「ミッション以外の名声は公開情報なので、オプションで見えるようにしたい。デフォルトは見えない」。ゲームオプション 105「Public fame (except missions)」（1: Hidden 既定 / 2: Visible）で Visible のときだけ、ミッション V を除く途中の名声を `getAllDatas.publicFame` と N36 で公開する。既定は従来どおり表示しない |
 | 3 | 捨て札の中身（どのカードが捨てられたか）を、全員がいつでも一覧で見られてよいか（008 §6 は「捨て札は表向き」とする）。山札が尽きて捨て札をシャッフルしたあと、どのカードが山札に戻ったかは全員が推測できる（紙のゲームと同じ） | 見られる。`getAllDatas` で捨て札の ID の並びを送る | 暫定案で了承（2026-10-19、作者からの指摘なし） |
 | 4 | 統計（§14）の項目と ID の割り当て。公開後は変更も再利用もできない | §14 のとおり（名声の内訳 I〜IX、通信確立・配備・打ち上げ・燃料・マヤなど 41 項目） | 暫定案で了承（2026-10-19、作者からの指摘なし） |
 | 5 | 衛星の `sat_card`（衛星カードの ID）を、ゲームオプション 103 で MOON 面か色別プラン面かを決めた時点で 1 度だけ決めて固定する。ゲーム中に面を変えることはないが、これでよいか（001 §3-4 は 1 人の 5 枚を混在させない） | 固定。変更の手段は作らない | 暫定案で了承（2026-10-19、作者からの指摘なし） |
@@ -899,7 +903,7 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 ## 他の仕様書への申し送り
 
 - → 011: 窓の問い（プロンプト）の組み立て（`pool`・`pool_state`・`pool_context` の中身）、`card_memo`・`sat_memo` の使い道、保留通知に積む効果ごとの通知（N27〜N29 と N29 の細目）、`PA` の `extra`（§9.3）、山札を見る効果の `_private` args。
-- → 012: 通知ハンドラ（N1〜N33）、`ev_id` による二重適用の防止（§10.5）、`getAllDatas` の `board.cells` からの盤面描画、名声の内訳の表（bga-score-sheet）、スコア欄の 0 の非表示（未確定 2）、燃料ゲージ（`fuelUsed`・`fuelCapacity`）、使用済みマーク（`activation`）、横向きのアクションカード（`actionCards` の 2）。
+- → 012: 通知ハンドラ（N1〜N36）、`ev_id` による二重適用の防止（§10.5）、`getAllDatas` の `board.cells` からの盤面描画、名声の内訳の表（bga-score-sheet）、スコア欄の 0 の非表示（未確定 2）、燃料ゲージ（`fuelUsed`・`fuelCapacity`）、使用済みマーク（`activation`）、横向きのアクションカード（`actionCards` の 2）。
 - → 009: 本書のグローバル値（`bonus_holders`〔`selected_actions` をキー集合で表す〕、`window_snapshot`、`commit_seq`、`held_seq`、`step_participants`、`flow_ctx`）を状態機械が読み書きする。
 
 ## 受け入れ条件

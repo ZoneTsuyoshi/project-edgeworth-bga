@@ -60,9 +60,28 @@ final class FinalScoring
     }
 
     /**
+     * ゲーム中に公開する途中の名声（ゲームオプション 105）。ミッション V を除き（0 点で内訳にも載せない）、手札は換金しない。
+     * 終了条件 IX は終了判定で満たした人だけ、褒賞 VIII は現在の比較値での順位。DB には保存しない。
+     *
+     * @return array<int, array{total: int, detail: array<string, mixed>}> プレイヤー ID => 合計と内訳（席順）
+     */
+    public function publicFame(): array
+    {
+        $results = FameCalculator::calculate($this->playerStates(false), $this->scoringBoard(), $this->globals->rewardCards(), false);
+        $fame = [];
+        foreach ($results as $playerId => $result) {
+            $detail = $result->detail;
+            unset($detail['V']);
+            $fame[$playerId] = ['total' => $result->total, 'detail' => $detail];
+        }
+        return $fame;
+    }
+
+    /**
+     * @param bool $withMissions false ならミッションを空にする（V を 0 にする）
      * @return list<PlayerState> 席順
      */
-    public function playerStates(): array
+    public function playerStates(bool $withMissions = true): array
     {
         $endPlayers = $this->globals->endConditionPlayers();
         $states = [];
@@ -92,7 +111,7 @@ final class FinalScoring
                 $cubes,
                 $this->players->padCell($id),
                 $sats,
-                $this->missions->forPlayer($id),
+                $withMissions ? $this->missions->forPlayer($id) : [],
                 in_array($id, $endPlayers, true),
             );
         }

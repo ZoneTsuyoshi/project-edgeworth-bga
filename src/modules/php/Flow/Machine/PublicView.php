@@ -52,10 +52,12 @@ final class PublicView
         $discard = $services->cards->idsIn(CardLocation::Discard);
         $playerData = $this->playerData($order);
         $snapshot = $globals->windowSnapshot();
+        $publicFame = null;
         if ($snapshot !== null) {
             // 窓の最中は、他人の変化を窓を開いた時点の値で返す（010 §9.4）。本人の分は DB の現在値
             $deckCount = (int) ($snapshot['deckCount'] ?? $deckCount);
             $discard = array_values(array_map('intval', (array) ($snapshot['discard'] ?? $discard)));
+            $publicFame = $snapshot['publicFame'] ?? null;
             foreach ((array) ($snapshot['playerData'] ?? []) as $playerId => $data) {
                 if ((int) $playerId !== $viewerId) {
                     $playerData[(int) $playerId] = $data;
@@ -63,7 +65,7 @@ final class PublicView
             }
         }
 
-        return [
+        $view = [
             'round' => $globals->roundNo(),
             'phase' => $globals->flowPhase()->value,
             'basePlayer' => $globals->basePlayer(),
@@ -80,6 +82,12 @@ final class PublicView
             'window' => $globals->windowId() === null ? null : ['id' => $globals->windowId()],
             'finalScores' => $finalScores,
         ];
+        if ($this->ctx->publicFame) {
+            // ゲームオプション 105 が Visible のときだけ（ミッション V を除く途中の名声。010 §8.2）
+            // 窓の最中は全員に窓開始時の値（snapshot）を返す
+            $view['publicFame'] = $publicFame ?? $this->ctx->finalScoring()->publicFame();
+        }
+        return $view;
     }
 
     /**
@@ -91,11 +99,15 @@ final class PublicView
     {
         $services = $this->ctx->services;
 
-        return [
+        $data = [
             'deckCount' => $this->ctx->deckCount(),
             'discard' => $services->cards->idsIn(CardLocation::Discard),
             'playerData' => $this->playerData($services->players->playerIds()),
         ];
+        if ($this->ctx->publicFame) {
+            $data['publicFame'] = $this->ctx->finalScoring()->publicFame();
+        }
+        return $data;
     }
 
     /**

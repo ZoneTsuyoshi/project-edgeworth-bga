@@ -114,7 +114,7 @@ final class SetupFlow
                 $this->ctx->discardCount(),
             ));
         }
-        $notes->add($this->ctx->counters());
+        $notes->add(...$this->ctx->sync());
         return new DriverResult('done', $notes->all());
     }
 

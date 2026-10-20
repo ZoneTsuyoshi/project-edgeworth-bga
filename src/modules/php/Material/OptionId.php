@@ -19,6 +19,7 @@ final class OptionId
     public const AWARD_CARDS = 102;
     public const SATELLITE_PLAN = 103;
     public const STARTING_HAND = 104;
+    public const PUBLIC_FAME = 105;
 
     private function __construct()
     {

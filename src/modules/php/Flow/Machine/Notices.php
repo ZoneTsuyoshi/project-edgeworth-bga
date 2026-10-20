@@ -465,6 +465,16 @@ final class Notices
     }
 
     /**
+     * N36: ミッション以外の名声の再同期（ゲームオプション 105 が Visible のときだけ。全員宛て）。
+     *
+     * @param array<int, array{total: int, detail: array<string, mixed>}> $fame
+     */
+    public function publicFameUpdated(array $fame): Notice
+    {
+        return new Notice('publicFameUpdated', '', ['fame' => $fame]);
+    }
+
+    /**
      * N22: 窓の中のカード効果による通信確立をステージに積んだ（本人にだけ。予約額と残り）。
      */
     public function linkStaged(int $playerId, int $stageId, int $cell, int $satId, bool $special, int $reserved, int $mayaAvailable, int $cubesLeft): Notice

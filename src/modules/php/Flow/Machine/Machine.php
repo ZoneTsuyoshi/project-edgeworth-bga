@@ -106,7 +106,7 @@ final class Machine
         if ($mayaChanged !== null) {
             $notices[] = $mayaChanged;
         }
-        $notices[] = $this->ctx->counters();
+        array_push($notices, ...$this->ctx->sync());
         return $notices;
     }
 

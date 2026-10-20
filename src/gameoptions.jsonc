@@ -62,5 +62,14 @@
     },
     "default": 1,
     "level": "additional"
+  },
+  "105": {
+    "name": "Public fame (except missions)",
+    "values": {
+      "1": { "name": "Hidden" },
+      "2": { "name": "Visible", "tmdisplay": "Fame is visible during the game (except missions)" }
+    },
+    "default": 1,
+    "level": "additional"
   }
 }

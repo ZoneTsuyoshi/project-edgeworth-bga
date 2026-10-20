@@ -323,4 +323,18 @@ final class FameCalculatorTest extends TestCase
         $r = FameCalculator::calculate($players, $board, ['T010']);
         $this->assertSame([18, 6, 6, 6], [$r[1]->points('VIII'), $r[2]->points('VIII'), $r[3]->points('VIII'), $r[4]->points('VIII')]);
     }
+
+    public function testWithoutCashOutKeepsHandAndMayaAsIs(): void
+    {
+        $board = Fixtures::board();
+        $player = Fixtures::player(1, maya: 9, hand: 5, missions: [9]);
+
+        $final = FameCalculator::calculate([$player], $board, [])[1];
+        $midGame = FameCalculator::calculate([$player], $board, [], false)[1];
+
+        // 終了時は手札 5 枚 = 15 マヤが加わって 24 マヤ（II = 2）、途中の計算ではそのまま 9 マヤ（II = 0）
+        $this->assertSame(2, $final->points('II'));
+        $this->assertSame(0, $midGame->points('II'));
+        $this->assertSame(9, $midGame->detail['II']['maya']);
+    }
 }

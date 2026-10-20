@@ -37,7 +37,9 @@ use Bga\Games\projectedgeworth\Flow\Machine\Machine;
 use Bga\Games\projectedgeworth\Flow\Machine\Notice;
 use Bga\Games\projectedgeworth\Flow\Machine\PublicView;
 use Bga\Games\projectedgeworth\Flow\StateId;
+use Bga\Games\projectedgeworth\Material\OptionId;
 use Bga\Games\projectedgeworth\Setup\GameOptions;
+use Bga\Games\projectedgeworth\Setup\PublicFame;
 use Bga\Games\projectedgeworth\Setup\GameSetup;
 use Bga\Games\projectedgeworth\Setup\SetupPlayer;
 use Bga\Games\projectedgeworth\States\SetupLaunchPadNext;
@@ -71,7 +73,16 @@ class Game extends \Bga\GameFramework\Table
             new BgaRandom(),
             fn(int $playerId): string => $this->getPlayerNameById($playerId),
             effects: new EffectRuntime($this->peDatabase, $this->peGlobals),
+            publicFame: $this->pePublicFame(),
         ));
+    }
+
+    /**
+     * ゲームオプション 105（ミッション以外の名声を公開）が Visible か。
+     */
+    private function pePublicFame(): bool
+    {
+        return PublicFame::tryFrom($this->bga->tableOptions->get(OptionId::PUBLIC_FAME) ?? 1) === PublicFame::Visible;
     }
 
     /**

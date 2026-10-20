@@ -29,6 +29,7 @@ final readonly class GameOptions
         public RewardSelection $rewardSelection = RewardSelection::InitialGame,
         public SatellitePlanOption $satellitePlan = SatellitePlanOption::Moon,
         public StartingHand $startingHand = StartingHand::None,
+        public PublicFame $publicFame = PublicFame::Hidden,
     ) {
         if (!in_array($boardCount, self::BOARD_COUNT_BY_SIZE, true)) {
             throw new \InvalidArgumentException("boardCount must be 2..4: {$boardCount}");
@@ -62,6 +63,7 @@ final readonly class GameOptions
         $award = $get(OptionId::AWARD_CARDS) ?? 1;
         $plan = $get(OptionId::SATELLITE_PLAN) ?? 1;
         $hand = $get(OptionId::STARTING_HAND) ?? 1;
+        $publicFame = $get(OptionId::PUBLIC_FAME) ?? 1;
         return new self(
             $face,
             $placement,
@@ -69,6 +71,7 @@ final readonly class GameOptions
             RewardSelection::tryFrom($award) ?? throw new \InvalidArgumentException("Unknown award cards option: {$award}"),
             SatellitePlanOption::tryFrom($plan) ?? throw new \InvalidArgumentException("Unknown satellite plan option: {$plan}"),
             StartingHand::tryFrom($hand) ?? throw new \InvalidArgumentException("Unsupported starting hand option: {$hand}"),
+            PublicFame::tryFrom($publicFame) ?? throw new \InvalidArgumentException("Unknown public fame option: {$publicFame}"),
         );
     }
 }
