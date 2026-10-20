@@ -96,3 +96,4 @@ BGA Studio への同期の導入前に、リポジトリオーナー側で SSH �
 - `dbmodel.sql` を読み込み直すボタンは無い。Studio ではテーブルを作るたびに DB が `dbmodel.sql` から作り直される。
 - `gameinfos`・`stats`・`gameoptions` は変更のたびに自動で読み込み直される（コントロールパネルの各「Reload …」ボタンは手動で読み込み直すためのもの）。
 - 2026-10-20: 手動の `mode: sync` を実行し、Studio でゲーム画面が開くことを作者が確認した。以後は main へのマージで自動同期する。
+- 2026-10-20: リポジトリで削除した状態クラス（`DeployBonusChoose.php`）が Studio に残り、テーブル作成時に致命的エラーになった。以後、`modules/php` と `modules/js` は同期のたびに `--delete` で src と一致させる（リポジトリに無いファイルは Studio から消える）。`img/`・`modules/` 直下・ルートは削除しない。

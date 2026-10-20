@@ -84,7 +84,10 @@ LIST
 }
 
 # --- 転送（dry-run と sync で共通）---
-# 3 段階（img → modules → ルートのファイル）。削除なし（--delete を付けない）。
+# 段階: img → modules/php・modules/js → modules 直下 → ルートのファイル。
+# modules/php と modules/js はこのリポジトリのコードだけが入る場所なので --delete で src と一致させる
+# （リポジトリで消した PHP が Studio に残り、読み込まれて致命的エラーになったため。2026-10-20 の DeployBonusChoose.php）。
+# img・modules 直下・ルートは Studio の雛形の README などがあるので削除しない。
 # 引数は "--dry-run"（転送せず予定を表示）か ""（本番の転送）。
 transfer() {
   local flag="$1"
@@ -94,7 +97,14 @@ transfer() {
     cmds+="mirror --reverse --no-perms --parallel=2 --verbose $flag src/img $remote/img; "
   fi
   if [ -d src/modules ]; then
-    cmds+="mirror --reverse --no-perms --parallel=2 --verbose $flag src/modules $remote/modules; "
+    local sub
+    for sub in php js; do
+      if [ -d "src/modules/$sub" ]; then
+        cmds+="mirror --reverse --no-perms --parallel=2 --delete --verbose $flag src/modules/$sub $remote/modules/$sub; "
+      fi
+    done
+    # modules 直下のファイル（あれば）。削除しない
+    cmds+="mirror --reverse --no-perms --no-recursion --verbose $flag src/modules $remote/modules; "
   fi
   # ルート直下のファイルのみ（CSS・設定・スキーマ）。サブディレクトリは上で処理済み
   cmds+="mirror --reverse --no-perms --no-recursion --verbose $flag src $remote"
