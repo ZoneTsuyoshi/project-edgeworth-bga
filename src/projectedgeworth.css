@@ -1,0 +1,12 @@
+/*
+ * PROJECT EDGEWORTH のスタイル。素の CSS（SCSS は使わない）。@import は使えない。
+ * 盤面・カードのスタイルは I-10（仕様書 012）で追加する。
+ * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
+ */
+
+.pe-placeholder {
+    margin: 8px;
+    padding: 8px 12px;
+    border: 1px dashed #888;
+    background: rgb(255 255 255 / 60%);
+}

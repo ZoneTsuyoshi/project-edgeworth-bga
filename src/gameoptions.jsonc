@@ -1,0 +1,66 @@
+{
+  // ゲームオプション（仕様書 004 §7、001 §3）。ID と値のキーは Material/OptionId と Setup/ の enum に一致させる。
+  // 値のキーは一度決めたら変えない。値 104=3（Draft）は実装するまで載せない（キーは予約）。
+  // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
+  "100": {
+    "name": "Board layout",
+    "values": {
+      "1": { "name": "Standard (Earth)" },
+      "2": { "name": "Standard (Random w/o Flip)", "tmdisplay": "Standard (Random w/o Flip)" },
+      "3": { "name": "Standard (Random w/ Flip)", "tmdisplay": "Standard (Random w/ Flip)" },
+      "4": { "name": "Advanced (Earth)", "tmdisplay": "Advanced (Earth)" },
+      "5": { "name": "Advanced (Random w/o Flip)", "tmdisplay": "Advanced (Random w/o Flip)" },
+      "6": { "name": "Advanced (Random w/ Flip)", "tmdisplay": "Advanced (Random w/ Flip)" }
+    },
+    "default": 1,
+    "level": "base"
+  },
+  "101": {
+    "name": "Board size",
+    "values": {
+      "1": { "name": "2x4" },
+      "2": { "name": "2x3", "tmdisplay": "Board 2x3" },
+      "3": { "name": "2x2", "tmdisplay": "Board 2x2" }
+    },
+    "default": 1,
+    "level": "base",
+    "displaycondition": [{ "type": "maxplayers", "value": 3 }],
+    "startcondition": {
+      "3": [
+        {
+          "type": "maxplayers",
+          "value": 2,
+          "message": "The 2x2 board is available only for 2 players."
+        }
+      ]
+    }
+  },
+  "102": {
+    "name": "Award cards",
+    "values": {
+      "1": { "name": "Initial Game" },
+      "2": { "name": "Random (1: Cube, 1: Other)", "tmdisplay": "Awards: Random (1 Cube, 1 Other)" },
+      "3": { "name": "Random", "tmdisplay": "Awards: Random" }
+    },
+    "default": 1,
+    "level": "base"
+  },
+  "103": {
+    "name": "Satellite plan",
+    "values": {
+      "1": { "name": "MOON" },
+      "2": { "name": "Player-variable", "tmdisplay": "Player-variable satellite plans" }
+    },
+    "default": 1,
+    "level": "base"
+  },
+  "104": {
+    "name": "Starting hand",
+    "values": {
+      "1": { "name": "None" },
+      "2": { "name": "Mulligan", "tmdisplay": "Mulligan" }
+    },
+    "default": 1,
+    "level": "additional"
+  }
+}
