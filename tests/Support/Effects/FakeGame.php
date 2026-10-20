@@ -12,8 +12,10 @@ namespace ProjectEdgeworthTests\Support\Effects;
 use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
 use Bga\Games\ProjectEdgeworth\Effects\Context\GameMutator;
 use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
+use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
 use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
 use Bga\Games\ProjectEdgeworth\Material\ProjectType;
+use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
 use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
 
 /**
@@ -45,6 +47,23 @@ final class FakeGame implements GameView, GameMutator
     /** @var list<array{no: int, sat: int}> 配備順 */
     private array $deployed = [];
 
+    /** @var list<int> 捨て札（山札が空になったら、この順のまま山札にする。乱数は固定） */
+    public array $discard = [];
+
+    /** @var array<int, int> 衛星 ID => 消費した燃料 c（001 §4-4） */
+    public array $fuelUsed = [];
+
+    /** @var array<int, list<int>> プレイヤー => 縦向きのアクションカード（1〜5） */
+    public array $upright = [];
+
+    /** @var array<int, list<int>> プレイヤー => 計画フェイズの回収で手札に戻したアクションカード */
+    public array $keptActions = [];
+
+    /** @var array<int, list<int>> プレイヤー => 通信確立済みの区域 */
+    public array $linkedCells = [];
+
+    public bool $proposalPhase = false;
+
     /** @var array<string, true> */
     public array $used = [];
 
@@ -69,7 +88,7 @@ final class FakeGame implements GameView, GameMutator
     }
 
     /**
-     * 衛星を足して ID を返す。`cardKey` は衛星カードの name_id（省略時は MOON 面）。
+     * 衛星を足して ID を返す。`cardKey` は衛星カードの name_id（省略時は効果の定義のない名前。MOON 面の効果 R001〜R005 を意図せず働かせないため）。
      */
     public function satellite(int $player, SatelliteShape $shape, bool $active = true, ?string $cardKey = null): int
     {
@@ -78,7 +97,7 @@ final class FakeGame implements GameView, GameMutator
             'player' => $player,
             'shape' => $shape,
             'active' => $active,
-            'key' => $cardKey ?? strtolower($shape->value) . '_moon',
+            'key' => $cardKey ?? strtolower($shape->value) . '_plain',
         ];
 
         return $id;
@@ -178,12 +197,86 @@ final class FakeGame implements GameView, GameMutator
     public function draw(int $playerId, int $count): int
     {
         $drawn = 0;
-        for ($i = 0; $i < $count && $this->deck !== []; $i++) {
+        for ($i = 0; $i < $count; $i++) {
+            if ($this->deck === []) {
+                $this->deck = $this->discard;
+                $this->discard = [];
+            }
+            if ($this->deck === []) {
+                break;
+            }
             $this->hand[$playerId][] = array_shift($this->deck);
             $drawn++;
         }
 
         return $drawn;
+    }
+
+    public function drawCards(int $playerId, int $count): int
+    {
+        $drawn = $this->draw($playerId, $count);
+        $this->note('drawCards', $drawn);
+
+        return $drawn;
+    }
+
+    public function gainMaya(int $playerId, int $amount): void
+    {
+        $this->maya[$playerId] += $amount;
+        $this->note('gainMaya', $amount);
+    }
+
+    public function changeBudget(int $playerId, int $amount): void
+    {
+        $this->budget[$playerId] += $amount;
+        $this->note('changeBudget', $amount);
+    }
+
+    public function recoverFuel(int $satelliteId, int $amount): int
+    {
+        $before = $this->fuelUsed[$satelliteId] ?? 0;
+        $after = FuelMath::change($before, -$amount, $this->fuelCapacity($satelliteId));
+        $this->fuelUsed[$satelliteId] = $after;
+        $this->note('recoverFuel', $before - $after);
+
+        return $before - $after;
+    }
+
+    public function returnPlottedActionToHand(int $playerId, int $actionNo): void
+    {
+        $this->upright[$playerId] = array_values(array_diff($this->upright[$playerId] ?? [], [$actionNo]));
+        $this->keptActions[$playerId][] = $actionNo;
+        $this->note('keepAction', $actionNo);
+    }
+
+    public function isProposalPhase(): bool
+    {
+        return $this->proposalPhase;
+    }
+
+    public function isOwnLinkedArea(int $playerId, int $cell): bool
+    {
+        return in_array($cell, $this->linkedCells[$playerId] ?? [], true);
+    }
+
+    /** 燃料庫の数 C = 衛星カード + 配備されているプロジェクトカード（001 §4-4） */
+    public function fuelCapacity(int $satId): int
+    {
+        $key = $this->satellites[$satId]['key'];
+        $sum = 0;
+        foreach (SatelliteCards::all() as $card) {
+            if ($card->nameId === $key) {
+                $sum = $card->fuelSlots;
+                break;
+            }
+        }
+        foreach ($this->deployed as $d) {
+            if ($d['sat'] === $satId) {
+                $sum += ProjectCards::get(sprintf('P%03d', $d['no']))->fuelSlots;
+            }
+        }
+
+        return $sum;
     }
 
     public function note(string $name, int $value = 0): void
@@ -197,11 +290,11 @@ final class FakeGame implements GameView, GameMutator
         return array_map(static fn(array $j): string => $j[0], $this->journal);
     }
 
-    public function deviceCountOn(int $satId): int
+    public function deviceCountOn(int $satelliteId): int
     {
         $count = 0;
         foreach ($this->deployed as $d) {
-            if ($d['sat'] === $satId && ProjectCards::get(sprintf('P%03d', $d['no']))->type === ProjectType::Device) {
+            if ($d['sat'] === $satelliteId && ProjectCards::get(sprintf('P%03d', $d['no']))->type === ProjectType::Device) {
                 $count++;
             }
         }

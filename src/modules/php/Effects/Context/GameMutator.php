@@ -26,4 +26,29 @@ interface GameMutator
      * @param list<int> $cardIds
      */
     public function sellCards(int $playerId, array $cardIds): void;
+
+    // ---- E-2 で足した書き込み（結果部品 R01〜R03・R05・R15） ----
+
+    /** マヤを得る（R01） */
+    public function gainMaya(int $playerId, int $amount): void;
+
+    /** 予算を上げる。上限なし（R02。001 U-5） */
+    public function changeBudget(int $playerId, int $amount): void;
+
+    /**
+     * 山札から手札に引く。山札が空になったら捨て札をシャッフルして山札にする（FAQ 行 3）。両方空なら引けた分だけ。
+     *
+     * @return int 実際に引いた枚数
+     */
+    public function drawCards(int $playerId, int $count): int;
+
+    /**
+     * 燃料を回復する（R05。001 §4-4）。消費量 c を減らし、初期燃料庫より下には動かない。燃料庫の外にあるコマは動かさない（FAQ 行 14）。
+     *
+     * @return int 実際に回復した量
+     */
+    public function recoverFuel(int $satelliteId, int $amount): int;
+
+    /** 計画フェイズの回収で、縦向きのアクションカード（I〜V = 1〜5）を横向きにせず手札に戻す（R15。P001・P002） */
+    public function returnPlottedActionToHand(int $playerId, int $actionNo): void;
 }

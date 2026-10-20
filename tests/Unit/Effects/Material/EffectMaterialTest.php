@@ -74,6 +74,32 @@ final class EffectMaterialTest extends TestCase
             'P035' => ['P035', 'LAUNCHED', 'ON_LAUNCH', ['C', 'Cr']],
             'P038' => ['P038', 'LAUNCHED', 'ACTIVATED', ['F-', 'F+', 'Cr']],
             'P039' => ['P039', 'LAUNCHED', 'ON_LAUNCH', ['H+', 'Cr']],
+            // E-2（強制の反応効果）。007 §10 の付表の「資源」列
+            'P001' => ['P001', 'PLANNING_RETRIEVE', 'ACTIVATED', []],
+            'P002' => ['P002', 'PLANNING_RETRIEVE', 'ACTIVATED', []],
+            'P003' => ['P003', 'PLANNING_REVEAL', 'ACTIVATED', ['M+']],
+            'P007' => ['P007', 'BUDGET_BONUS_GAIN', 'ACTIVATED', ['M+']],
+            'P009' => ['P009', 'DEPLOYED', 'ON_DEPLOY', ['H+']],
+            'P025' => ['P025', 'DEPLOYED', 'ACTIVATED', ['H+']],
+            'P027' => ['P027', 'DEPLOYED', 'ACTIVATED', ['H+']],
+            'P028' => ['P028', 'DEPLOYED', 'ACTIVATED', ['H+']],
+            'P029' => ['P029', 'DEPLOYED', 'ACTIVATED', ['H+']],
+            'P030' => ['P030', 'DEPLOYED', 'ACTIVATED', ['B+']],
+            'P031' => ['P031', 'DEPLOYED', 'ACTIVATED', ['B+']],
+            'P032' => ['P032', 'DEPLOYED', 'ACTIVATED', ['B+']],
+            'P037' => ['P037', 'TURNED', 'ACTIVATED', ['H+']],
+            'P041' => ['P041', 'LAUNCHED', 'ACTIVATED', ['B+']],
+            'P042' => ['P042', 'LAUNCHED', 'ON_LAUNCH', ['B+', 'Cr']],
+            'P043' => ['P043', 'TURNED', 'ACTIVATED', ['F+']],
+            'P049' => ['P049', 'LINKED', 'CONSTANT', ['F+']],
+            'P075' => ['P075', 'PROPOSAL_DRAWN', 'CONSTANT', ['M+']],
+            'P078' => ['P078', 'LANDED', 'ACTIVATED', ['H+']],
+            'P083' => ['P083', 'ORBIT_ENTERED', 'ACTIVATED', ['F+']],
+            'P084' => ['P084', 'ORBIT_ENTERED', 'ACTIVATED', ['F+']],
+            'P088' => ['P088', 'LANDED', 'ACTIVATED', ['M+']],
+            'P089' => ['P089', 'LANDED', 'ACTIVATED', ['M+']],
+            'P092' => ['P092', 'LANDED', 'ACTIVATED', ['M+']],
+            'P093' => ['P093', 'ORBIT_ENTERED', 'ACTIVATED', ['M+']],
         ];
     }
 
@@ -121,7 +147,7 @@ final class EffectMaterialTest extends TestCase
         $this->assertSame('stealth_phobos', $stealthPhobos?->cardKey);
         $this->assertSame(PartId::GainMaya, $stealthPhobos->part);
         $this->assertSame(['M+'], array_map(static fn($t): string => $t->symbol->value, $stealthPhobos->touches));
-        $this->assertNull(CardEffects::forProject('P001'), 'E-0 では代表 10 枚だけ');
+        $this->assertNull(CardEffects::forProject('P005'), 'P005 は E-3 で定義する');
         $this->assertNull(CardEffects::get('no_such_card'));
     }
 

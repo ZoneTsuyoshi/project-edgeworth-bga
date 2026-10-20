@@ -39,4 +39,15 @@ interface GameView
 
     /** 手札 1 枚の売却額（SELL_PRICE の修正を含む。008 §2-6） */
     public function sellPrice(int $playerId): int;
+
+    // ---- E-2 で足した読み取り ----
+
+    /** 衛星に配備されている DEVICE の枚数（P039・P042。解決の時点で数える。衛星カードは数えない） */
+    public function deviceCountOn(int $satelliteId): int;
+
+    /** いま企画フェイズか（企画フェイズ中に引いたカードを `PROPOSAL_DRAWN` で数えるため。P075。011 §6-5） */
+    public function isProposalPhase(): bool;
+
+    /** 区域 `$cell` が、プレイヤーが通信確立済みの区域か（発射拠点の区域を含む。FAQ 行 44。K07） */
+    public function isOwnLinkedArea(int $playerId, int $cell): bool;
 }
