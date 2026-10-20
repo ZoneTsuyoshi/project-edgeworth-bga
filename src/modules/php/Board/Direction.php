@@ -11,7 +11,7 @@ namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * 六角形の 6 方向（003 §1.2）。ダブルド座標の差分 (dx, dy) を持つ。
- * 衛星の向きに使うのは斜めの 4 方向だけ（003 §4.1）。E・W は隣接と形状判定用。
+ * 衛星の向きにも 6 方向すべてを使う（003 §4.1。作者回答 2026-10-20）。
  */
 enum Direction: string
 {
@@ -76,11 +76,5 @@ enum Direction: string
             self::NW => self::NE,
             self::NE => self::E,
         };
-    }
-
-    /** 衛星の向きとして使える斜めの 4 方向か（003 §4.1） */
-    public function isDiagonal(): bool
-    {
-        return $this->dy() !== 0;
     }
 }

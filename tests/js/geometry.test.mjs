@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
-  BASE_CENTER, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
+  BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
 import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
@@ -119,4 +119,10 @@ test('キューブのマスの中心が、区域タイル原本の 4 つの正�
 test('発射拠点コマは区域の左上のマス（slot 0）の中心に置く。キューブは slot 1 以降（作者回答 2026-10-20）', () => {
   assert.deepEqual(BASE_CENTER, SLOT_CENTERS[0]);
   assert.ok(BASE_CENTER.x < SLOT_CENTERS[1].x && BASE_CENTER.y < SLOT_CENTERS[2].y);
+});
+
+test('衛星の向きは 6 方向で、コマの回転角は 60° ずつ（003 §4.1、012 §3.6）', () => {
+  assert.deepEqual([...SATELLITE_DIRECTIONS].sort(), ['E', 'NE', 'NW', 'SE', 'SW', 'W']);
+  // 原画は機首が左向き（W = 0°）。時計回りに W → NW → NE → E → SE → SW
+  assert.deepEqual(['W', 'NW', 'NE', 'E', 'SE', 'SW'].map((d) => SATELLITE_ROTATION[d]), [0, 60, 120, 180, 240, 300]);
 });

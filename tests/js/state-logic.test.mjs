@@ -137,6 +137,9 @@ test('打ち上げ / 転回: 候補、向き、送信する引数', () => {
   const pay = payState(10, funds(12));
   assert.equal(validateLaunch({ op: 'launch', satId: 13, dir: null, sell: [] }, { pay, canBudget: false }).reason, 'needDirection');
   assert.equal(validateLaunch({ op: 'launch', satId: 13, dir: 'SE', sell: [] }, { pay, canBudget: false }).ok, true);
+  for (const dir of ['NE', 'E', 'SE', 'SW', 'W', 'NW']) {
+    assert.equal(validateLaunch({ op: 'launch', satId: 13, dir, sell: [] }, { pay, canBudget: false }).ok, true, dir);
+  }
   assert.equal(validateLaunch({ op: 'launch', satId: 13, dir: 'N', sell: [] }, { pay, canBudget: false }).ok, false);
   assert.equal(validateLaunch({ op: 'turn', satId: 11, dir: 'NE', sell: [] }, { pay: null, canBudget: false }).ok, true, '同じ向きも選べる（FAQ 行 17）');
   assert.equal(validateLaunch({ op: 'budget', satId: null, dir: null, sell: [] }, { pay: null, canBudget: false }).ok, false);

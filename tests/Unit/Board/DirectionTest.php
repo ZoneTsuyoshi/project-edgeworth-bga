@@ -43,9 +43,12 @@ final class DirectionTest extends TestCase
         self::assertSame(['SE', 'SW', 'W', 'NW', 'NE', 'E'], $seq);
     }
 
-    public function testDiagonal(): void
+    /** 衛星の向きは 6 方向すべて（003 §4.1。作者回答 2026-10-20）。E・W は上下の反射を受けない */
+    public function testEastWestAreNeverFlippedAndAllSixAreSatelliteHeadings(): void
     {
-        self::assertTrue(Direction::NE->isDiagonal());
-        self::assertFalse(Direction::E->isDiagonal());
+        self::assertCount(6, Direction::cases());
+        self::assertSame(0, Direction::E->dy());
+        self::assertSame(0, Direction::W->dy());
+        self::assertSame(Direction::W, Direction::W->flipVertical());
     }
 }

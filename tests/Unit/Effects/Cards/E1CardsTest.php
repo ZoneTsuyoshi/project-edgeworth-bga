@@ -310,6 +310,31 @@ final class E1CardsTest extends TestCase
         $this->assertSame([28, 40, 41], $this->sorted($f->hooks->extraLinkTargets(1, $f->row($rear), StepMode::Main)));
     }
 
+    public function testEastHeadingShapesOfM04(): void
+    {
+        // 区域 29 で E を向く（作者回答 2026-10-20）: 前方 = NE(17)・E(30)・SE(41)、後方 = SW(40)・W(28)・NW(16)
+        // 右側 = SE(41)・SW(40)、左側 = NE(17)・NW(16)。西向きではすべて逆になる
+        $f = new E1Fixture();
+        $front = $f->satellite();
+        $rear = $f->satellite();
+        $right = $f->satellite();
+        $left = $f->satellite();
+        $f->deploy($front, ['P064']);
+        $f->deploy($rear, ['P065']);
+        $f->deploy($right, ['P053']);
+        $f->deploy($left, ['P054']);
+
+        $t = fn(int $sat, Direction $d): array => $this->sorted($f->hooks->extraLinkTargets(1, $f->row($sat, dir: $d), StepMode::Main));
+        $this->assertSame([17, 30, 41], $t($front, Direction::E));
+        $this->assertSame([16, 28, 40], $t($rear, Direction::E));
+        $this->assertSame([40, 41], $t($right, Direction::E));
+        $this->assertSame([16, 17], $t($left, Direction::E));
+        $this->assertSame([16, 28, 40], $t($front, Direction::W));
+        $this->assertSame([17, 30, 41], $t($rear, Direction::W));
+        $this->assertSame([16, 17], $t($right, Direction::W));
+        $this->assertSame([40, 41], $t($left, Direction::W));
+    }
+
     public function testFrontThreeDoesNotIncludeTheReflectedAreaAtTheTopRow(): void
     {
         // T32（FAQ 行 27・36）: 上端で右上を向くとき、前方に右下は含まれない

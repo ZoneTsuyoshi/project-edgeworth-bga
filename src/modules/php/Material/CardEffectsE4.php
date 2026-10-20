@@ -79,7 +79,7 @@ final class CardEffectsE4
                 ],
             ),
 
-            // 転回（R08）。向きは 4 方向から選ぶ。新しい TURNED を起こす
+            // 転回（R08）。向きは 6 方向から選ぶ。新しい TURNED を起こす
             // P044 編隊同期装置: 自分の他の衛星が転回したとき、この衛星は転回してもよい（011 §6-4: 転回先は ALL_SATS として扱う）
             self::task('formation_sync_unit', Hook::Turned, true, PartId::TurnSatellite, ['target' => 'THIS'], null, [$other], [new ResourceTouch($dir, $all)]),
             // P048 可変軌道装置: この衛星が通信確立したとき、転回してもよい

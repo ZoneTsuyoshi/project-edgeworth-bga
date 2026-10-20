@@ -17,7 +17,7 @@ use Bga\Games\projectedgeworth\Material\SatelliteCards;
 /**
  * III 打ち上げ・転回（001 §7-4、008 §3-2・§3-3、009 の 70〜72）。
  *
- * choice_data（010 §9.3）。向きは NE / SE / NW / SW（斜め 4 方向のみ。003 §4.1）:
+ * choice_data（010 §9.3）。向きは NE / E / SE / SW / W / NW（6 方向。003 §4.1）:
  * - メイン: {"op": "launch", "sat": id, "dir": "NE", "sell": [ID, …]} / {"op": "turn", "sat": id, "dir": "SW"} / {"op": "pass"}
  * - ボーナス: {"op": "turn", …} / {"op": "budget"} / {"op": "pass"}（打ち上げは選べない）
  *
@@ -273,8 +273,8 @@ final class LaunchPhase implements ActionStep
     private function direction(array $data): Direction
     {
         $direction = Direction::tryFrom((string) ($data['dir'] ?? ''));
-        if ($direction === null || !$direction->isDiagonal()) {
-            throw new RuleViolation('Select a direction (NE, SE, NW or SW)');
+        if ($direction === null) {
+            throw new RuleViolation('Select a direction (NE, E, SE, SW, W or NW)');
         }
         return $direction;
     }

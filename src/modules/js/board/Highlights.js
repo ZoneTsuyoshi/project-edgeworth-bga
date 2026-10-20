@@ -16,7 +16,7 @@ import { el } from '../ui/dom.js';
  */
 
 /** 方向の矢印の位置（区域の中心からの向き。画面上の向き） */
-const ARROW_VECTORS = { NE: [0.7, -0.7], SE: [0.7, 0.7], NW: [-0.7, -0.7], SW: [-0.7, 0.7] };
+const ARROW_VECTORS = { NE: [0.7, -0.7], E: [1, 0], SE: [0.7, 0.7], SW: [-0.7, 0.7], W: [-1, 0], NW: [-0.7, -0.7] };
 
 export class Highlights {
     /**
@@ -103,7 +103,7 @@ export class Highlights {
     }
 
     /**
-     * 区域の周囲に 4 方向の矢印ボタンを出す（打ち上げ・転回。区域の幅 90 px 以上のとき。それ未満は方向パッド）。
+     * 区域の周囲に 6 方向の矢印ボタンを出す（打ち上げ・転回。区域の幅 90 px 以上のとき。それ未満は方向パッド）。
      * @param {number} cell
      * @param {(dir: string) => void} onPick
      * @param {{ selected?: string | null, disabled?: string[] }} [opts]
@@ -140,11 +140,11 @@ export class Highlights {
 }
 
 /**
- * @param {string} dir NE / SE / NW / SW
+ * @param {string} dir NE / E / SE / SW / W / NW
  * @returns {string}
  */
 export function directionLabel(dir) {
-    const labels = { NE: _('Up-right'), SE: _('Down-right'), NW: _('Up-left'), SW: _('Down-left') };
+    const labels = { NE: _('Up-right'), E: _('Right'), SE: _('Down-right'), SW: _('Down-left'), W: _('Left'), NW: _('Up-left') };
     return labels[/** @type {keyof typeof labels} */ (dir)] ?? dir;
 }
 
@@ -153,6 +153,6 @@ export function directionLabel(dir) {
  * @returns {string}
  */
 export function directionGlyph(dir) {
-    const glyphs = { NE: '↗', SE: '↘', NW: '↖', SW: '↙' };
+    const glyphs = { NE: '↗', E: '→', SE: '↘', SW: '↙', W: '←', NW: '↖' };
     return glyphs[/** @type {keyof typeof glyphs} */ (dir)] ?? '?';
 }

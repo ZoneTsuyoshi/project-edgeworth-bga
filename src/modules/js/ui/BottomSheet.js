@@ -45,13 +45,13 @@ export class BottomSheet {
     }
 
     /**
-     * 2 × 2 の方向パッド（各 56 px。区域の幅 90 px 未満のとき。012 §3.9）。画面上の位置が向きと一致する。
+     * 2 列 × 3 行の方向パッド（各 56 × 48 px。区域の幅 90 px 未満のとき。012 §3.9）。画面上の位置が向きと一致する。
      * @param {{ onPick: (dir: string) => void, selected?: string | null, disabled?: string[] }} pad
      * @returns {HTMLElement}
      */
     directionPad(pad) {
-        // NW NE / SW SE の並び
-        const order = ['NW', 'NE', 'SW', 'SE'].filter((d) => SATELLITE_DIRECTIONS.includes(d));
+        // NW NE / W E / SW SE の並び
+        const order = ['NW', 'NE', 'W', 'E', 'SW', 'SE'].filter((d) => SATELLITE_DIRECTIONS.includes(d));
         return el('div', { class: 'pe-dpad', role: 'group', 'aria-label': _('Direction') }, order.map((dir) => el('button', {
             type: 'button',
             class: `pe-dpad-btn${pad.selected === dir ? ' pe-selected' : ''}`,

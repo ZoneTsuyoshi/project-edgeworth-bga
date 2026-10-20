@@ -108,6 +108,12 @@ sample('launch-main', {
   args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
   steps: [{ clickText: 'Launch' }, { click: '.pe-sat[data-sat-id="15"]' }, { click: '.pe-dpad-btn[aria-label="Down-right"]' }],
 });
+sample('launch-main-east', {
+  state: 'LaunchMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
+  steps: [{ clickText: 'Launch' }, { click: '.pe-sat[data-sat-id="15"]' }, { click: '.pe-dpad-btn[aria-label="Right"]' }],
+});
 sample('launch-main-turn', {
   state: 'LaunchMainChoose',
   active: true,

@@ -420,7 +420,7 @@ final class E4EffectsTest extends TestCase
         $engine->openWindow('TE', [$this->turned($other)]);
         $q = $this->ask($engine->questionsFor(self::P1), 'formation_sync_unit');
         $this->assertSame(FieldType::Direction, $q->fields[0]->type);
-        $this->assertSame(['NE', 'NW', 'SE', 'SW'], $q->fields[0]->candidates);
+        $this->assertSame(['NE', 'E', 'SE', 'SW', 'W', 'NW'], $q->fields[0]->candidates);
 
         $this->use($engine, 'formation_sync_unit', ['direction' => 'SW']);
 
@@ -478,7 +478,7 @@ final class E4EffectsTest extends TestCase
         $engine = $f->engine();
         $engine->openWindow('TE', [$this->turned($other)]);
         $id = $this->entry($engine, 'formation_sync_unit');
-        foreach (['E', 'W', 'UP', ''] as $bad) {
+        foreach (['N', 'S', 'UP', ''] as $bad) {
             try {
                 $engine->useEffect(self::P1, $id, new Answer(['direction' => $bad]));
                 $this->fail("$bad is not a facing");

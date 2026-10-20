@@ -1,13 +1,13 @@
 /**
  * 打ち上げ / 転回（状態 71・72）の args の解釈、選択の検証、送信する引数の組み立て（008 §3-2、§3-3、009 §3.7）。
  * args（`_private`）: `launchable`（メインのみ。`[{ satId, cost, blocked, minSales, selectable, useMods? }]`）、
- * `turnable`（`[{ satId, dir, blocked, selectable }]`。稼働中の衛星）、`canBudget`（ボーナスのみ）、`hand`、`sellValue`。向きは NE / SE / NW / SW。
+ * `turnable`（`[{ satId, dir, blocked, selectable }]`。稼働中の衛星）、`canBudget`（ボーナスのみ）、`hand`、`sellValue`。向きは NE / E / SE / SW / W / NW（6 方向）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { cheapest, compact, costWith, jsonParam, parseMods, payState, validMods } from './common.js';
 
-/** 向きの候補（斜め 4 方向。003 §4.1） */
-export const DIRECTIONS = ['NE', 'SE', 'NW', 'SW'];
+/** 向きの候補（6 方向。003 §4.1） */
+export const DIRECTIONS = ['NE', 'E', 'SE', 'SW', 'W', 'NW'];
 
 /**
  * @typedef {object} LaunchOption

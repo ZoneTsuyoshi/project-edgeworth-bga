@@ -71,6 +71,17 @@ final class AdjacencyTest extends TestCase
         self::assertSame($this->xy([new Cell(0, 2), new Cell(23, 3), new Cell(1, 1)]), $this->xy(Adjacency::forwardBackward($g, 0, 2, Direction::SW)));
     }
 
+    /** E / W 向き: 前方 = 進む先の区域、後方 = 反対側の区域。左右の端は接続する（作者回答 2026-10-20） */
+    public function testForwardBackwardForEastWest(): void
+    {
+        $g = BoardGeometry::forBoardCount(4, 0);
+        self::assertSame($this->xy([new Cell(10, 2), new Cell(12, 2), new Cell(8, 2)]), $this->xy(Adjacency::forwardBackward($g, 10, 2, Direction::E)));
+        self::assertSame($this->xy([new Cell(10, 2), new Cell(8, 2), new Cell(12, 2)]), $this->xy(Adjacency::forwardBackward($g, 10, 2, Direction::W)));
+        // 左端で W 向き: 前方は右端、後方は右隣。上端でも前後は同じ段なので両方対象
+        self::assertSame($this->xy([new Cell(0, 2), new Cell(22, 2), new Cell(2, 2)]), $this->xy(Adjacency::forwardBackward($g, 0, 2, Direction::W)));
+        self::assertSame($this->xy([new Cell(4, 0), new Cell(6, 0), new Cell(2, 0)]), $this->xy(Adjacency::forwardBackward($g, 4, 0, Direction::E)));
+    }
+
     public function testForwardBackwardEdgeCases(): void
     {
         $g = BoardGeometry::forBoardCount(4, 0);

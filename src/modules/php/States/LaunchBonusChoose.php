@@ -35,7 +35,7 @@ class LaunchBonusChoose extends ChooseState
 
     /**
      * @param string $op launch（メインのみ）/ turn / budget（ボーナスのみ）/ pass
-     * @param string $dir NE / SE / NW / SW
+     * @param string $dir NE / E / SE / SW / W / NW
      * @param list<int>|null $sell 打ち上げコストが足りないときに同梱する売却
      */
     #[PossibleAction]

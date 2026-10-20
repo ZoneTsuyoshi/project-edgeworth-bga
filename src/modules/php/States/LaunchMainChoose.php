@@ -36,7 +36,7 @@ class LaunchMainChoose extends ChooseState
 
     /**
      * @param string $op launch（メインのみ）/ turn / budget（ボーナスのみ）/ pass
-     * @param string $dir NE / SE / NW / SW
+     * @param string $dir NE / E / SE / SW / W / NW
      * @param list<int>|null $sell 打ち上げコストが足りないときに同梱する売却
      * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（args の useMods の候補から。011 §6-3）
      */

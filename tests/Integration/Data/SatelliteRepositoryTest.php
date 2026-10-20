@@ -76,11 +76,6 @@ final class SatelliteRepositoryTest extends DatabaseTestCase
             $this->fail('inactive satellite cannot move');
         } catch (\DomainException) {
         }
-        try {
-            $this->sats->launch($sat->id, 3, Direction::E);
-            $this->fail('E is not a satellite direction');
-        } catch (\InvalidArgumentException) {
-        }
         $this->sats->launch($sat->id, 3, Direction::NE);
         $this->expectException(\DomainException::class);
         $this->sats->launch($sat->id, 4, Direction::NE);

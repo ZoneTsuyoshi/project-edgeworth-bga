@@ -73,7 +73,7 @@
 | R05 | `RECOVER_FUEL` | 燃料を回復する（`c` を減らす。初期燃料庫より下には動かない。庫外のコマは動かさない。001 §4-4） | `amount`、`target`（`THIS` / `EVENT_SATELLITE`） | なし | 自動 | P043、P049、P083、P084 |
 | R06 | `TRANSFER_FUEL` | 打ち上げた衛星の燃料を減らし、他の稼働中の衛星の燃料を同量回復する | `maxAmount`＝減らせる量（残り燃料まで。庫外には出さない。FAQ 行 15・18・19）、回復は初期燃料庫まで | `AMOUNT`（0〜上限）、`SATELLITE`（他の稼働中の自分の衛星） | 辞退 | P038 |
 | R07 | `MOVE_SATELLITE` | 衛星を向きに沿って進め、燃料を消費する。ニアミス判定・着陸判定は行わない（FAQ 行 4・34・59）。反射・左右の接続は 003 §4 | `areas`（固定）または `maxByFuel`＋段階の対応（P034）、`fuelPerArea`、`target`（`THIS` / `CHOSEN_OWN_ACTIVE`）、`fireEntered`（真なら進んだ先の「突入したとき」を起こす。007 未確定 9） | P004: `SATELLITE`。P034: `AMOUNT`（段階）。P081・P082・P091: なし | 辞退 | P004、P034、P081、P082、P091 |
-| R08 | `TURN_SATELLITE` | 衛星の向きを変える（向きを変えない 360 度も可。FAQ 行 17）。`TURNED` イベントを起こす | `target`（`THIS`）。禁止 F01（転回不可）の衛星は対象外 | `DIRECTION`（4 方向。現在の向きも含む） | 辞退 | P044、P048、P090、P095 |
+| R08 | `TURN_SATELLITE` | 衛星の向きを変える（向きを変えない 360 度も可。FAQ 行 17）。`TURNED` イベントを起こす | `target`（`THIS`）。禁止 F01（転回不可）の衛星は対象外 | `DIRECTION`（6 方向。現在の向きも含む） | 辞退 | P044、P048、P090、P095 |
 | R09 | `DEPLOY_FROM_HAND` | 手札のプロジェクトカードを衛星に配備する。`DEPLOYED` イベントを起こす | `filterType`（P011 は DEVICE）、`targetScope`（`THIS` / `ANY_OWN`）、`surcharge`（稼働中の衛星への +5 の要否。FAQ 行 20・69）、`maxCards`（R005 は 2） | `CARDS`（配備するカード）、`SATELLITE`、`USE_MODS`（起動の修正を使うか。§6-3） | 辞退 | P011、P045、P074、R005 |
 | R10 | `DEPLOY_DECK_TOP` | 山札の一番上を配備コストなしで配備し、このカード自身を捨てる。新しいカードの `ON_DEPLOY`・`ON_LAUNCH` が発動する（FAQ 行 16） | `discardSelf`、`free` | なし（強制） | 自動 | P035 |
 | R11 | `ESTABLISH_LINK` | 通信確立を**ステージに積む**（コミットは 32 のバリア。007 §7-3）。コスト（区域＋先駆−修正、特殊は +5）はステージ時に予約する | `actor`（`THIS` / `OTHER_OWN_IN_REGIONS`）、`area`（`BELOW` / `AHEAD` / `BEHIND` / `ADJACENT_LAND_OF_ACTOR`）、`costKind`（`SPECIAL` / `NORMAL`。P076 だけ通常。FAQ 行 30） | `AREA`（候補が複数のとき）、`SATELLITE`（P050・P051・P076）、`USE_MODS` | 辞退 | P047、P050、P051、P056、P057、P058、P059、P060、P061、P076、P096、P097、P098、P099 |
@@ -439,7 +439,7 @@ Field = {key, type, min, max, candidates, default}
 | --- | --- | --- | --- | --- |
 | `SATELLITE` | 衛星を 1 機選ぶ | 衛星 ID の配列（禁止 F01、稼働状態、地域の条件で絞り込み済み） | 衛星 ID | R06（P038）、R07（P004）、R13（P024） |
 | `AREA` | 通信確立などの区域を選ぶ | 区域の座標の配列（`LINK_TARGETS` の和集合から、自分のキューブがある区域を除く。001 §7-5 の (ii)、007 エッジケース） | 区域 | R11（P047、P058〜P061、P096、P097、P099 ほか） |
-| `DIRECTION` | 転回後の向き | 4 方向（現在の向きを含む。FAQ 行 17） | 方向 | R08 |
+| `DIRECTION` | 転回後の向き | 6 方向（現在の向きを含む。FAQ 行 17） | 方向 | R08 |
 | `AMOUNT` | 段階・量を選ぶ | 整数または段階の配列。P034 は「燃料庫の外に出るところまで」の上限（FAQ 行 15・59）を超えないものに絞る。P038 は 0〜残り燃料 | 整数 | R06、R07（P034）、M08（P072）の支払い段階 |
 | `CARDS` | 手札のカードを選ぶ | 手札のカード ID（配備できる、または捨てられるもの）と、選べる枚数の `min`・`max` | カード ID の配列 | R04、R09 |
 | `PAIRS` | 依存する 2 つの選択の組 | 有効な組の配列。組ごとにコスト・燃料などの内訳を付ける（例: P011 は (カード, 配備先の衛星)、P050 は (他の衛星, 区域)、P076 は (衛星, 区域)） | 組の配列 | R09（P011、P045、P074、R005）、R11（P050、P051、P076） |

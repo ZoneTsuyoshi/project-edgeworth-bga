@@ -79,6 +79,32 @@ final class MovementTest extends TestCase
         self::assertFalse(Movement::willReflect($g, new SatellitePosition(1, 3, Direction::SW)));
     }
 
+    /** 真横（E / W）は同じ段を 1 区域（x ± 2）ずつ進み、左右の端は反対側へつながる。向きは変わらない（作者回答 2026-10-20） */
+    public function testEastWestMoveAlongTheRowAndConnectAtTheEdges(): void
+    {
+        $g = $this->geometry();
+        self::assertSame([12, 2, 'E'], $this->step($g, 10, 2, Direction::E));
+        self::assertSame([8, 2, 'W'], $this->step($g, 10, 2, Direction::W));
+        // 右端の次は左端（W = 12、周期 24）。段によってずれが違うので x の偶奇に注意
+        self::assertSame([0, 2, 'E'], $this->step($g, 22, 2, Direction::E));
+        self::assertSame([22, 2, 'W'], $this->step($g, 0, 2, Direction::W));
+        self::assertSame([1, 1, 'E'], $this->step($g, 23, 1, Direction::E));
+        self::assertSame([23, 1, 'W'], $this->step($g, 1, 1, Direction::W));
+    }
+
+    public function testEastWestNeverReflectAtTopAndBottomRows(): void
+    {
+        $g = $this->geometry();
+        foreach ([Direction::E, Direction::W] as $d) {
+            foreach ([0, 5] as $y) {
+                $x = $y % 2 === 0 ? 10 : 11;
+                self::assertFalse(Movement::willReflect($g, new SatellitePosition($x, $y, $d)));
+                self::assertSame($y, Movement::move($g, new SatellitePosition($x, $y, $d))->y);
+                self::assertSame($d, Movement::move($g, new SatellitePosition($x, $y, $d))->dir);
+            }
+        }
+    }
+
     /** どの区域・どの斜め向き・どの盤面でも移動先は盤面内の有効な区域になる。 */
     public function testAlwaysLandsOnValidCell(): void
     {
@@ -87,7 +113,7 @@ final class MovementTest extends TestCase
                 $g = $this->geometry($p, $b);
                 for ($id = 0; $id < $g->cellCount(); $id++) {
                     $c = $g->cellFromId($id);
-                    foreach ([Direction::NE, Direction::NW, Direction::SE, Direction::SW] as $d) {
+                    foreach (Direction::cases() as $d) {
                         $n = Movement::move($g, new SatellitePosition($c->x, $c->y, $d));
                         self::assertGreaterThanOrEqual(0, $n->y);
                         self::assertLessThan(6, $n->y);

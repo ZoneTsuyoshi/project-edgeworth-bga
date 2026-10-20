@@ -39,14 +39,14 @@ export const DIRECTIONS = {
   SW: [-1, 1],
 };
 
-/** 衛星の向き 4 方向（003 §4.1） */
-export const SATELLITE_DIRECTIONS = ['NE', 'SE', 'NW', 'SW'];
+/** 衛星の向き 6 方向（003 §4.1。作者回答 2026-10-20）。時計回りに右上から */
+export const SATELLITE_DIRECTIONS = ['NE', 'E', 'SE', 'SW', 'W', 'NW'];
 
 /**
  * 衛星コマの画像（機首が左向き）を各向きにする CSS rotate の角度（度。時計回り。012 §3.6）。
  * @type {Record<string, number>}
  */
-export const SATELLITE_ROTATION = { NE: 120, SE: 240, NW: 60, SW: 300 };
+export const SATELLITE_ROTATION = { NE: 120, E: 180, SE: 240, SW: 300, W: 0, NW: 60 };
 
 /**
  * 行のずれ（0 または 1。1 の行は半区域右にずれる。003 §1.1）。

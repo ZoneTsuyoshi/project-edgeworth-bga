@@ -113,7 +113,7 @@ final class SatelliteRepository
     }
 
     /**
-     * 非稼働の衛星を打ち上げる（cell・dir を書く。燃料は 0 のまま）。向きは斜めの 4 方向のみ。
+     * 非稼働の衛星を打ち上げる（cell・dir を書く。燃料は 0 のまま）。向きは 6 方向（003 §4.1）。
      */
     public function launch(int $satId, int $cell, Direction $direction): void
     {
@@ -121,7 +121,6 @@ final class SatelliteRepository
         if ($sat->isActive()) {
             throw new \DomainException("satellite $satId is already active");
         }
-        $this->assertDiagonal($direction);
         $this->db->execute(
             "UPDATE `satellite` SET `sat_cell` = $cell, `sat_dir` = '{$direction->value}', `sat_fuel_used` = 0 "
             . "WHERE `sat_id` = $satId",
@@ -134,7 +133,6 @@ final class SatelliteRepository
     public function move(int $satId, int $cell, Direction $direction): void
     {
         $this->assertActive($satId);
-        $this->assertDiagonal($direction);
         $this->db->execute(
             "UPDATE `satellite` SET `sat_cell` = $cell, `sat_dir` = '{$direction->value}' WHERE `sat_id` = $satId",
         );
@@ -146,7 +144,6 @@ final class SatelliteRepository
     public function turn(int $satId, Direction $direction): void
     {
         $this->assertActive($satId);
-        $this->assertDiagonal($direction);
         $this->db->execute("UPDATE `satellite` SET `sat_dir` = '{$direction->value}' WHERE `sat_id` = $satId");
     }
 
@@ -242,13 +239,6 @@ final class SatelliteRepository
             throw new \DomainException("satellite $satId is not active");
         }
         return $sat;
-    }
-
-    private function assertDiagonal(Direction $direction): void
-    {
-        if (!$direction->isDiagonal()) {
-            throw new \InvalidArgumentException('satellite direction must be NE/SE/NW/SW: ' . $direction->value);
-        }
     }
 
     /**

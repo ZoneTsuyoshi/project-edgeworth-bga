@@ -76,11 +76,11 @@ final class LaunchPhaseTest extends ActionTestCase
         $this->assertSame(0, $this->phases->launch()->launchOptions(101)[0]->cost);
     }
 
-    public function testOnlyDiagonalDirectionsAreAccepted(): void
+    public function testAllSixDirectionsAreAcceptedAndOthersRefused(): void
     {
         $sat = $this->sat(101, 0);
         $this->deployDirect(101, 1, $sat->id);
-        foreach (['E', 'W', 'N', '', 'ne'] as $dir) {
+        foreach (['N', 'S', '', 'ne'] as $dir) {
             try {
                 $this->phases->launch()->validate(101, StepMode::Main, $this->launch($sat->id, $dir));
                 $this->fail("expected RuleViolation for '$dir'");
@@ -88,9 +88,21 @@ final class LaunchPhaseTest extends ActionTestCase
                 $this->addToAssertionCount(1);
             }
         }
-        foreach (['NE', 'SE', 'NW', 'SW'] as $dir) {
+        foreach (['NE', 'E', 'SE', 'SW', 'W', 'NW'] as $dir) {
             $this->phases->launch()->validate(101, StepMode::Main, $this->launch($sat->id, $dir));
         }
+    }
+
+    /** 作者回答 2026-10-20: 打ち上げも転回も E / W を選べ、そのまま保存される */
+    public function testLaunchAndTurnWithEastAndWest(): void
+    {
+        $sat = $this->sat(101, 0);
+        $this->deployDirect(101, 1, $sat->id);
+        $this->phases->launch()->resolve(StepMode::Main, [101 => $this->launch($sat->id, 'E')]);
+        $this->assertSame(Direction::E, $this->phases->services()->satellites->get($sat->id)->direction);
+
+        $this->phases->launch()->resolve(StepMode::Main, [101 => ['op' => 'turn', 'sat' => $sat->id, 'dir' => 'W']]);
+        $this->assertSame(Direction::W, $this->phases->services()->satellites->get($sat->id)->direction);
     }
 
     public function testActiveSatelliteCannotBeLaunchedAgainButLandedOneCan(): void

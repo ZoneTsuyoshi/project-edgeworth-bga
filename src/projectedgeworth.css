@@ -1495,7 +1495,7 @@ html[data-theme="dark"] .pe-zoom {
 .pe-dpad {
     display: grid;
     grid-template-columns: repeat(2, 56px);
-    grid-template-rows: repeat(2, 56px);
+    grid-template-rows: repeat(3, 48px);
     gap: 6px;
 }
 

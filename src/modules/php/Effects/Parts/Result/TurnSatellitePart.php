@@ -24,7 +24,7 @@ use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
 use Bga\Games\projectedgeworth\Material\Hook;
 
 /**
- * R08 `TURN_SATELLITE`: このカードのある衛星の向きを変える（P044・P048・P090・P095）。向きは斜めの 4 方向から選び、現在の向きも選べる
+ * R08 `TURN_SATELLITE`: このカードのある衛星の向きを変える（P044・P048・P090・P095）。向きは 6 方向から選び、現在の向きも選べる
  * （向きを変えない 360 度の転回も `TURNED` を起こす。FAQ 行 17）。反射は転回ではない（このクラスは反射を扱わない）。
  * 稼働中の衛星だけが対象で、禁止 F01（`TURN_THIS`、P046）の衛星は使えない（`isAvailable()` が偽）。
  */
@@ -48,7 +48,7 @@ final class TurnSatellitePart extends AbstractResultPart
     {
         $directions = array_map(
             static fn(Direction $d): string => $d->value,
-            array_values(array_filter(Direction::cases(), static fn(Direction $d): bool => $d->isDiagonal())),
+            [Direction::NE, Direction::E, Direction::SE, Direction::SW, Direction::W, Direction::NW], // 時計回り（右上から）
         );
 
         return [new Field('direction', FieldType::Direction, $directions)];

@@ -89,7 +89,7 @@ const demos = {
         if (sat?.cell !== null && sat !== undefined) {
             const cell = /** @type {number} */ (sat.cell);
             view.stateFrame.selectCells([{ cell, kind: 'selected' }]);
-            view.stateFrame.chooseDirection(cell, (dir) => view.pieces.turnSatellite(sat.satId, dir), { title: 'Choose a direction', lines: ['Up-right / Down-right / Up-left / Down-left'] });
+            view.stateFrame.chooseDirection(cell, (dir) => view.pieces.turnSatellite(sat.satId, dir), { title: 'Choose a direction', lines: ['Up-right / Right / Down-right / Down-left / Left / Up-left'] });
         }
     },
     async move() {
