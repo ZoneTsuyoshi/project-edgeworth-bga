@@ -9,13 +9,13 @@ import { escapeHtml } from '../ui/dom.js';
 /**
  * @typedef {{ label: string, piece: string, framed?: boolean }} SymbolDef
  * label = 代替テキスト（aria-label・title）に入れる英語名。piece = コマ・アイコンのスプライト名（sprite-layout の pieceSprite）。
- * framed = 四角い枠を重ねる（予算。原本の画像がないため、マヤのアイコンに CSS で枠を付けて代用する）。
+ * framed = 四角い枠を CSS で重ねる（現在は未使用。予算は作者が追加した原本 `予算` を使う）。
  */
 
 /** @type {Record<string, SymbolDef>} キーは角括弧の中身を小文字にしたもの */
 export const SYMBOLS = {
-  maya: { label: 'Maya', piece: 'maya_1' },
-  budget: { label: 'Budget', piece: 'maya_1', framed: true },
+  maya: { label: 'Maya', piece: 'icon_maya' },
+  budget: { label: 'Budget', piece: 'icon_budget' },
   fuel: { label: 'Fuel', piece: 'icon_fuel' },
   crew: { label: 'Crew', piece: 'icon_crew' },
   device: { label: 'Device', piece: 'icon_device' },

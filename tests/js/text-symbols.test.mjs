@@ -31,11 +31,11 @@ test('表記ゆれ（大文字小文字）は同じ記号', () => {
   assert.match(symbolsToHtml('[SOFTWARE]', resolve), /aria-label="Software"/);
 });
 
-test('予算はマヤのアイコンに枠を付ける', () => {
-  const out = symbolsToHtml('[Budget]', resolve);
-  assert.match(out, /pe-glyph pe-glyph-framed/);
-  assert.match(out, /background-image:url\(maya_1\)/);
-  assert.ok(!symbolsToHtml('[Maya]', resolve).includes('pe-glyph-framed'));
+test('マヤと予算は作者の原本アイコンを使い、枠は重ねない', () => {
+  const budget = symbolsToHtml('[Budget]', resolve);
+  assert.match(budget, /background-image:url\(icon_budget\)/);
+  assert.ok(!budget.includes('pe-glyph-framed'));
+  assert.match(symbolsToHtml('[Maya]', resolve), /background-image:url\(icon_maya\)/);
 });
 
 test('未知の記号はそのまま残す', () => {
@@ -69,7 +69,7 @@ test('span の組み立て: style は属性として安全にエスケープさ�
 test('置き換え表: 全記号に英語名とコマ・アイコンがある', () => {
   for (const [key, def] of Object.entries(SYMBOLS)) {
     assert.ok(def.label.length > 0, key);
-    assert.match(def.piece, /^(maya_1|icon_[a-z]+|area_[A-H])$/, key);
+    assert.match(def.piece, /^(icon_[a-z]+|area_[A-H])$/, key);
   }
   assert.equal(SYMBOL_PIECES.length, new Set(SYMBOL_PIECES).size);
   assert.ok(SYMBOL_PIECES.includes('icon_fuel') && SYMBOL_PIECES.includes('area_H'));

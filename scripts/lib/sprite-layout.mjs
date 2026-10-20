@@ -135,8 +135,10 @@ const SATELLITE_SHAPES = ['hammer', 'retro', 'scallop', 'concorde', 'stealth'];
 const MAYA_VALUES = [1, 3, 5, 10, 20, 50];
 const AREA_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
-/** 文中アイコンの名前 → 原本（`data/` からの相対パス）。炎は色なしの `燃料`、区域タイルは `海`・`陸`（日本語のファイル名） */
+/** 文中アイコンの名前 → 原本（`data/` からの相対パス）。マヤは「M」だけのコイン、予算は四角い枠付きのマヤ、炎は色なしの `燃料`、区域タイルは `海`・`陸`（日本語のファイル名） */
 const TEXT_ICON_SOURCES = {
+  maya: 'icons/マヤ@4x.png',
+  budget: 'icons/予算@4x.png',
   fuel: 'icons/燃料@4x.png',
   crew: 'icons/crew@4x.png',
   device: 'icons/device@4x.png',
