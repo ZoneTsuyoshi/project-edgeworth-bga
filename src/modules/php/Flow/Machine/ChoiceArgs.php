@@ -32,10 +32,23 @@ final class ChoiceArgs
     public function build(ChoiceFlow $flow): array
     {
         $services = $this->ctx->services;
+        // BGA は getArgs を onEnteringState の「前」に呼ぶ（State classes の仕様）。入場前は enter() がまだ参加者も自動確定も
+        // 書いていないので、step_participants が空のあいだは enter() と同じ規則で求める（DB は書かない）。
+        // これを怠ると、入場直後の args の参加者と _private が空になり、全員の画面が「Waiting for other players」で止まる。
         $participants = $services->globals->stepParticipants();
+        $confirmed = $services->choices->confirmedPlayers($flow->stateId);
+        if ($participants === []) {
+            $participants = $flow->step->participants($flow->mode);
+            foreach ($participants as $playerId) {
+                if (!$flow->step->canAct($playerId, $flow->mode) && !in_array($playerId, $confirmed, true)) {
+                    $confirmed[] = $playerId;
+                }
+            }
+            sort($confirmed);
+        }
         $args = [
             'participants' => $participants,
-            'confirmed' => $services->choices->confirmedPlayers($flow->stateId),
+            'confirmed' => $confirmed,
         ];
         if ($flow->stateId === StateId::PROPOSAL_KEEP_CHOOSE) {
             // 引いた枚数だけが公開情報。残す枚数も公開してよい

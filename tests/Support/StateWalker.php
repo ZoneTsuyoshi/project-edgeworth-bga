@@ -25,6 +25,8 @@ final class StateWalker
     public array $notices = [];
     /** @var list<int> 通った状態（順） */
     public array $visited = [];
+    /** @var list<int> 入場前の getArgs が入場後と食い違った同時選択の状態（BGA は getArgs を onEnteringState の前に呼ぶ） */
+    public array $staleArgsStates = [];
     /** @var list<int> 入力待ちの同時選択の状態でアクティブなプレイヤー */
     public array $active = [];
     /** @var array<int, array{class: string, type: string, transitions: array<string, int>}> */
@@ -244,7 +246,11 @@ final class StateWalker
                 if (!$this->isChoice($stateId)) {
                     throw new \LogicException("unhandled state $stateId");
                 }
+                $argsBefore = $m->choice($stateId)->args();
                 [$entry, $notices] = $m->choice($stateId)->enter();
+                if ($argsBefore !== $m->choice($stateId)->args()) {
+                    $this->staleArgsStates[] = $stateId;
+                }
                 $this->notices = array_merge($this->notices, $notices);
                 $this->active = $entry->active;
                 return $entry->active === [] ? 'allConfirmed' : null;

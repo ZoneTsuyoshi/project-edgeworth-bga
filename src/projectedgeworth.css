@@ -796,6 +796,17 @@ html[data-theme="dark"] .pe-modal-body {
     margin-left: 0;
 }
 
+/* PC（wide・medium。BGA の盤面領域は画面より狭く、PC でも medium になる）: 手札は重ねず横に並べ、幅が足りなければ折り返す（narrow は重ねたまま） */
+.pe-root:not([data-layout="narrow"]) .pe-hand {
+    flex-wrap: wrap;
+    gap: 6px;
+    overflow-x: visible;
+}
+
+.pe-root:not([data-layout="narrow"]) .pe-hand-card {
+    margin-left: 0;
+}
+
 .pe-hand-card.pe-selected {
     transform: translateY(-6px);
 }

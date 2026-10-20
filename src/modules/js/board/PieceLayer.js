@@ -15,7 +15,7 @@ const SATELLITE_WIDTH = 0.45;
 /** 発射拠点コマの幅 */
 const BASE_WIDTH = 0.3;
 /** キューブの一辺（区域の幅に対する割合。マスの約 8 割） */
-const CUBE_SIZE = SLOT_SIZE * 0.8;
+const CUBE_SIZE = SLOT_SIZE * 0.9;
 /** 移動の 1 段階の長さ（ミリ秒。012 §3.7: 0.25 秒ずつ） */
 const MOVE_MS = 250;
 /** 反射のはね返り（012 §3.6: 0.2 秒） */

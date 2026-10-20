@@ -86,6 +86,32 @@ final class MachineRoundTest extends MachineTestCase
         self::assertNotContains(StateId::EFFECT_WINDOW_OPEN, $this->walker->visited);
     }
 
+    /**
+     * Studio で全員が「Waiting for other players」で止まった不具合の再現。BGA は getArgs を onEnteringState の前に呼ぶので、
+     * 入場前の args（参加者・確定済み・_private）が、入場後と同じでなければならない。セットアップの配備（61・62）を含む通しで確かめる。
+     */
+    public function testArgsBeforeEnteringMatchArgsAfterEntering(): void
+    {
+        $this->startGame();
+        $waiting = $this->walker->run(StateId::SETUP_LAUNCH_PAD_NEXT);
+        // 61 の args に両方のプレイヤーが参加者として載り、_private がある（入場前後の一致は次のテストで確かめる）
+        $this->walker->play($waiting, [], [StateId::DEPLOY_MAIN_CHOOSE]);
+        $args = $this->machine->choice(StateId::DEPLOY_MAIN_CHOOSE)->args();
+        self::assertSame([101, 102], $args['participants']);
+        self::assertSame([101, 102], array_keys($args['_private']));
+        self::assertArrayHasKey('targets', $args['_private'][101]);
+    }
+
+    /** 通しで、通った全員同時の状態すべてで入場前後の args が同じ。 */
+    public function testArgsBeforeEnteringMatchInAWholeRound(): void
+    {
+        $this->startGame();
+        $this->walker->autoPlay(StateId::SETUP_LAUNCH_PAD_NEXT, [], [StateId::PLANNING_PLOT]);
+        self::assertSame([], $this->walker->staleArgsStates);
+        self::assertContains(StateId::DEPLOY_MAIN_CHOOSE, $this->walker->visited);
+        self::assertContains(StateId::DEPLOY_BONUS_CHOOSE, $this->walker->visited);
+    }
+
     public function testMulliganDiscardsAndRedraws(): void
     {
         $this->startGame(StartingHand::Mulligan);

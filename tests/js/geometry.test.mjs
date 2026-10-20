@@ -1,8 +1,9 @@
 // board/geometry.js・ui/layout-math.js・PieceLayer の純粋関数の単体テスト（仕様書 012 §3.2、003 §1・§4）。実行: npm run test:js
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
-  boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, toDoubled, TILE_ASPECT,
+  boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
 import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
@@ -89,4 +90,28 @@ test('衛星コマの回転は最短で回る', () => {
   assert.equal(nearestAngle(300, 60), 420);
   assert.equal(nearestAngle(60, 300), -60);
   assert.equal(nearestAngle(120, 120), 120);
+});
+
+test('キューブのマスの中心が、区域タイル原本の 4 つの正方形の上にある（Z 順: 左上・右上・左下・右下）', async () => {
+  const { default: sharp } = await import('sharp');
+  const dir = new URL('../../data/boards/area/', import.meta.url);
+  for (const name of ['陸', '海', '山岳']) {
+    const { data, info } = await sharp(fileURLToPath(new URL(`${name}@4x.png`, dir))).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const lum = (/** @type {number} */ x, /** @type {number} */ y) => {
+      const i = (Math.round(y) * info.width + Math.round(x)) * 4;
+      return data[i] + data[i + 1] + data[i + 2];
+    };
+    // 正方形の縁の少し内側と少し外側の輝度が、はっきり違う（縁がマスの縁と一致する。区域の模様と重なる辺が 1 つあってもよい）
+    for (const c of SLOT_CENTERS) {
+      const cx = c.x * info.width;
+      const cy = c.y * info.height;
+      const half = (SLOT_SIZE * info.width) / 2;
+        const edge = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([dx, dy]) => Math.abs(lum(cx + dx * (half - 4), cy + dy * (half - 4)) - lum(cx + dx * (half + 5), cy + dy * (half + 5))));
+      assert.ok(edge.filter((d) => d > 12).length >= 3, `${name}: 正方形の縁が中心の推定とずれている (${c.x}, ${c.y}) ${edge}`);
+    }
+  }
+  // Z 順
+  assert.ok(SLOT_CENTERS[0].x < SLOT_CENTERS[1].x && SLOT_CENTERS[0].y === SLOT_CENTERS[1].y);
+  assert.ok(SLOT_CENTERS[2].y > SLOT_CENTERS[0].y && SLOT_CENTERS[2].x === SLOT_CENTERS[0].x);
+  assert.ok(SLOT_CENTERS[3].x === SLOT_CENTERS[1].x && SLOT_CENTERS[3].y === SLOT_CENTERS[2].y);
 });

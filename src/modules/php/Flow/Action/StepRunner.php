@@ -81,6 +81,8 @@ final class StepRunner
         }
         $result = $step->resolve($mode, $choices);
         $this->choices->clear($stateId);
+        // 次に同じ種類の状態に入る前の getArgs（BGA は onEnteringState の前に呼ぶ）が、古い参加者を読まないようにする
+        $this->globals->setStepParticipants([]);
         return $result;
     }
 }
