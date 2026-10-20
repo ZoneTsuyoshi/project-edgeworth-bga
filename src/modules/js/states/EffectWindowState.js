@@ -8,7 +8,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { directionGlyph, directionLabel } from '../board/Highlights.js';
-import { cardInfo } from '../cards/card-text.js';
+import { cardInfo, effectTextHtml } from '../cards/card-text.js';
 import { createCard } from '../cards/CardView.js';
 import { keyOfNameId, nameOfNameId } from '../cards/name-id.js';
 import { CardPicker } from '../ui/CardPicker.js';
@@ -258,7 +258,7 @@ export class EffectWindowState extends ActionState {
             el('div', { class: 'pe-effect-title' }, [
                 el('strong', {}, [info?.name ?? nameOfNameId(q.cardKey)]),
                 q.mandatory ? el('span', { class: 'pe-order-forced' }, [_('Mandatory')]) : null,
-                info?.text === undefined ? null : el('p', { class: 'pe-effect-text' }, [info.text]),
+                info?.text === undefined ? null : this.effectText(info.text),
             ]),
         ]);
 
@@ -347,6 +347,18 @@ export class EffectWindowState extends ActionState {
             default:
                 return field.key;
         }
+    }
+
+    /**
+     * 効果文（英語。`[Maya]` などの記号はアイコンにする）。
+     * @param {string} text
+     * @returns {HTMLElement}
+     */
+    effectText(text) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const p = el('p', { class: 'pe-effect-text' });
+        p.innerHTML = effectTextHtml(text, view.env.imgUrl);
+        return p;
     }
 
     /**

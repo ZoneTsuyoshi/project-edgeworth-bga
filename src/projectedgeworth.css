@@ -1353,6 +1353,24 @@ html[data-theme="dark"] .pe-modal-body {
     background: var(--pe-pc);
 }
 
+/* 英語の効果文の中の記号（[Maya] など）。幅は画像のセルの縦横比（--pe-glyph-aspect）から出す */
+.pe-glyph {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    width: calc(1.5em * var(--pe-glyph-aspect, 1));
+    height: 1.5em;
+    vertical-align: -0.4em;
+    background-repeat: no-repeat;
+}
+
+/* 予算: 原本がないので、マヤのアイコンに四角い枠を重ねて代用する（印刷では予算を四角い枠付きのマヤで表す） */
+.pe-glyph-framed {
+    border: 2px solid currentcolor;
+    border-radius: 3px;
+    background-clip: padding-box;
+}
+
 .pe-panel-marks {
     display: inline-flex;
     gap: 4px;

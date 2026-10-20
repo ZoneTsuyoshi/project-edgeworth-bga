@@ -135,6 +135,17 @@ const SATELLITE_SHAPES = ['hammer', 'retro', 'scallop', 'concorde', 'stealth'];
 const MAYA_VALUES = [1, 3, 5, 10, 20, 50];
 const AREA_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
+/** 文中アイコンの名前 → 原本（`data/` からの相対パス）。炎は色なしの `燃料`、区域タイルは `海`・`陸`（日本語のファイル名） */
+const TEXT_ICON_SOURCES = {
+  fuel: 'icons/燃料@4x.png',
+  crew: 'icons/crew@4x.png',
+  device: 'icons/device@4x.png',
+  software: 'icons/software@4x.png',
+  land: 'boards/area/陸@4x.png',
+  sea: 'boards/area/海@4x.png',
+};
+const TEXT_ICON_NAMES = Object.keys(TEXT_ICON_SOURCES);
+
 const PIECE_GROUPS = [
   { prefix: 'satellite', cell: { w: 232, h: 132 }, cols: 4, names: SATELLITE_SHAPES.flatMap((s) => COLORS.map((c) => `${s}_${c}`)), src: (n) => `piecies/satellite/${n}@4x.png` },
   { prefix: 'base', cell: { w: 164, h: 228 }, cols: 4, names: COLORS, src: (n) => `piecies/base/base_${n}@4x.png` },
@@ -143,6 +154,8 @@ const PIECE_GROUPS = [
   { prefix: 'cube', cell: { w: 80, h: 96 }, cols: 4, names: COLORS, src: (n) => `piecies/cube/cube_${n}@4x.png` },
   { prefix: 'maya', cell: { w: 128, h: 132 }, cols: 6, names: MAYA_VALUES.map(String), src: (n) => `piecies/maya/maya${n}@4x.png` },
   { prefix: 'area', cell: { w: 128, h: 140 }, cols: 4, names: AREA_LETTERS, src: (n) => `icons/area/area_${n}@4x.png` },
+  // 文中アイコン（カードの英語の効果文の [Fuel] など。マヤと地域は上のグループを使い回す）。原本はセルより大きいので 64 × 64 に収まるよう縮小して貼る
+  { prefix: 'icon', cell: { w: 64, h: 64 }, cols: 6, resize: true, names: TEXT_ICON_NAMES, src: (n) => TEXT_ICON_SOURCES[n] },
 ];
 
 /** コマ・アイコンのシート全体の寸法。グループを上から順に積む（幅は最大のグループ） */
@@ -155,8 +168,8 @@ export function piecesSize() {
 }
 
 /**
- * コマ・アイコンのセル。名前は `satellite_hammer_b`、`base_r`、`fuel_g`、`maya_10`、`area_A` の形式。
- * @returns {{name: string, src: string, x: number, y: number, w: number, h: number}[]}
+ * コマ・アイコンのセル。名前は `satellite_hammer_b`、`base_r`、`fuel_g`、`maya_10`、`area_A`、`icon_fuel` の形式。`resize` が真のセルは原本をセルに収まるよう縮小する。
+ * @returns {{name: string, src: string, x: number, y: number, w: number, h: number, resize: boolean}[]}
  */
 export function pieceCells() {
   const out = [];
@@ -166,6 +179,7 @@ export function pieceCells() {
       out.push({
         name: `${g.prefix}_${n}`, src: g.src(n),
         x: (i % g.cols) * g.cell.w, y: y + Math.floor(i / g.cols) * g.cell.h, w: g.cell.w, h: g.cell.h,
+        resize: Boolean(g.resize),
       });
     });
     y += Math.ceil(g.names.length / g.cols) * g.cell.h;

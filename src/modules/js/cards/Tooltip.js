@@ -145,7 +145,7 @@ export class Tooltip {
             probe.src = this.env.imgUrl(zoomSprite.file);
         }
         this.image.classList.toggle('pe-zoom-landscape', landscape);
-        this.text.innerHTML = cardTextHtml(key);
+        this.text.innerHTML = cardTextHtml(key, this.env.imgUrl);
 
         // 衛星カードの拡大表示には配備されている全カードのチップを並べる。タップでそのカードの拡大表示に切り替える
         this.chips.replaceChildren();

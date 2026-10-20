@@ -5,6 +5,8 @@
  */
 import { CARD_INFO } from './card-info.js';
 import { escapeHtml } from '../ui/dom.js';
+import { pieceSprite } from './sprite-layout.js';
+import { symbolsToHtml } from './text-symbols.js';
 
 /**
  * @typedef {{ name: string, type?: string, cost?: number, fame?: number, fuelSlots?: number, timing?: string, kind?: string, active?: string, text?: string }} CardInfo
@@ -91,12 +93,32 @@ export function chipInfo(key) {
 }
 
 /**
+ * 英語の効果文の HTML（エスケープ済み。`[Maya]` などの記号は小さなアイコンにする。改行は `<br>`）。
+ * @param {string} text
+ * @param {(file: string) => string} imgUrl 画像ファイル名 → URL（BGA では `bga.images.getImgUrl`）
+ * @returns {string}
+ */
+export function effectTextHtml(text, imgUrl) {
+  return symbolsToHtml(text, (piece) => {
+    const sprite = pieceSprite(piece);
+    if (sprite === null) {
+      return null;
+    }
+    return {
+      style: `background-image:url("${imgUrl(sprite.file)}");background-size:${sprite.size};background-position:${sprite.position};`,
+      aspect: sprite.aspect,
+    };
+  });
+}
+
+/**
  * 拡大表示のテキストパネル（HTML 文字列。値は escape 済み）。
  * 名前・種類・コスト・名声・効果タイミング・効果タイプ・稼働条件・英語の効果文（012 §4.6）。
  * @param {string} key
+ * @param {(file: string) => string} imgUrl 画像ファイル名 → URL
  * @returns {string}
  */
-export function cardTextHtml(key) {
+export function cardTextHtml(key, imgUrl) {
   const c = cardInfo(key);
   if (c === null) {
     return `<div class="pe-tip-name">${escapeHtml(key)}</div>`;
@@ -139,5 +161,5 @@ export function cardTextHtml(key) {
   const name = c.group === 'action' ? `${/** @type {any} */ (c).numeral} ${c.name}` : c.name;
   return `<div class="pe-tip-name">${escapeHtml(name)}</div>`
     + (rows.length > 0 ? `<dl class="pe-tip-facts">${rows.join('')}</dl>` : '')
-    + (text === '' ? '' : `<p class="pe-tip-effect">${escapeHtml(text).replaceAll('\n', '<br>')}</p>`);
+    + (text === '' ? '' : `<p class="pe-tip-effect">${effectTextHtml(text, imgUrl)}</p>`);
 }

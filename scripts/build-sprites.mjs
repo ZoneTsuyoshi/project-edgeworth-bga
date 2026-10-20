@@ -83,7 +83,7 @@ async function readPieceInputs(cells) {
       throw new Error(`原本がありません、または読めません: data/${c.src}（${c.name}）`);
     }
     if (!meta.hasAlpha) throw new Error(`${c.src} が RGBA ではありません`);
-    if (meta.width > c.w || meta.height > c.h) {
+    if (!c.resize && (meta.width > c.w || meta.height > c.h)) {
       throw new Error(`${c.name} の原本 ${meta.width}x${meta.height} がセル ${c.w}x${c.h} に収まりません`);
     }
   }
@@ -156,7 +156,9 @@ async function buildPieces(outDir) {
   const composites = [];
   const items = {};
   for (const c of cells) {
-    const { data, info } = await sharp(path.join(DATA, c.src)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let img = sharp(path.join(DATA, c.src)).ensureAlpha();
+    if (c.resize) img = img.resize(c.w, c.h, { fit: 'inside', kernel: 'lanczos3' });
+    const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
     const left = c.x + Math.floor((c.w - info.width) / 2);
     const top = c.y + Math.floor((c.h - info.height) / 2);
     composites.push({ ...rawOf(data, info), left, top });
