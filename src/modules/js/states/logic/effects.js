@@ -275,6 +275,43 @@ export function useEffectArgs(q, values, sell) {
   return args;
 }
 
+// ---- 直接選択（衛星カード・盤面のコマ・手札を押して選ぶ） ----
+
+/**
+ * CARDS フィールドの候補がすべて自分の手札にあるか（そうなら手札のカードを直接押して選べる）。
+ * 一部でも手札に無い（配備済み・山札・捨て札など）ときは false で、カードの一覧（CardPicker）から選ぶ。
+ * @param {Field} field
+ * @param {number[]} hand
+ * @returns {boolean}
+ */
+export function cardsInHand(field, hand) {
+  return field.type === 'CARDS' && field.candidates.length > 0 && field.candidates.every((c) => hand.includes(Number(c)));
+}
+
+/**
+ * 手札を押して選んだ結果を、上限（max 枚）に収める。単一（max = 1）は入れ替え、複数は上限を超える追加を無視する（選択は変えない）。
+ * @param {number[]} prev 今の選択
+ * @param {number[]} next 押した後の選択（HandView が出した並び）
+ * @param {number} max
+ * @returns {number[]}
+ */
+export function clampSelection(prev, next, max) {
+  if (max <= 0 || next.length <= max) {
+    return next;
+  }
+  return max === 1 ? next.slice(-1) : prev;
+}
+
+/**
+ * SATELLITE フィールドの、衛星カードに出す選択の状態（候補だけが対象。選んでいる衛星は selected）。
+ * @param {Field} field
+ * @param {any} value 今の選択
+ * @returns {Map<number, 'selectable' | 'selected'>}
+ */
+export function satellitePicks(field, value) {
+  return new Map(field.candidates.map((c) => [Number(c), value !== null && value !== undefined && String(value) === String(c) ? 'selected' : 'selectable']));
+}
+
 // ---- 代価と売却 ----
 
 /**

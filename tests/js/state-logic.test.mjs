@@ -15,7 +15,7 @@ import {
   optionPayment, parseProposal, proposalActionArgs, proposalSelectionFrom, requiredKeep, reservedHand, validateProposal,
 } from '../../src/modules/js/states/logic/proposal.js';
 import {
-  answerFields, fieldDefault, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, useEffectArgs, validateField, validateQuestion,
+  answerFields, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, useEffectArgs, validateField, validateQuestion,
 } from '../../src/modules/js/states/logic/effects.js';
 import { fameBreakdown, mergePublicFame, parsePublicFame, playerScore, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
 
@@ -479,4 +479,26 @@ test('途中の名声（ゲームオプション 105）: キーが無ければ n
   assert.equal(merged?.[102].total, 3);
   assert.equal(mergePublicFame(null, undefined), null);
   assert.equal(mergePublicFame(fame, undefined), fame);
+});
+
+test('効果の CARDS: 候補がすべて手札のときだけ手札から直接選ぶ', () => {
+  const field = (candidates) => ({ key: 'cards', type: 'CARDS', min: 0, max: 2, candidates, default: null });
+  assert.equal(cardsInHand(field([3, 18]), [3, 18, 44]), true);
+  assert.equal(cardsInHand(field([3, 99]), [3, 18, 44]), false);
+  assert.equal(cardsInHand(field([]), [3]), false);
+  assert.equal(cardsInHand({ ...field([3]), type: 'PAIRS' }, [3]), false);
+});
+
+test('効果の CARDS: 手札を押した結果を上限に収める', () => {
+  assert.deepEqual(clampSelection([3], [3, 18], 2), [3, 18]);
+  assert.deepEqual(clampSelection([3, 18], [3, 18, 44], 2), [3, 18]);
+  assert.deepEqual(clampSelection([3], [18], 1), [18]);
+  assert.deepEqual(clampSelection([3], [3, 18], 1), [18]);
+  assert.deepEqual(clampSelection([3], [], 1), []);
+});
+
+test('効果の SATELLITE: 候補の衛星だけが選べ、選んだ衛星は selected', () => {
+  const field = { key: 'satellite', type: 'SATELLITE', min: 1, max: 1, candidates: [11, '12', 14], default: null };
+  assert.deepEqual([...satellitePicks(field, 12)], [[11, 'selectable'], [12, 'selected'], [14, 'selectable']]);
+  assert.deepEqual([...satellitePicks(field, null)].map(([, s]) => s), ['selectable', 'selectable', 'selectable']);
 });

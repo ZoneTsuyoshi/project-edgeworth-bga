@@ -1,0 +1,75 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "EFFECT",
+     "entryId": 30,
+     "cardKey": "swap_technician",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "satellite",
+       "type": "SATELLITE",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        11,
+        12,
+        14
+       ],
+       "default": null
+      }
+     ],
+     "preview": {}
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-sat-pickable",
+   "nth": 2
+  }
+ ]
+}
