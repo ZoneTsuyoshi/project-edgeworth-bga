@@ -37,4 +37,8 @@ id_ed25519*
 
 # PHPUnit のキャッシュ
 .phpunit.result.cache
-/build/
+# 生成物の置き場。画像の対応表（manifest.json）だけはコミットする（CI の check:sprites が読む）
+/build/*
+!/build/sprites/
+/build/sprites/*
+!/build/sprites/manifest.json
