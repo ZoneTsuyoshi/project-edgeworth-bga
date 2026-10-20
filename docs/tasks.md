@@ -55,7 +55,7 @@ T-001〜T-004 は互いに独立しているため並列に進められます。
 | I-04 | CI 第 2 段階（PHP・JS・CSS・JSONC・`pe` 接頭辞の検査） | 005 | I-01 | 完了（#20） |
 | I-05 | データ層（`dbmodel.sql`、リポジトリ、グローバル値・プレイヤーの値） | 010 | I-01、T-006 | 完了（#23） |
 | I-06 | セットアップ（ボード配置・褒賞・衛星プランのオプション、初期資金、手札、ミッション、発射拠点の配置、セットアップの配備フェイズ、マリガン） | 001 §3・§5、009 | I-02、I-05 | 完了（#24） |
-| I-07 | 状態機械の骨格（全状態クラス、遷移、同時選択の共通パターン、zombie、進行度。効果は空のまま）と Studio の雛形の置き換え | 009 | I-05 | 未着手（雛形の取り込みは済: `src/` に `Game.php`・仮の状態 `PlaceholderWait`（8）・`PlaceholderEnd`（9）・設定ファイル・最小の `Game.js` がある。I-07 でこの 2 つの仮の状態を 009 の状態に置き換える） |
+| I-07 | 状態機械（009 の 30 状態、遷移、同時選択の共通パターン、zombie、進行度、getAllDatas、通知）をルール層（Setup・Flow・Action）につなぐ。効果の窓（30〜32）は効果なしで素通りする最小の形で、効果エンジンの結線は次のタスク（N-4・N-7） | 009 | I-05 | レビュー中 |
 | I-08 | 計画フェイズとアクションフェイズ I〜V（メインとボーナス、全員同時、売却） | 001 §6・§7、008 | I-07 | 実装中（ルール層） |
 | I-09 | 循環フェイズ・終了判定・最終得点 | 001 §9・§10・§12 | I-03、I-08 | 実装中（ルール層） |
 | I-10 | クライアントの基盤（レイアウト、盤面の描画、カード・コマの表示、プレイヤーパネル、通知の受け取り） | 012、010 §通知 | I-07 | 未着手 |
@@ -73,11 +73,11 @@ T-001〜T-004 は互いに独立しているため並列に進められます。
 | --- | --- | --- |
 | N-1 | 燃料切れ（c > C）の衛星に配備して燃料庫 C が増えても燃料切れのまま（001 U-6）。配備・除去・付け替えのたびに `Flow\FuelMath::afterCapacityChange` で c を更新する | 解消（I-15。配備・除去・付け替えを行う部品は `Effects\Parts\Result\FuelAdjust` で c を直す。本番の `GameMutator` はそれを前提に c を調整しない） |
 | N-2 | 着陸した衛星は O4 の窓が閉じるまで稼働中として扱う（007、FAQ 行 32）。`Satellite::isActive()` は cell だけで判定しているので、O4 の窓で「稼働中のみ」の効果を評価するときは grace も見る | I-07・I-12 |
-| N-3 | 終了時の手札の換金（状態 120）で DB 上のマヤを動かす場合、`FinalScoring` 内の計算上の換金と二重にならないようにする | I-09（状態の結線） |
-| N-4 | 効果エンジンの `Effects\Context\GameView` / `GameMutator` の本番実装（`Data/` のリポジトリを使う）と、窓の状態（`WindowState`）の DB への保存（`pool`・`staged_link`・`held_notif`、または窓ごとの JSON）は未実装。E-4・E-5 で `GameView`（`satelliteIds`・`satelliteState`・`deployedCards`）と `GameMutator`（`spendFuel`・`setFuelUsed`・`moveSatellite`・`turnSatellite`・`swapSatellites`・`deployFromHand`・`deployFromDeck`・`discardDeployed`・`rearrangeDeployed`）が増えた。E-6 で `GameView`（`linkedCells`・`pioneerRecipients`）が増え、バリアの 1 周は `Flow\Action\StagedLinkConverter`（ステージ → `LinkRequest`、コミット → `LINKED` のイベント）で行う | I-07（状態 30〜32 の結線） |
+| N-3 | 終了時の手札の換金（状態 120）で DB 上のマヤを動かす場合、`FinalScoring` 内の計算上の換金と二重にならないようにする | 解消（I-07。120 `EndHandCashOut` が手札を捨て札へ移してマヤを足し、121 の名声計算は手札 0 枚で行うので二重にならない。`MachineRoundTest` で検査） |
+| N-4 | 効果エンジンの `Effects\Context\GameView` / `GameMutator` の本番実装（`Data/` のリポジトリを使う）と、窓の状態（`WindowState`）の DB への保存（`pool`・`staged_link`・`held_notif`、または窓ごとの JSON）は未実装。E-4・E-5 で `GameView`（`satelliteIds`・`satelliteState`・`deployedCards`）と `GameMutator`（`spendFuel`・`setFuelUsed`・`moveSatellite`・`turnSatellite`・`swapSatellites`・`deployFromHand`・`deployFromDeck`・`discardDeployed`・`rearrangeDeployed`）が増えた。E-6 で `GameView`（`linkedCells`・`pioneerRecipients`）が増え、バリアの 1 周は `Flow\Action\StagedLinkConverter`（ステージ → `LinkRequest`、コミット → `LINKED` のイベント）で行う | 効果エンジンの結線（I-07 の次のタスク。状態 30〜32 の `Flow\Machine\WindowFlow` と `WindowGate`、`ActionHooks` の差し込み口） |
 | N-5 | `EngineOrbitModifiers` の追加移動・燃料回復（P081〜P084・P091）は O1 の窓の結果部品（R07 `MoveSatellitePart`・R05 `RecoverFuelPart`）として実装したので、問い合わせは意図して 0 を返す | 解消（I-15） |
 | N-6 | 011 §5-3 の「対象なし」の判定は、要素の番が来たときに行う（S02 を成り立たせるため。I-12 の判断） | — |
-| N-7 | 本番の効果エンジンの組み立てで、各 PR の登録関数（`PartsE1`〜`PartsE3`、`ConditionsE1`〜`ConditionsE3` の `register` など、E-4 以降も同様）を必ず呼ぶ。src には既定の組み立て処理がまだない | I-07（状態 30〜32 の結線） |
+| N-7 | 本番の効果エンジンの組み立てで、各 PR の登録関数（`PartsE1`〜`PartsE3`、`ConditionsE1`〜`ConditionsE3` の `register` など、E-4 以降も同様）を必ず呼ぶ。src には既定の組み立て処理がまだない | 効果エンジンの結線（I-07 の次のタスク。状態 30〜32 の `Flow\Machine\WindowFlow` と `WindowGate`、`ActionHooks` の差し込み口） |
 | N-8 | P070 の `apply` は、企画で残すカードを手札に入れた後に呼ぶ。R09・R11 の問いへの `USE_MODS` の同梱は `UseMods::field()` を使う。EUROPA の「メインの代わり / メインに加えて」の区別は Flow 側で行う | I-07・I-15・I-16 |
 | N-9 | 連鎖で同じ宿主の起動効果が 2 件プールに積まれると（P081 の追加移動の後の P090 など）、同一カード同士の ORDER の問いが出る。結果は正しいが無駄なので、`TriggerCollector::collect` で保留中の同一宿主の起動効果を重複させない | 解消（I-16。保留中の同じプレイヤー・同じ宿主の起動効果は、後のイベントで重複させない） |
-| N-10 | R11 は支払いをステージの時点では行わず（予約だけ）、コミットの `LinkCommitter` が払う。R11 は同じ窓の自分のステージを予約として所持金から引いて判定するが、他の部品（C1 の支払いなど）の判定は予約を引かない。窓の最中に別の効果がマヤを払ってコミット時に足りなくなった依頼は、`LinkCommitter` が取りやめる（払わず、`LINKED` も起こさない）。バリアの結線では、取りやめを通知に載せる | I-07（状態 30〜32 の結線） |
+| N-10 | R11 は支払いをステージの時点では行わず（予約だけ）、コミットの `LinkCommitter` が払う。R11 は同じ窓の自分のステージを予約として所持金から引いて判定するが、他の部品（C1 の支払いなど）の判定は予約を引かない。窓の最中に別の効果がマヤを払ってコミット時に足りなくなった依頼は、`LinkCommitter` が取りやめる（払わず、`LINKED` も起こさない）。バリアの結線では、取りやめを通知に載せる | 効果エンジンの結線（I-07 の次のタスク。状態 30〜32 の `Flow\Machine\WindowFlow` と `WindowGate`、`ActionHooks` の差し込み口） |

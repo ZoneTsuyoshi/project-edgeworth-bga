@@ -23,8 +23,19 @@ final class ProjectCardRepository
     public const CARD_COUNT = 99;
     public const MAX_DEPLOYED = 4;
 
+    /** このインスタンスが捨て札を山札に戻した回数（山札の再構成の通知 N11 の判定用） */
+    private int $reshuffles = 0;
+
     public function __construct(private readonly Database $db, private readonly RandomSource $random)
     {
+    }
+
+    /**
+     * このインスタンスで捨て札をシャッフルして山札にした回数。操作の前後で比べ、増えていれば 010 の N11 を送る。
+     */
+    public function reshuffles(): int
+    {
+        return $this->reshuffles;
     }
 
     /**
@@ -157,6 +168,7 @@ final class ProjectCardRepository
      */
     public function reshuffleDiscard(): void
     {
+        $this->reshuffles++;
         $ids = $this->shuffled($this->idsIn(CardLocation::Discard));
         $min = $this->db->value(
             'SELECT MIN(`card_order`) FROM `project_card` WHERE ' . $this->where(CardLocation::Deck, 0),

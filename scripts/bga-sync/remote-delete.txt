@@ -2,12 +2,14 @@
 # 空行と # で始まる行は無視する。ファイルのみ（ディレクトリの再帰削除は非対応）。
 # mode: sync のときだけ、転送の後に削除する。仕様書 006 §3・§4.3。
 #
-# Studio の雛形のサンプルの状態クラス。このゲームの状態クラス（States/PlaceholderWait・PlaceholderEnd。
-# 009 の確定後は 009 の状態一覧）と同名・同 ID にならない間は、雛形のものが残ると衝突するので消す。
+# Studio の雛形のサンプルの状態クラス。このゲームの状態クラス（009 の状態一覧。States/ の 30 状態）と同名・同 ID にならない間は、
+# 雛形のものが残ると衝突するので消す。仮の状態（PlaceholderWait・PlaceholderEnd）は I-07 で 009 の状態に置き換えたので消す。
 # 状態クラスに PlayerTurn・NextPlayer・EndScore と同名のものを作った場合は、上書きされるので該当行をこのファイルから外す。
 modules/php/States/PlayerTurn.php
 modules/php/States/NextPlayer.php
 modules/php/States/EndScore.php
+modules/php/States/PlaceholderWait.php
+modules/php/States/PlaceholderEnd.php
 # TypeScript テンプレートの原本（使わない）。仕様書 006 §4.3・未確定事項 No.2
 src-disabled/scss/Game.scss
 src-disabled/ts/libs.ts
