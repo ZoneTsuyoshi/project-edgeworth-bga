@@ -9,6 +9,7 @@ import { chipInfo } from './cards/card-text.js';
 import { projectKey } from './cards/sprite-layout.js';
 import { mergePublicFame, scoreFromNotification } from './states/logic/score.js';
 import { int } from './ui/dom.js';
+import { refreshLinkedRegions } from './ui/link-regions.js';
 
 /**
  * @typedef {import('./ui/GameView.js').GameView} GameView
@@ -359,6 +360,7 @@ export const HANDLERS = {
     }
     const link = { cell: int(a.cell), slot: int(a.slot), level: int(a.level) };
     p.links = [...p.links.filter((l) => l.cell !== link.cell), link];
+    refreshLinkedRegions(p, view.m.board);
     p.cubesLeft = int(a.cubes_left, p.cubesLeft);
     view.pieces.setCube(p.id, link, p.colorIndex);
     view.pieces.refreshStackBadges();

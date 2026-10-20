@@ -6,6 +6,7 @@
 import { CARD_INFO } from '../cards/card-info.js';
 import { parsePublicFame } from '../states/logic/score.js';
 import { int } from './dom.js';
+import { refreshLinkedRegions } from './link-regions.js';
 
 /** gameinfos.jsonc の player_colors（青・緑・赤・橙）→ 色番号（0 = BLUE、1 = GREEN、2 = RED、3 = YELLOW。002 §3.6） */
 const HEX_TO_COLOR = { '0000ff': 0, '008000': 1, ff0000: 2, ffa500: 3 };
@@ -63,6 +64,7 @@ export function colorOfSatelliteCard(card) {
  * @property {Record<string, number>} actionCards アクション番号 → 0 手札 / 1 縦 / 2 横
  * @property {import('../cards/SatelliteView.js').SatelliteData[]} satellites
  * @property {{ cell: number, slot: number, level: number }[]} links
+ * @property {string[]} linkedRegions 通信確立済みの地域（A〜H。links の区域が属する地域。サマリー用。links を変えたら refreshLinkedRegions で更新する）
  * @property {Record<string, number>} rewardValues 褒賞カード（T001 など）→ 比較値の現在値（010 に未定義。→ 報告）
  * @property {boolean} confirmed 同時選択で確定済みか
  */
@@ -129,6 +131,7 @@ export function normalizeGamedatas(raw, me) {
       actionCards: Object.fromEntries(Object.entries(data.actionCards ?? {}).map(([k, v]) => [k, int(v)])),
       satellites,
       links: (data.links ?? []).map((/** @type {any} */ l) => ({ cell: int(l.cell), slot: int(l.slot), level: int(l.level) })),
+      linkedRegions: [],
       rewardValues: Object.fromEntries(Object.entries(data.rewardValues ?? {}).map(([k, v]) => [k, int(v)])),
       confirmed: data.confirmed === true,
     };
@@ -140,6 +143,9 @@ export function normalizeGamedatas(raw, me) {
     regions: (raw.board.regions ?? []).map((/** @type {any} */ r) => ({ br: int(r.br), bc: int(r.bc), board: String(r.board), flip: r.flip === true })),
     cells: (raw.board.cells ?? []).map((/** @type {any} */ c) => ({ cell: int(c.cell), type: String(c.type), region: String(c.region) })),
   };
+  for (const p of Object.values(players)) {
+    refreshLinkedRegions(p, board);
+  }
   return {
     round: int(raw.round),
     phase: String(raw.phase ?? 'SETUP'),
