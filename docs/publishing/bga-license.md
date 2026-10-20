@@ -20,14 +20,37 @@ PROJECT EDGEWORTH を BGA で公開するための、ライセンス（権利者
 4. **販売の実績**: 頒布したイベント（ゲームマーケット 2026 秋）の出展ページ、通販のページ、製品の写真。「どこかで買える」ことの証明も兼ねる。
 5. **原本のデータを持っていること**: 印刷用の原本（カード・ボードの高解像度データ）から BGA 用の画像を作っていることは、メールにも書いておく。求められれば原本の一部を渡せる。
 
-メールの送信元は、1 の公式サイトに載せたアドレスにする（個人の Gmail でも、サイトに載っていれば裏付けになる）。サイトに載せたくなければ、「連絡は X の DM でも確認できる」と書き、BGA から X に DM してもらえるようにする。
+メールの送信元は、公式サイトの[お問い合わせページ](https://danjiri-concerto.github.io/contact.html)に載っているサークルのアドレスにする（サイトの BGA 版の告知に「BGA とのやり取りはお問い合わせページのアドレスから行う」と書いてある）。
+
+### 公式サイトの告知（2026-10-20 公開済み）
+
+PROJECT EDGEWORTH のページ（<https://danjiri-concerto.github.io/project-edgeworth/>）の「購入・詳細ルール」の節に「オンライン版（Board Game Arena）」を追加した。日本語と英語で、BGA Studio のプロジェクト `projectedgeworth`（開発者 ZoneTsuyoshi）が制作者による公式の実装であること、BGA に公開を許諾すること、BGA との連絡はお問い合わせページのアドレスから行うこと、BGG のゲーム・出版社のページへのリンクを載せている。
+
+### X のポストの文面（@danjiriconcerto から投稿する）
+
+日本語（X の文字数で 237 / 280）:
+
+```text
+【お知らせ】PROJECT EDGEWORTH のオンライン版を Board Game Arena（BGA）向けに開発中です。BGA Studio の「projectedgeworth」（開発：ぞね／BGA ID: ZoneTsuyoshi）が、だんじり協奏曲による公式の実装です。
+https://danjiri-concerto.github.io/project-edgeworth/
+#BoardGameArena
+```
+
+英語（BGA の担当者が読めるように。日本語のポストへの返信のスレッドにするとよい。265 / 280）:
+
+```text
+PROJECT EDGEWORTH is coming to Board Game Arena! As its designer & publisher, Danjiri Concerto is building the official adaptation: BGA Studio project "projectedgeworth" by our member Zone (BGA: ZoneTsuyoshi). We authorize BGA to publish it.
+https://danjiri-concerto.github.io/project-edgeworth/
+```
+
+投稿したら、英語のポストの URL をメールの `[URL of the post]` に入れる。
 
 ## 手順
 
 1. **（済）BGG のゲームページ**: <https://boardgamegeek.com/boardgame/481869/project-edgeworth>（BGG_ID 481869。`src/gameinfos.jsonc` に設定済み）。
 2. **BGA Studio のライセンスのページを確認する**: Studio にログインして <https://studio.boardgamearena.com/#!licensing> を開き、PROJECT EDGEWORTH が既に載っていないか確認する（載っていれば手続きは不要）。載っていなければ 3 へ。
-3. **権利者の裏付けを公開する**: 上の「権利者であることの示し方」の 1・2（公式サイトと X に BGA 版のことを載せる）。サイトの文面はエージェントが作れる（サイト側のリポジトリ `danjiri-concerto.github.io` に追記して公開する）。
-4. **許諾のメールを送る**: 下の「メールの文面」を、公式サイトに載せたアドレスから `studio@boardgamearena.com` に送る。`[ ]` の箇所を埋めてから送る。
+3. **権利者の裏付けを公開する**: 公式サイトの告知は公開済み（2026-10-20）。上の X のポストを投稿する。
+4. **許諾のメールを送る**: 下の「メールの文面」を、お問い合わせページのサークルのアドレスから `studio@boardgamearena.com` に送る。`[ ]` の箇所を埋めてから送る。
 5. **BGA からの返信を待つ**: 契約書（上の General terms and conditions）への署名や、追加の情報を求められることがある。届いたらエージェントに共有してもらえれば、内容の確認と返信の下書きをする。
 6. **許諾のメールを保存する**: 送ったメール（と BGA の返信）を、アルファ申請のときに添付・転送できるようにしておく。リポジトリには入れない（アドレスが載るため）。
 7. **アルファ申請**: Studio のコントロールパネルの「Request ALPHA status」から申請し、届く確認メールに、正式なゲーム名・本番の BGA ユーザー名・（非公開アルファの招待者）・許諾のメールを添えて返信する。ベータの前に、出版社として実装を承認する旨も伝える（作者 = 出版社なので、同じメールで承認しておいてよい）。
@@ -68,7 +91,7 @@ Game information:
 - Contact: https://x.com/danjiriconcerto
 
 To confirm that this message comes from the rights holder:
-- Our official website states that the BGA adaptation is ours and lists this email address: [URL of the official page with the BGA note]
+- Our official website states that the BGA adaptation is ours and that we contact BGA from the address on our contact page (this email): https://danjiri-concerto.github.io/project-edgeworth/ (section "オンライン版（Board Game Arena）", with an English paragraph) and https://danjiri-concerto.github.io/contact.html
 - We announced it on our official X account: [URL of the post]
 - The BGA graphics are made by us from the original print files; we can provide samples of the original files if needed.
 
@@ -105,3 +128,4 @@ Danjiri Concerto
 | --- | --- |
 | 2026-10-20 | BGG のゲームページが承認された（BGG_ID 481869）。この手順と文面を作成 |
 | 2026-10-20 | BGG の出版社のページ（ID 64662）を設定。権利者であることの示し方を追加 |
+| 2026-10-20 | 公式サイトに BGA 版の告知を公開。X のポストの文面を作成（作者の投稿待ち） |
