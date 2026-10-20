@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Modifier;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ModifierPart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Parts\ModifierPart;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * M10 `SELL_PRICE_MOD`: 手札の売却額（基本 3）に `delta` を足す（P077・R009 の +2。加算で重なり、FAQ 行 60 で 7 マヤ）。

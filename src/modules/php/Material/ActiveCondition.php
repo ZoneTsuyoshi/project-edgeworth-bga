@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 稼働条件（002 §3.5）。

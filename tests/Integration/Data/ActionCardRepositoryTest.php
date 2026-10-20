@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\ActionCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\ActionCardState;
+use Bga\Games\projectedgeworth\Data\ActionCardRepository;
+use Bga\Games\projectedgeworth\Data\ActionCardState;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class ActionCardRepositoryTest extends DatabaseTestCase

@@ -7,15 +7,15 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\MoveSatellitePart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\SwapSatellitesPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\TransferFuelPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\TurnSatellitePart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\MoveSatellitePart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\SwapSatellitesPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\TransferFuelPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\TurnSatellitePart;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * E-4（衛星の操作。011 §8）の結果部品の登録: R06 `TRANSFER_FUEL`、R07 `MOVE_SATELLITE`、R08 `TURN_SATELLITE`、R13 `SWAP_SATELLITES`。

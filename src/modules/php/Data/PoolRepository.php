@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * pool テーブル = 効果の窓のプール（010 §9.5）。窓を閉じるとき（32）に clear() で全消去する。

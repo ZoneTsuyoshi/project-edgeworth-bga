@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Cards;
 
-use Bga\Games\ProjectEdgeworth\Effects\Condition\BonusHolderCondition;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionContext;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\LandedAreaKindCondition;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\NoActionOverlapCondition;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\RegionChangedCondition;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Effects\Condition\BonusHolderCondition;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionContext;
+use Bga\Games\projectedgeworth\Effects\Condition\LandedAreaKindCondition;
+use Bga\Games\projectedgeworth\Effects\Condition\NoActionOverlapCondition;
+use Bga\Games\projectedgeworth\Effects\Condition\RegionChangedCondition;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\Hook;
 use PHPUnit\Framework\TestCase;
 
 /**

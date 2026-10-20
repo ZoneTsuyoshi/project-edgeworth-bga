@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K10 `NO_ACTION_OVERLAP`: 公開されたアクション選択が、他のどのプレイヤーとも被らないこと（P003）。

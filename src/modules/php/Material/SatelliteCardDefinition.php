@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 衛星カード 1 面の定義（002 §4.2）。MOON 面は色ごとに別の面（R001B など）で、`nameId` は同じ。

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * 盤面の形（行数 6、列数 W = 3 × ボード数 B、行のずれ P）と座標変換（003 §1）。

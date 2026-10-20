@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\Link;
+use Bga\Games\projectedgeworth\Data\Link;
 
 /**
  * コミットされた通信確立 1 回分の結果。

@@ -7,20 +7,20 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
-use Bga\Games\ProjectEdgeworth\Effects\Question\ValidationResult;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Effects\Question\ValidationResult;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
 
 /**
  * R12 `REARRANGE_STANDBY`（P022）: 自分の待機中（非稼働）の衛星に配備されているプロジェクトカードを、好きなように付け替える（強制）。

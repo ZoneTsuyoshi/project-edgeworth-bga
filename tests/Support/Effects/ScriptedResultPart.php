@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\ValidationResult;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\ValidationResult;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * クロージャで振る舞いを与えられる結果部品（テスト用）。呼ばれた記録を `$applied` に残す。

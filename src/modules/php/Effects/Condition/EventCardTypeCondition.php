@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K02 `EVENT_CARD_TYPE`: 配備されたカードのタイプが `params['type']`（CREW / DEVICE / SOFTWARE）であること。

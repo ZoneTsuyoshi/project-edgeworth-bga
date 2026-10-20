@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\ChoiceRepository;
+use Bga\Games\projectedgeworth\Data\ChoiceRepository;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class ChoiceRepositoryTest extends DatabaseTestCase

@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Flow\NoOrbitModifiers;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitReport;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitSatellite;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Flow\NoOrbitModifiers;
+use Bga\Games\projectedgeworth\Flow\OrbitReport;
+use Bga\Games\projectedgeworth\Flow\OrbitSatellite;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /** 009 の 100 OrbitDriver と 001 §9 を DB 込みで確かめる。 */
 final class OrbitPhaseTest extends FlowTestCase

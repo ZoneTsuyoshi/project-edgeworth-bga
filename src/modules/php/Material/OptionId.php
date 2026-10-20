@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * ゲームオプションの ID（004 §7。gameoptions.jsonc と一致させる）。

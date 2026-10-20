@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 
 /**
  * 区域ボーナス（001 §8、裏面）と岩礁の割引（U-13）。裏面の Earth 配置を使う。

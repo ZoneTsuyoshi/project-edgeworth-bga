@@ -9,13 +9,13 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
-use Bga\Games\ProjectEdgeworth\Material\EffectCost;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
-use Bga\Games\ProjectEdgeworth\Material\ResourceTouch;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCost;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Material\ResourceTouch;
 
 /**
  * テスト用の疑似カードの `EffectSpec` を短く組み立てる。

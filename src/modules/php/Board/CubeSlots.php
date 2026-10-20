@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** キューブ置き場の Z 順（003 §5）。0 = 左上、1 = 右上、2 = 左下、3 = 右下。 */
 final class CubeSlots

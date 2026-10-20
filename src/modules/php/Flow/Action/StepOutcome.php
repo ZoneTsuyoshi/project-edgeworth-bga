@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 1 人分の選択を処理した結果。公開してよい内容かどうかは details のキーごとに状態クラス側が決める

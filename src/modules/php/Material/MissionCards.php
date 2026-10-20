@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * ミッションカード 10 枚（M001〜M010）の定義（002 §8）。

@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
 
 /**
  * セットアップ対象のプレイヤー（席順の並びで渡す）。色は BGA の player_color から決める。

@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\EffectEngine;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\PoolItem;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Question;
-use Bga\Games\ProjectEdgeworth\Material\CardEffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\EffectEngine;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Pool\PoolItem;
+use Bga\Games\projectedgeworth\Effects\Question\Question;
+use Bga\Games\projectedgeworth\Material\CardEffectCatalog;
+use Bga\Games\projectedgeworth\Material\EffectCatalog;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\ProjectType;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
 use ProjectEdgeworthTests\Support\Effects\SampleParts;

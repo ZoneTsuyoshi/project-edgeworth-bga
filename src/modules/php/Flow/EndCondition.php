@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /** ゲーム終了判定（001 §10）と進行度（009 §10）。純粋関数。 */
 final class EndCondition

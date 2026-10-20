@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * link テーブルの 1 行 = 置かれたキューブ 1 個（010 §5.2）。

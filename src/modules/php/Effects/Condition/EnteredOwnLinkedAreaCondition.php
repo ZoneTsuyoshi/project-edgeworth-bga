@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K07 `ENTERED_OWN_LINKED_AREA`: 突入した区域（イベントの `cell`）が、自分が通信確立済み（発射拠点の区域を含む。FAQ 行 44）であること。

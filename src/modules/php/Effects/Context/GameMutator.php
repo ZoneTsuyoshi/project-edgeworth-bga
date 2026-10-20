@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Context;
+namespace Bga\Games\projectedgeworth\Effects\Context;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Direction;
 
 /**
  * 効果エンジンがゲーム状態を書くための口。エンジン自身が書くのは起動効果の使用済みと [Use] の支払いだけで、

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * プロジェクトのタイプ（002 §3.2）。P001〜P033 が CREW、P034〜P066 が DEVICE、P067〜P099 が SOFTWARE。

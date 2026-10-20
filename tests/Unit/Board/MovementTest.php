@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Board\Movement;
-use Bga\Games\ProjectEdgeworth\Board\SatellitePosition;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Movement;
+use Bga\Games\projectedgeworth\Board\SatellitePosition;
 use PHPUnit\Framework\TestCase;
 
 /** RB p.18 例 1〜3（003 §4.2）。W = 12（2×4）、P = 0 の盤面で検証する。 */

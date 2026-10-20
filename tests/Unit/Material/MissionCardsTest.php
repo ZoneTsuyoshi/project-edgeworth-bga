@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\MissionCards;
+use Bga\Games\projectedgeworth\Material\MissionCards;
 use PHPUnit\Framework\TestCase;
 
 final class MissionCardsTest extends TestCase

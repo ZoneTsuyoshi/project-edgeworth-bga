@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Context;
+namespace Bga\Games\projectedgeworth\Effects\Context;
 
 /**
  * 効果エンジンがゲーム状態を読むための口（011 §1 の 5 層目）。実装は `Data/`・`Flow/` 側（状態 30〜32 の結線のとき）。

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * プロジェクトカードの置き場所（010 §4.2）。

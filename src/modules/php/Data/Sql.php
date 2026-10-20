@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * SQL の値リテラルを組み立てる小さな補助（リポジトリ内部用）。

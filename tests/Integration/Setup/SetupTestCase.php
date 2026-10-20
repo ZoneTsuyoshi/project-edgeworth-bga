@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Setup\GameOptions;
-use Bga\Games\ProjectEdgeworth\Setup\GameSetup;
-use Bga\Games\ProjectEdgeworth\Setup\SetupPlayer;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Setup\GameOptions;
+use Bga\Games\projectedgeworth\Setup\GameSetup;
+use Bga\Games\projectedgeworth\Setup\SetupPlayer;
 use ProjectEdgeworthTests\Support\ArrayGlobals;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 use ProjectEdgeworthTests\Support\Schema;

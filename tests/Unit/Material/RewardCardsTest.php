@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\RewardCards;
-use Bga\Games\ProjectEdgeworth\Material\RewardClass;
-use Bga\Games\ProjectEdgeworth\Material\RewardMark;
+use Bga\Games\projectedgeworth\Material\RewardCards;
+use Bga\Games\projectedgeworth\Material\RewardClass;
+use Bga\Games\projectedgeworth\Material\RewardMark;
 use PHPUnit\Framework\TestCase;
 
 final class RewardCardsTest extends TestCase

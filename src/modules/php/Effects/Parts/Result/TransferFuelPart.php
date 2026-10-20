@@ -7,16 +7,16 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\SatelliteState;
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Effects\Context\SatelliteState;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
 
 /**
  * R06 `TRANSFER_FUEL`（P038）: 打ち上げた衛星（イベントの衛星）の燃料を、残り燃料の範囲で好きなだけ減らし、自分の他の稼働中の衛星 1 機の燃料を

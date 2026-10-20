@@ -7,19 +7,19 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionContext;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\HookKind;
-use Bga\Games\ProjectEdgeworth\Material\PartCategory;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionContext;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Material\EffectCatalog;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\HookKind;
+use Bga\Games\projectedgeworth\Material\PartCategory;
 
 /**
  * 修正の問い合わせ（011 §3-2）の共通の骨組み。プレイヤーの効果のカードから、そのフックの修正・禁止を集めて畳み込む。

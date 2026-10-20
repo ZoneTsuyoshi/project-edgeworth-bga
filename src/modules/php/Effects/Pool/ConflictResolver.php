@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Pool;
+namespace Bga\Games\projectedgeworth\Effects\Pool;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\ResourceScope;
-use Bga\Games\ProjectEdgeworth\Material\ResourceSymbol;
-use Bga\Games\ProjectEdgeworth\Material\ResourceTouch;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\ResourceScope;
+use Bga\Games\projectedgeworth\Material\ResourceSymbol;
+use Bga\Games\projectedgeworth\Material\ResourceTouch;
 
 /**
  * 資源の衝突の判定（007 §6-2、011 §6-4）。衝突が連なる効果を 1 つの集合（連結成分）にまとめる。

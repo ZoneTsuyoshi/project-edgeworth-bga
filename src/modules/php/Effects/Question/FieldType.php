@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 /**
  * 問いのフィールドの型（011 §6-2、8 種）。

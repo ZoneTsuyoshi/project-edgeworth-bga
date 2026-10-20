@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 通信確立の一斉コミットの結果（007 §7-3 の世代 1 つ分）。

@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\RegionRepository;
-use Bga\Games\ProjectEdgeworth\Setup\LaunchPadPlacement;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Setup\LaunchPadPlacement;
 use ProjectEdgeworthTests\Support\SeededRandom;
 
 final class LaunchPadPlacementTest extends SetupTestCase

@@ -83,7 +83,7 @@ src/
 ├── projectedgeworth.css         # スタイル（1 ファイル）
 ├── modules/
 │   ├── php/
-│   │   ├── Game.php             # Bga\Games\ProjectEdgeworth\Game。薄く保つ（§5.1）
+│   │   ├── Game.php             # Bga\Games\projectedgeworth\Game。薄く保つ（§5.1）
 │   │   ├── Material/            # 不変のマスターデータ（カード定義、列挙）
 │   │   ├── Board/               # 六角形の盤面の純粋な計算（BGA・DB に依存しない）
 │   │   ├── Data/                # DB アクセス（Database、リポジトリ、グローバル値）

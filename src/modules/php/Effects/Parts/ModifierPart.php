@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * 修正部品 M01〜M13（011 §5-1）。状態を持たず、状態を変えない。複数あれば加算で重なる（007 §5-1）。

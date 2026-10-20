@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Direction;
 
 /**
  * 循環フェイズで扱う稼働中の衛星 1 機（不変）。DB に依存しない。

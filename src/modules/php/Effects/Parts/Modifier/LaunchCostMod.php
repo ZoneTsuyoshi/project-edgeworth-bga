@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Modifier;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ModifierPart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\CostBreakdown;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Parts\ModifierPart;
+use Bga\Games\projectedgeworth\Effects\Query\CostBreakdown;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * M02 `LAUNCH_COST_MOD`: 打ち上げコストを引く（011 §2-3、007 §5-3）。打ち上げる衛星は非稼働のまま評価するので、`ACTIVE_ONLY` の

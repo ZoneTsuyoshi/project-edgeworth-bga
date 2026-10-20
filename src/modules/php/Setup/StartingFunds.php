@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardFace;
 
 /**
  * 初期資金（001 §2-2、§5 手順 15）。席順（1 番手が基準プレイヤー。Q-07）で決まり、

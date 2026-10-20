@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 /**
  * 問いのフィールド 1 つ（011 §6-1）。`key` が答え（`Answer::$fields`）の鍵になる。

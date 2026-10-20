@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { checkSources } from './check-method-prefix.mjs';
 
-const NS = 'namespace Bga\\Games\\ProjectEdgeworth;\n';
+const NS = 'namespace Bga\\Games\\projectedgeworth;\n';
 const check = (...codes) => checkSources(codes.map((code, i) => ({ path: `f${i}.php`, code: `<?php\n${code}` })));
 const fails = (r, re) => r.errors.some((e) => re.test(e));
 
@@ -83,7 +83,7 @@ test('基底クラスを挟んだ継承も対象（別ファイル）', () => {
 });
 
 test('フレームワークを継承しないクラス・インターフェース・enum は対象外', () => {
-  const r = check(`namespace Bga\\Games\\ProjectEdgeworth\\Flow;
+  const r = check(`namespace Bga\\Games\\projectedgeworth\\Flow;
 class Calc { function calc() {} }
 interface I { function foo(); }
 enum E: string { case A = 'a'; function label() {} }`);

@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\MissionShapes;
-use Bga\Games\ProjectEdgeworth\Scoring\FameCalculator;
-use Bga\Games\ProjectEdgeworth\Scoring\FameResult;
-use Bga\Games\ProjectEdgeworth\Scoring\HandCashOut;
-use Bga\Games\ProjectEdgeworth\Scoring\PlayerState;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\MissionShapes;
+use Bga\Games\projectedgeworth\Scoring\FameCalculator;
+use Bga\Games\projectedgeworth\Scoring\FameResult;
+use Bga\Games\projectedgeworth\Scoring\HandCashOut;
+use Bga\Games\projectedgeworth\Scoring\PlayerState;
 use PHPUnit\Framework\TestCase;
 
 final class FameCalculatorTest extends TestCase
@@ -27,7 +27,7 @@ final class FameCalculatorTest extends TestCase
     /**
      * 001 §12-1 のテレサ（青）。ARCH は 2 段階（〇+◎）、LOCK は 1 段階（〇）で、区域は重ならない。
      *
-     * @return array{list<PlayerState>, list<int>, \Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard}
+     * @return array{list<PlayerState>, list<int>, \Bga\Games\projectedgeworth\Scoring\ScoringBoard}
      */
     private function teresaGame(): array
     {

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果文・アクション文面（002 §5〜§6・§9。日本語は印刷どおり、英語は翻訳の原文）。

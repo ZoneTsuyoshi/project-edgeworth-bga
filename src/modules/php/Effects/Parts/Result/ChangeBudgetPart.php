@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
 
 /**
  * R02 `CHANGE_BUDGET`: 予算を上げる（上限なし）。`amount`、`perDevice`（この衛星の DEVICE の枚数 1 枚につき。P042。解決の時点で数える）。

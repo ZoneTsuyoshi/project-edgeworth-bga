@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
 /**
  * 窓を閉じたときの結果。logs から通知（保留通知のバリアでの一斉送信。010 §10.5）を組み立てる。

@@ -7,18 +7,18 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameMutator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Effects\EffectViolation;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Material\CostKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\PartCategory;
+use Bga\Games\projectedgeworth\Effects\Context\GameMutator;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\EffectViolation;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Material\CostKind;
+use Bga\Games\projectedgeworth\Material\EffectCatalog;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\PartCategory;
 
 /**
  * `PROPOSAL_OPTIONS`（P068・P070・P072。011 §6-5）: 企画の「残すカードの選択」（状態 91）に含める効果。窓を開かない。

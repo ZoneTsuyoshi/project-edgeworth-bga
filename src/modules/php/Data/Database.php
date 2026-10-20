@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * DB 操作の最小限の口（010 §12.2）。BGA の静的メソッドを直接呼ばないことで、データ層を差し替え可能にする。

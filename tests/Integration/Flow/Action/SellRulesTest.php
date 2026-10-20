@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Flow\Action\RuleViolation;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 
 final class SellRulesTest extends ActionTestCase
 {

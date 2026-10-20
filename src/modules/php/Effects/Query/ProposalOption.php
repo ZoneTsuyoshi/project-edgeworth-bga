@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
 /**
  * 企画（91）の残すカードの選択で使えるオプション 1 つ（011 §6-5）。P070 は `EXTRA_DISCARD`（手札から追加で 1 枚捨てて `reward` マヤ）、

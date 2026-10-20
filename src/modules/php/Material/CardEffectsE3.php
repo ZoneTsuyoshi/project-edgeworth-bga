@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * E-3（任意の効果と問い。011 §8）の効果の定義。[Use] / [Skip] と支払い、起動の修正（`USE_MODS`）、EUROPA の宣言、企画のオプション、

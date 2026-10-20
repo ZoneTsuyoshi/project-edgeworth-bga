@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 衛星コマの移動（003 §4.2）。 */
 final class Movement

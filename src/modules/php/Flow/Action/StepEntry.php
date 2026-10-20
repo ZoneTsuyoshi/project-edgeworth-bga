@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 同時選択のステップに入った結果（009 §5.2）。

@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\ConflictResolver;
-use Bga\Games\ProjectEdgeworth\Material\CardEffects;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\ResourceScope;
-use Bga\Games\ProjectEdgeworth\Material\ResourceSymbol;
-use Bga\Games\ProjectEdgeworth\Material\ResourceTouch;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Pool\ConflictResolver;
+use Bga\Games\projectedgeworth\Material\CardEffects;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\ResourceScope;
+use Bga\Games\projectedgeworth\Material\ResourceSymbol;
+use Bga\Games\projectedgeworth\Material\ResourceTouch;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
 use ProjectEdgeworthTests\Support\Effects\TestSpecs;
 

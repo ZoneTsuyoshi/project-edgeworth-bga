@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow;
 
-use Bga\Games\ProjectEdgeworth\Flow\EndCondition;
-use Bga\Games\ProjectEdgeworth\Flow\PlayerProgress;
+use Bga\Games\projectedgeworth\Flow\EndCondition;
+use Bga\Games\projectedgeworth\Flow\PlayerProgress;
 use PHPUnit\Framework\TestCase;
 
 /** 001 §10、009 §10。 */

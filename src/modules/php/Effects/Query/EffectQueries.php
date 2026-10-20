@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Material\Hook;
 
 /**
  * 修正の問い合わせ 11 種（011 §3-2）の型付きの入口。`ModifierQuery::fold()` に基本値と戻り値の型を与えるだけの薄い層。

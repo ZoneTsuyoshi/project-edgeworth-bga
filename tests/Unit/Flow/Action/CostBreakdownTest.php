@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Flow\Action\DeployCost;
-use Bga\Games\ProjectEdgeworth\Flow\Action\LinkCost;
+use Bga\Games\projectedgeworth\Flow\Action\DeployCost;
+use Bga\Games\projectedgeworth\Flow\Action\LinkCost;
 use PHPUnit\Framework\TestCase;
 
 final class CostBreakdownTest extends TestCase

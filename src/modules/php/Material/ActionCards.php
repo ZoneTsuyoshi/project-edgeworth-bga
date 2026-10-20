@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * アクションカード 5 枚（A001〜A005）の定義（002 §9）。文面は CardTexts::ACTION。

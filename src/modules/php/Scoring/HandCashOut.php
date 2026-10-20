@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
 /**
  * ゲーム終了時の手札の自動換金（001 §10、Q-12）。1 枚 3 マヤ。

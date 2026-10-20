@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /** 終了判定・進行度の入力となる、1 人の状況。 */
 final class PlayerProgress

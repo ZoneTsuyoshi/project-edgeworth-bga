@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class SatelliteRepositoryTest extends DatabaseTestCase

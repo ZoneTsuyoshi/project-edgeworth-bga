@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
 /**
  * 褒賞カード 1 枚の順位と名声（001 §12-2、FAQ 行 76〜78）。

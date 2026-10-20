@@ -7,14 +7,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\ChangeBudgetPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\DrawCardsPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\GainMayaPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\KeepPlottedActionsPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\RecoverFuelPart;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\ChangeBudgetPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\DrawCardsPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\GainMayaPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\KeepPlottedActionsPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\RecoverFuelPart;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * E-2（強制の反応効果）の結果部品の登録: R01 `GAIN_MAYA`、R02 `CHANGE_BUDGET`、R03 `DRAW_CARDS`、R05 `RECOVER_FUEL`、R15 `KEEP_PLOTTED_ACTIONS`。

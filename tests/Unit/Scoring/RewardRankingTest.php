@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Scoring\RewardRanking;
+use Bga\Games\projectedgeworth\Scoring\RewardRanking;
 use PHPUnit\Framework\TestCase;
 
 final class RewardRankingTest extends TestCase

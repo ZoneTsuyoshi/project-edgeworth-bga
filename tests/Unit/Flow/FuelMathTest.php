@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow;
 
-use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
+use Bga\Games\projectedgeworth\Flow\FuelMath;
 use PHPUnit\Framework\TestCase;
 
 /** 001 §4-4 と FAQ 行 13〜15・18・19。 */

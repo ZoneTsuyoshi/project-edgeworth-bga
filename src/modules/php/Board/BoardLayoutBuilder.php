@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * ボード配置の生成（003 §2.2〜§2.4）。乱数は注入する。

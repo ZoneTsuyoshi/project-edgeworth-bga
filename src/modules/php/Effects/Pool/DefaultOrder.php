@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Pool;
+namespace Bga\Games\projectedgeworth\Effects\Pool;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /**
  * デフォルトの順（007 §6-3、Q-15）: 衛星は衛星カードの形状順（HAMMER、RETRO、SCALLOP、CONCORDE、STEALTH）、

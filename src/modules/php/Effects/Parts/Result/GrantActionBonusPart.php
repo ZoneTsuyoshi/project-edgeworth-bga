@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
 
 /**
  * R14 `GRANT_ACTION_BONUS`（R016〜R020 EUROPA）: 自分でそのアクションを選んでいなくても、そのアクション選択ボーナスを得る権利を宣言する。

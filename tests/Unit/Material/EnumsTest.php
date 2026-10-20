@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectTiming;
-use Bga\Games\ProjectEdgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectTiming;
+use Bga\Games\projectedgeworth\Material\Region;
 use PHPUnit\Framework\TestCase;
 
 final class EnumsTest extends TestCase

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * アクションフェイズの 2 つのステップ（001 §7-1）。メインは全員、ボーナスはそのアクションを自分で選んだプレイヤーだけ。

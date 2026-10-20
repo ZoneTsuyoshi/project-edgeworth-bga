@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class LinkRepositoryTest extends DatabaseTestCase

@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\HeldNotificationRepository;
+use Bga\Games\projectedgeworth\Data\HeldNotificationRepository;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class HeldNotificationRepositoryTest extends DatabaseTestCase

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * mission_card テーブル（10 行。010 §6.2）。本人以外には番号を送らない。配られなかったカードの存在も送らない。

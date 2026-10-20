@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * 条件 K01〜K13 の評価（011 §2-6）。`EffectSpec::$conditions` はすべて満たすときだけ成立する（AND）。

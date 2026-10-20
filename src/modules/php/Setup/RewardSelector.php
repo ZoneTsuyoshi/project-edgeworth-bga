@@ -7,14 +7,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
-use Bga\Games\ProjectEdgeworth\Material\RewardCardDefinition;
-use Bga\Games\ProjectEdgeworth\Material\RewardCards;
-use Bga\Games\ProjectEdgeworth\Material\RewardClass;
-use Bga\Games\ProjectEdgeworth\Material\RewardMark;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Material\RewardCardDefinition;
+use Bga\Games\projectedgeworth\Material\RewardCards;
+use Bga\Games\projectedgeworth\Material\RewardClass;
+use Bga\Games\projectedgeworth\Material\RewardMark;
 
 /**
  * 褒賞 2 面の選択（001 §3-3、002 §7）。24 面を独立に扱う（010 §6.3）。

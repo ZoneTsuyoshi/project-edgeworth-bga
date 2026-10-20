@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K05 `LINK_AREA_KIND`: 通信確立する区域が陸（`LAND`）か海（`SEA`）か。森林・山岳・雪原は陸、深海・岩礁は海（総称。`AreaType`）。

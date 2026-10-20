@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\ActionCardRepository;
+use Bga\Games\projectedgeworth\Data\ActionCardRepository;
 
 /**
  * 計画フェイズ（001 §6-1、008 §3-1、009 の 21〜23）。

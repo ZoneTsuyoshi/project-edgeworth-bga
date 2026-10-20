@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\ProposalDiscardScopeMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\ProposalKeepPurchaseMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\DiscardHandPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\GrantActionBonusPart;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\ProposalDiscardScopeMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\ProposalKeepPurchaseMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\DiscardHandPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\GrantActionBonusPart;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * E-3（任意の効果と問い。011 §8）の部品の登録: R04 `DISCARD_HAND`、R14 `GRANT_ACTION_BONUS`、M07 `PROPOSAL_DISCARD_SCOPE`、

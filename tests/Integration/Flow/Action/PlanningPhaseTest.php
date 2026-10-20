@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\ActionCardState;
-use Bga\Games\ProjectEdgeworth\Flow\Action\RuleViolation;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Data\ActionCardState;
+use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 
 final class PlanningPhaseTest extends ActionTestCase
 {

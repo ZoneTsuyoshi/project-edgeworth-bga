@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Material\OptionId;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Material\OptionId;
 
 /**
  * セットアップに関わるゲームオプションの解釈結果（004 §7、001 §3）。

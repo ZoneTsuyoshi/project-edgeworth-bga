@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 地域ボードの面。1 ゲームで混ぜない（003 §2.4）。 */
 enum BoardFace: string

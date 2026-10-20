@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\ActiveCondition;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectTiming;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\ActiveCondition;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectTiming;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\ProjectType;
 use PHPUnit\Framework\TestCase;
 
 final class ProjectCardsTest extends TestCase

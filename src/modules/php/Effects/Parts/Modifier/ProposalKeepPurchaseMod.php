@@ -7,14 +7,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Modifier;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ModifierPart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\ProposalOption;
-use Bga\Games\ProjectEdgeworth\Effects\Query\ProposalOptionPlan;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Parts\ModifierPart;
+use Bga\Games\projectedgeworth\Effects\Query\ProposalOption;
+use Bga\Games\projectedgeworth\Effects\Query\ProposalOptionPlan;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * M08 `PROPOSAL_KEEP_PURCHASE`（P072）: 引いたカードを見てから、マヤを払って残す枚数を増やす。`tiers` = 支払い額 => 増分（4 / 7 / 10 → +1 / +2 / +3）。

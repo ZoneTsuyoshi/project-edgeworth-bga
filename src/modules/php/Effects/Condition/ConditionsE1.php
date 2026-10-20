@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Material\ConditionId;
 
 /**
  * E-1 の条件（K03・K06・K12）を `ConditionEvaluator` に登録する（011 §8）。K01・K02 は `ConditionEvaluator` が最初から持つ。

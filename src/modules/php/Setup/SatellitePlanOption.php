@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
 /** 衛星プランのオプション（ゲームオプション 103。001 §3-4）。 */
 enum SatellitePlanOption: int

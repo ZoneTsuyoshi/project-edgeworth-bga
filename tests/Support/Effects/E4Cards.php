@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
 
 /**
  * 011 §8 の E-4（衛星の操作）11 種のカード。

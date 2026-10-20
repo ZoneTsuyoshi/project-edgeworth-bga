@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Context;
+namespace Bga\Games\projectedgeworth\Effects\Context;
 
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /**
  * 効果を持つカード 1 枚（プロジェクトカードまたは衛星カード）の、その時点の状態。`GameView` が作る。

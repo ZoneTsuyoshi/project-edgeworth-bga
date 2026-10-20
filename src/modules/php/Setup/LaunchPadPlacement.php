@@ -7,15 +7,15 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\LaunchSiteSelector;
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\LaunchSiteSelector;
+use Bga\Games\projectedgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
 
 /**
  * 発射拠点の配置に必要な問い合わせ（001 §5 手順 10、009 §3.3・§9.2）。配置そのもの（状態 10・11）は I-07 以降。

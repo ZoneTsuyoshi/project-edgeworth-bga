@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Material\ConditionId;
 
 /**
  * E-2 で使う条件 K07〜K11 の登録。K07 は盤面（通信確立済みの区域）を読むので `GameView` が要る。

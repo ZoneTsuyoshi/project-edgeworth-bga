@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
 
 /** 燃料の表現（001 §4-4）。c は消費量、C は燃料庫の数。 */
 final class FuelMath

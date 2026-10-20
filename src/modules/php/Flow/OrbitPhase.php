@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 
 /**
  * 循環フェイズの DB への反映（001 §9、009 の 100 OrbitDriver）。計算は OrbitResolver、ここは読み書きだけ。

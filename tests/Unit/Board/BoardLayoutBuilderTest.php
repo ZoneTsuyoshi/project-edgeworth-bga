@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayoutBuilder;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Board\RegionBoards;
-use Bga\Games\ProjectEdgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\BoardLayoutBuilder;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Board\RegionBoards;
+use Bga\Games\projectedgeworth\Material\Region;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

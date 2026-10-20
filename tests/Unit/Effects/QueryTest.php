@@ -9,34 +9,34 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ModifierPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Query\CostBreakdown;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EngineActionHooks;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EngineOrbitModifiers;
-use Bga\Games\ProjectEdgeworth\Effects\Query\ModifierQuery;
-use Bga\Games\ProjectEdgeworth\Effects\Query\NearMissAdjust;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitSatellite;
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
-use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Parts\ModifierPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Query\CostBreakdown;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Effects\Query\EngineActionHooks;
+use Bga\Games\projectedgeworth\Effects\Query\EngineOrbitModifiers;
+use Bga\Games\projectedgeworth\Effects\Query\ModifierQuery;
+use Bga\Games\projectedgeworth\Effects\Query\NearMissAdjust;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Flow\OrbitSatellite;
+use Bga\Games\projectedgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Material\EffectCatalog;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\Effects\ArrayCatalog;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
 use ProjectEdgeworthTests\Support\Effects\SampleParts;
@@ -96,7 +96,7 @@ final class QueryTest extends EffectsTestCase
         $b = $game->satellite(1, SatelliteShape::Retro);
         $game->deploy($a, 'P010');
         $catalog = new ArrayCatalog([
-            ...array_values(\Bga\Games\ProjectEdgeworth\Material\CardEffects::all()),
+            ...array_values(\Bga\Games\projectedgeworth\Material\CardEffects::all()),
             TestSpecs::spec('pseudo_all', Hook::DeployCost, PartId::DeployCostMod, params: ['delta' => -1]),
         ]);
         $game->satellite(1, SatelliteShape::Scallop, true, 'pseudo_all');
@@ -219,7 +219,7 @@ final class QueryTest extends EffectsTestCase
         $sat = $game->satellite(1, SatelliteShape::Hammer);
         $other = $game->satellite(1, SatelliteShape::Retro);
         $game->deploy($sat, 'P010');
-        $hooks = new EngineActionHooks($this->queries($game, new \Bga\Games\ProjectEdgeworth\Material\CardEffectCatalog()));
+        $hooks = new EngineActionHooks($this->queries($game, new \Bga\Games\projectedgeworth\Material\CardEffectCatalog()));
         $target = $this->satelliteRow($game, $sat);
         $otherRow = $this->satelliteRow($game, $other, SatelliteShape::Retro);
 

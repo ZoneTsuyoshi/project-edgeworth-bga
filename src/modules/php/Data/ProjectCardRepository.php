@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Board\RandomSource;
 
 /**
  * project_card テーブルの唯一の読み書き口（010 §4.4）。

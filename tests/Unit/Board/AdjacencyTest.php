@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\Cell;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\Cell;
+use Bga\Games\projectedgeworth\Board\Direction;
 use PHPUnit\Framework\TestCase;
 
 final class AdjacencyTest extends TestCase

@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K03 `FULL_TYPES`: 該当の衛星（イベントまたは問い合わせの衛星。なければ効果を持つカードのある衛星）に CREW・DEVICE・SOFTWARE が

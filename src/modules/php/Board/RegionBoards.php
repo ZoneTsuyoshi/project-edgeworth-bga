@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * 地域ボード 16 面の区域配置（003 §3.3・§3.4）。ローカル座標 (lr, lc) は 0〜2。

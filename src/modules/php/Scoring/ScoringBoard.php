@@ -7,13 +7,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Material\Region;
 
 /**
  * 名声計算が使う盤面の情報（区域の種類・地域・隣接）。BoardLayout から作る（テストでは直接作れる）。

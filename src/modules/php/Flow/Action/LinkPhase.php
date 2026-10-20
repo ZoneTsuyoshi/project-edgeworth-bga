@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\Satellite;
 
 /**
  * IV 通信確立（001 §7-5・§8、008 §3-4・§3-5、009 の 80〜82）。

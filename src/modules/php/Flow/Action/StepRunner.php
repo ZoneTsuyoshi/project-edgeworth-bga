@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\ChoiceRepository;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Data\ChoiceRepository;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
 
 /**
  * 全員同時の選択の共通パターン（009 §5.2、008 §2-1）を、Table に依存せずに行う。状態クラス（I-07）はこれを呼ぶだけにする。

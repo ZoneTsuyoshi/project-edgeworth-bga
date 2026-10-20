@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

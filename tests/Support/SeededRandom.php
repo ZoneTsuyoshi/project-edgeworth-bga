@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support;
 
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Board\RandomSource;
 
 /**
  * 種を指定できる乱数（線形合同法）。bga_rand の代わりに渡す。結果は種ごとに再現できる。

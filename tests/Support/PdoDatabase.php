@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support;
 
-use Bga\Games\ProjectEdgeworth\Data\Database;
+use Bga\Games\projectedgeworth\Data\Database;
 
 /**
  * データ層の Database インターフェースを PDO で実装したテスト用クラス。本番コードには入れない。

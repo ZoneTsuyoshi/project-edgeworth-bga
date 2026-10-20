@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 褒賞カード 1 面の定義（002 §7.1）。`points` は 1 位から 4 位の名声。

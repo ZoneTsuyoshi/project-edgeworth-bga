@@ -9,21 +9,21 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\CardEffects;
-use Bga\Games\ProjectEdgeworth\Material\ConditionId;
-use Bga\Games\ProjectEdgeworth\Material\CostKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\HookKind;
-use Bga\Games\ProjectEdgeworth\Material\PartCategory;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\ResourceSymbol;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
-use Bga\Games\ProjectEdgeworth\Material\ActiveCondition;
-use Bga\Games\ProjectEdgeworth\Material\EffectTiming;
+use Bga\Games\projectedgeworth\Material\CardEffects;
+use Bga\Games\projectedgeworth\Material\ConditionId;
+use Bga\Games\projectedgeworth\Material\CostKind;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\HookKind;
+use Bga\Games\projectedgeworth\Material\PartCategory;
+use Bga\Games\projectedgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\ResourceSymbol;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Material\ActiveCondition;
+use Bga\Games\projectedgeworth\Material\EffectTiming;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

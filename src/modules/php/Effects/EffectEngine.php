@@ -7,32 +7,32 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectContext;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameMutator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\ConflictResolver;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\DefaultOrder;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\PlanKind;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\PoolItem;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\PoolItemStatus;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\ResolvePlan;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\TriggerCollector;
-use Bga\Games\ProjectEdgeworth\Effects\Pool\WindowState;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\AnswerValidator;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Question;
-use Bga\Games\ProjectEdgeworth\Material\CostKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\projectedgeworth\Effects\Context\EffectContext;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Context\GameMutator;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Parts\ResultPart;
+use Bga\Games\projectedgeworth\Effects\Pool\ConflictResolver;
+use Bga\Games\projectedgeworth\Effects\Pool\DefaultOrder;
+use Bga\Games\projectedgeworth\Effects\Pool\PlanKind;
+use Bga\Games\projectedgeworth\Effects\Pool\PoolItem;
+use Bga\Games\projectedgeworth\Effects\Pool\PoolItemStatus;
+use Bga\Games\projectedgeworth\Effects\Pool\ResolvePlan;
+use Bga\Games\projectedgeworth\Effects\Pool\TriggerCollector;
+use Bga\Games\projectedgeworth\Effects\Pool\WindowState;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\AnswerValidator;
+use Bga\Games\projectedgeworth\Effects\Question\Question;
+use Bga\Games\projectedgeworth\Material\CostKind;
+use Bga\Games\projectedgeworth\Material\EffectCatalog;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * 効果エンジン: 窓の入口（011 §5-2）。状態 30〜32 は、問いを渡して答えを受けるだけで、プールの収集・衝突の判定・順序・解決は

@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\CardLocation;
 
 /**
  * V 企画（001 §7-6、008 §3-8、009 の 90・91）。

@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\NoActionHooks;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\NoActionHooks;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use PHPUnit\Framework\TestCase;
 
 /**

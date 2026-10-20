@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
 /**
  * 窓の答えがルールを満たさないときの例外。状態 31 は、これを捕まえて穏当な文言でプレイヤーに返す（008 §2-5）。

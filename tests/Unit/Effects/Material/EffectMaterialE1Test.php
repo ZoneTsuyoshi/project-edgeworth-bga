@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Material;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayoutBuilder;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartsE1;
-use Bga\Games\ProjectEdgeworth\Material\ActiveCondition;
-use Bga\Games\ProjectEdgeworth\Material\CardEffects;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardLayoutBuilder;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Parts\PartsE1;
+use Bga\Games\projectedgeworth\Material\ActiveCondition;
+use Bga\Games\projectedgeworth\Material\CardEffects;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
@@ -187,7 +187,7 @@ final class EffectMaterialE1Test extends TestCase
             $this->assertTrue($registry->has($part), "$cardId の部品 {$part->value} が登録されている");
         }
         // E-1 の部品は M01〜M06・M09〜M13 と F01 の 12 種（M07・M08 は E-3）
-        $registered = array_filter(\Bga\Games\ProjectEdgeworth\Material\PartId::cases(), static fn($p): bool => $registry->has($p));
+        $registered = array_filter(\Bga\Games\projectedgeworth\Material\PartId::cases(), static fn($p): bool => $registry->has($p));
         $this->assertCount(12, $registered);
     }
 }

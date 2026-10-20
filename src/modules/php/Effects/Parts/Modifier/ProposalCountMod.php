@@ -7,15 +7,15 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Modifier;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\ModifierPart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalPhase;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Parts\ModifierPart;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalPhase;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * M06 `PROPOSAL_COUNT_MOD`: 企画で引く枚数・残す枚数を変える（011 §2-3、007 §5-5 の ①〜③）。

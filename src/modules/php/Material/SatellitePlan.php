@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 衛星プラン（002 §3.1・§3.6）。MOON は全員共通の表面、他は色別プランの面。

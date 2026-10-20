@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
 /**
  * コストの内訳（007 §5-2〜§5-4）。修正は加算で重なり、下限 0 は全修正の後に 1 回だけ適用する。

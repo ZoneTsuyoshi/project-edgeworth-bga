@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 /**
  * 答えが問いのフィールドの候補に含まれるかの共通の検証（011 §6-2。zombie の既定の答えも同じ検証を通す）。

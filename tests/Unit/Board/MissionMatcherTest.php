@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\MissionMatcher;
-use Bga\Games\ProjectEdgeworth\Board\MissionShape;
-use Bga\Games\ProjectEdgeworth\Board\MissionShapes;
-use Bga\Games\ProjectEdgeworth\Board\MissionTier;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\MissionMatcher;
+use Bga\Games\projectedgeworth\Board\MissionShape;
+use Bga\Games\projectedgeworth\Board\MissionShapes;
+use Bga\Games\projectedgeworth\Board\MissionTier;
 use PHPUnit\Framework\TestCase;
 
 final class MissionMatcherTest extends TestCase

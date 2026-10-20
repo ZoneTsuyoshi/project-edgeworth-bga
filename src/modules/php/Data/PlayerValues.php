@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * player テーブルの追加列 maya・budget・pad_cell・fame_detail のアクセサ（010 §7.1）。

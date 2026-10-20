@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
-use Bga\Games\ProjectEdgeworth\Flow\NoOrbitModifiers;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitResolver;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitSatellite;
-use Bga\Games\ProjectEdgeworth\Material\Region;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Flow\FuelMath;
+use Bga\Games\projectedgeworth\Flow\NoOrbitModifiers;
+use Bga\Games\projectedgeworth\Flow\OrbitResolver;
+use Bga\Games\projectedgeworth\Flow\OrbitSatellite;
+use Bga\Games\projectedgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 use PHPUnit\Framework\TestCase;
 
 /** 001 §9 と RB p.18〜19 の例 1〜3・5・6、FAQ の循環・燃料の裁定。2×4 ボード（W = 12、P = 0）。 */

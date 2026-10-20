@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Bonus;
+namespace Bga\Games\projectedgeworth\Effects\Bonus;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Material\ActionKind;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Material\ActionKind;
+use Bga\Games\projectedgeworth\Material\Hook;
 
 /**
  * EUROPA（R016〜R020）の宣言（窓 `XD`。007 未確定 6）の入口。各フェイズで、フェイズ開始効果の後・メインのステップの前に、

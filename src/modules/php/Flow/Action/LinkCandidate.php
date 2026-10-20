@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 通信確立可能区域 1 つ（001 §7-5 の (i)(ii)）と、それを通信確立できる衛星の候補。

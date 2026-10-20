@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\ActiveCondition;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\EffectTiming;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Material\ActiveCondition;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectTiming;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use PHPUnit\Framework\TestCase;
 
 final class SatelliteCardsTest extends TestCase

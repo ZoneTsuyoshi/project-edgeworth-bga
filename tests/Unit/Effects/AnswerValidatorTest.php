@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\AnswerValidator;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\AnswerValidator;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
 use PHPUnit\Framework\TestCase;
 
 /**

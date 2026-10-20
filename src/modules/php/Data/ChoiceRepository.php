@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * choice テーブル = 同時選択の確定内容（010 §9.2・§9.3）。全員確定まで非公開。

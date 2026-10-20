@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 区域の種類（003 §3.1）。区域コスト・区域名声は 006 が使う。 */
 enum AreaType: string

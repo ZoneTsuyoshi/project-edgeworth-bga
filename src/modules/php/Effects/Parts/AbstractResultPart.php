@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\ValidationResult;
-use Bga\Games\ProjectEdgeworth\Material\EffectSpec;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\ValidationResult;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 
 /**
  * 結果部品の既定の振る舞い（1 段・いつでも使える・選択なし・検証は通る・zombie は辞退・見込みなし）。

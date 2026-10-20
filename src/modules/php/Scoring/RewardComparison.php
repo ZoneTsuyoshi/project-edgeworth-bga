@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\Region;
 
 /**
  * 褒賞カード 24 面（T001〜T024）の「比較内容」の値（002 §7、FAQ 行 79〜87）。

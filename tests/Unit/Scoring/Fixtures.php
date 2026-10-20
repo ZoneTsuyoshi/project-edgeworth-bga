@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\MissionShape;
-use Bga\Games\ProjectEdgeworth\Material\Region;
-use Bga\Games\ProjectEdgeworth\Scoring\LinkedCube;
-use Bga\Games\ProjectEdgeworth\Scoring\PlayerState;
-use Bga\Games\ProjectEdgeworth\Scoring\SatelliteState;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\MissionShape;
+use Bga\Games\projectedgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Scoring\LinkedCube;
+use Bga\Games\projectedgeworth\Scoring\PlayerState;
+use Bga\Games\projectedgeworth\Scoring\SatelliteState;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 
 /**
  * テスト用の盤面（8 枚の地域ボード = 24 列 × 6 行、偶数行が左寄せ）とプレイヤーの組み立て。

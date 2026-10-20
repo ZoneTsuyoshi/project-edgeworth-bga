@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Pool;
+namespace Bga\Games\projectedgeworth\Effects\Pool;
 
 enum PlanKind: string
 {

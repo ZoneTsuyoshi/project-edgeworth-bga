@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 use Bga\GameFramework\Db\Globals;
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardFace;
 
 /**
  * ゲーム全体の値（$this->bga->globals。010 §7.2）のアクセサ。キー名と初期値は 010 §7.2 の表に合わせる。

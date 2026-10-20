@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\RegionBoards;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\RegionBoards;
 use PHPUnit\Framework\TestCase;
 
 final class RegionBoardsTest extends TestCase

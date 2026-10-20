@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * E-5（配備。011 §8）の効果の定義: 手札からの配備（R09）、山札からの配備（R10）、付け替え（R12）。`touches` は 007 §10 の付表の「資源」列。

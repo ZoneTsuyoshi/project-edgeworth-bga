@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 1 回の通信確立の依頼（ステップのメイン / ボーナスの選択、または窓でステージされた効果による通信確立）。

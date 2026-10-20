@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * ミッションカード 1 枚の定義（002 §8.2）。マスは 002 §8.1 のアキシャル座標 (q, r)（pointy-top、原点は最上行の最左マス）。

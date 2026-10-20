@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Context;
+namespace Bga\Games\projectedgeworth\Effects\Context;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /**
  * 衛星 1 機のその時点の状態（E-4・E-5 の部品が読む。001 §4-4）。

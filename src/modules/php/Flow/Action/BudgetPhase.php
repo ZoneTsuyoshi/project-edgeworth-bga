@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\ActionCardRepository;
+use Bga\Games\projectedgeworth\Data\ActionCardRepository;
 
 /**
  * I 予算発行（001 §7-2、008 §3-9）。選択はない。メインは全員が予算の値だけマヤを得る（B1）。

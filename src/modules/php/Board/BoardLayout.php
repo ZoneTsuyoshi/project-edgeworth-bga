@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
-use Bga\Games\ProjectEdgeworth\Material\Region;
+use Bga\Games\projectedgeworth\Material\Region;
 
 /**
  * 生成済みの盤面（ボード配置）。区域ごとの種類・地域・元のローカル座標を引ける（003 §2）。

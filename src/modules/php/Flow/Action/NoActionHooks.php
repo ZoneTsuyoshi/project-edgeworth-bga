@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Data\Satellite;
 
 /**
  * 既定のフック: 効果による修正も禁止もない（カード効果は I-12 以降）。

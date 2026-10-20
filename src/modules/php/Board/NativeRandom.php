@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** PHP 標準の乱数（BGA 以外での利用・既定値用）。 */
 final class NativeRandom implements RandomSource

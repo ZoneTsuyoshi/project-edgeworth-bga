@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 褒賞の分類（002 §3.6・§7）。ゲームオプション「Random (1: Cube, 1: Other)」で使う。

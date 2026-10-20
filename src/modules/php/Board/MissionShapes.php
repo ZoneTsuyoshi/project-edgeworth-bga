@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
-use Bga\Games\ProjectEdgeworth\Material\MissionCards;
+use Bga\Games\projectedgeworth\Material\MissionCards;
 
 /**
  * ミッションカード 10 枚（M001〜M010）の形状（003 §8.1）。

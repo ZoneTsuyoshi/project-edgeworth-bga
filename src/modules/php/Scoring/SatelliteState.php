@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
 
 /**
  * 衛星 1 機の状態（名声計算・褒賞の比較値の入力）。

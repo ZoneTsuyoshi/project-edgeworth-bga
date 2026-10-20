@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\CubeSlots;
+use Bga\Games\projectedgeworth\Board\CubeSlots;
 use PHPUnit\Framework\TestCase;
 
 final class CubeSlotsTest extends TestCase

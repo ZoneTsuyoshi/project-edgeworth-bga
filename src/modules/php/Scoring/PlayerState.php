@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
 /**
  * 名声計算・褒賞の比較値の入力となる、1 人のプレイヤーの状態。

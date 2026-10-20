@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
 
 /**
  * III 打ち上げ・転回（001 §7-4、008 §3-2・§3-3、009 の 70〜72）。

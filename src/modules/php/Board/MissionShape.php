@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * ミッション 1 枚の形状（003 §8.1）。セルはダブルド座標 (row, x) の相対位置。

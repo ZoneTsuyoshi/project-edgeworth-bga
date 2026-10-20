@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\StagedLinkRequest;
+use Bga\Games\projectedgeworth\Effects\Context\StagedLinkRequest;
 
 /**
  * 窓を開いた直後（30）・バリア（32）の報告。

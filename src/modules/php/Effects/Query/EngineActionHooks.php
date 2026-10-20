@@ -7,17 +7,17 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ActionHooks;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Material\ActionKind;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Material\ActionKind;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
 
 /**
  * 効果エンジンにつないだ `ActionHooks`（`NoActionHooks` の差し替え。011 §3-2）。

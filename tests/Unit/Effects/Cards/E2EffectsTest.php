@@ -9,17 +9,17 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Cards;
 
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionsE2;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\EffectEngine;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartsE2;
-use Bga\Games\ProjectEdgeworth\Effects\WindowResult;
-use Bga\Games\ProjectEdgeworth\Material\CardEffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionsE2;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\EffectEngine;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Parts\PartsE2;
+use Bga\Games\projectedgeworth\Effects\WindowResult;
+use Bga\Games\projectedgeworth\Material\CardEffectCatalog;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\Effects\E2Cards;

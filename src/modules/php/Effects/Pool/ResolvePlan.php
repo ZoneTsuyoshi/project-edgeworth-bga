@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Pool;
+namespace Bga\Games\projectedgeworth\Effects\Pool;
 
 /**
  * 1 人分のプールの「次にすること」（011 §5-3 の `advance(p)` の分岐）。

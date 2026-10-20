@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Context;
+namespace Bga\Games\projectedgeworth\Effects\Context;
 
 /**
  * ステージに積まれた通信確立（007 §7-3）。コミットは状態 32 のバリアで全員分を一斉に行う。

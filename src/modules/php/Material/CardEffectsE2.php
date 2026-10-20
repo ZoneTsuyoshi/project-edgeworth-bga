@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * E-2（強制の反応効果。011 §8）の効果の定義。強制・選択なし・1 段の反応効果で、計画 / 予算 / 配備 / 打ち上げ / 転回 / 通信確立 /

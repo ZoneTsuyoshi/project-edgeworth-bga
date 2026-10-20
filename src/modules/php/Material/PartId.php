@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果の部品（011 §2-2〜§2-4、29 種: 結果 15・修正 13・禁止 1）。値は 011 の部品名。

@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Setup\StartingFunds;
-use Bga\Games\ProjectEdgeworth\Setup\SetupPlayer;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Setup\StartingFunds;
+use Bga\Games\projectedgeworth\Setup\SetupPlayer;
 use PHPUnit\Framework\TestCase;
 
 final class StartingFundsTest extends TestCase

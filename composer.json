@@ -11,7 +11,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Bga\\Games\\ProjectEdgeworth\\": "src/modules/php/"
+            "Bga\\Games\\projectedgeworth\\": "src/modules/php/"
         }
     },
     "autoload-dev": {

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 1 枚のミッションの達成候補（配置 × 段階）。 */
 final class MissionCandidate

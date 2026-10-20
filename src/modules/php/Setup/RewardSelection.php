@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Setup;
+namespace Bga\Games\projectedgeworth\Setup;
 
 /** 褒賞カードの選び方（ゲームオプション 102。001 §3-3）。 */
 enum RewardSelection: int

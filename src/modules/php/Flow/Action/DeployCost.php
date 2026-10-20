@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 配備コストの内訳（007 §5-2）。total = max(0, base + activeSurcharge − reduction)。下限 0 は最後に 1 回だけ。

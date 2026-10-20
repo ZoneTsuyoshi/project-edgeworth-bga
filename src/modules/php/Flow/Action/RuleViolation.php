@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 選択がルールを満たさないときの例外。状態クラスは、これを捕まえて穏当な文言でプレイヤーに返す（008 §2-5）。

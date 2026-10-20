@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /** 修正なし（001 §9 の基本ルールのまま）。一部だけ変えるときは継承して上書きする。 */
 class NoOrbitModifiers implements OrbitModifiers

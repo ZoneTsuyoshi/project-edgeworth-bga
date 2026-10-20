@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果の定義（011 §4-2）。1 カード 1 効果で、`cardKey`（`name_id`）をキーに `CardEffects` が持つ。不変のデータで、振る舞いは持たない。

@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Data\Satellite;
 
 /**
  * あるプロジェクトカードを配備する先の衛星 1 機と、その場合のコスト・選べない理由（008 §3-6）。

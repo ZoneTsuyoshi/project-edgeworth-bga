@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Flow\RoundEnd;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Flow\RoundEnd;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /** 009 の 110 EndCheck と 001 §10。 */
 final class RoundEndTest extends FlowTestCase

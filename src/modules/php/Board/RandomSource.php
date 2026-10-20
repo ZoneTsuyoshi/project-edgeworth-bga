@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 乱数の注入口。BGA では bga_rand を包み、テストでは固定列を返す。 */
 interface RandomSource

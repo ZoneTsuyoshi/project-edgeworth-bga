@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Pool;
+namespace Bga\Games\projectedgeworth\Effects\Pool;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\StagedLinkRequest;
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Context\StagedLinkRequest;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
 
 /**
  * 開いている窓 1 つ分の状態（プール、プレイヤーが選んだ順序、解決した効果の数、溜めたログ、ステージされた通信確立）。

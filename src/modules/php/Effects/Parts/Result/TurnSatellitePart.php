@@ -7,21 +7,21 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Material\Hook;
 
 /**
  * R08 `TURN_SATELLITE`: このカードのある衛星の向きを変える（P044・P048・P090・P095）。向きは斜めの 4 方向から選び、現在の向きも選べる

@@ -9,25 +9,25 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayoutBuilder;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionEvaluator;
-use Bga\Games\ProjectEdgeworth\Effects\Condition\ConditionsE1;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartsE1;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EngineActionHooks;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EngineOrbitModifiers;
-use Bga\Games\ProjectEdgeworth\Effects\Query\ModifierQuery;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitSatellite;
-use Bga\Games\ProjectEdgeworth\Material\CardEffectCatalog;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteColor;
-use Bga\Games\ProjectEdgeworth\Material\SatellitePlan;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\BoardLayoutBuilder;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionEvaluator;
+use Bga\Games\projectedgeworth\Effects\Condition\ConditionsE1;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Parts\PartsE1;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Effects\Query\EngineActionHooks;
+use Bga\Games\projectedgeworth\Effects\Query\EngineOrbitModifiers;
+use Bga\Games\projectedgeworth\Effects\Query\ModifierQuery;
+use Bga\Games\projectedgeworth\Flow\OrbitSatellite;
+use Bga\Games\projectedgeworth\Material\CardEffectCatalog;
+use Bga\Games\projectedgeworth\Material\SatelliteColor;
+use Bga\Games\projectedgeworth\Material\SatellitePlan;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\SeededRandom;
 
 /**

@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K01 `EVENT_SATELLITE`: イベントの衛星が、このカードのある衛星 / 自分の他の衛星 / 自分のどれかであること。

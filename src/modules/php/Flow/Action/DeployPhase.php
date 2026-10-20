@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\Satellite;
 
 /**
  * II 配備（001 §7-3、008 §3-6・§3-7、009 の 60〜62）。セットアップ手順 16（round_no = 0）も同じルール。

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 衛星カード 40 面（MOON 面 R001B〜R005Y の 20 面、色別プランの面 R006〜R025 の 20 面）の定義（002 §6）。

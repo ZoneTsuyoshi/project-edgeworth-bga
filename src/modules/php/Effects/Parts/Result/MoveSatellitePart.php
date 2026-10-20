@@ -7,23 +7,23 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\Movement;
-use Bga\Games\ProjectEdgeworth\Board\SatellitePosition;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Context\SatelliteState;
-use Bga\Games\ProjectEdgeworth\Effects\LogEntry;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\AbstractResultPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
-use Bga\Games\ProjectEdgeworth\Effects\Question\ValidationResult;
-use Bga\Games\ProjectEdgeworth\Material\CostKind;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\Movement;
+use Bga\Games\projectedgeworth\Board\SatellitePosition;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Context\SatelliteState;
+use Bga\Games\projectedgeworth\Effects\LogEntry;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\AbstractResultPart;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Effects\Question\ValidationResult;
+use Bga\Games\projectedgeworth\Material\CostKind;
+use Bga\Games\projectedgeworth\Material\Hook;
 
 /**
  * R07 `MOVE_SATELLITE`: 衛星を向きに沿って進め、燃料を消費する（P004・P034・P081・P082・P091）。移動は 003 §4.2（上下の端で反射、左右は接続）。

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * action_card テーブル（010 §6.1）。常に公開情報。プロット中のカードは ChoiceRepository が持ち、公開（23）までここは変えない。

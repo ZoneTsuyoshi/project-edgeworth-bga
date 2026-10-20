@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
 /**
  * 窓の最中に溜める結果のログ 1 件。通知の組み立て（010 の N27〜N29 など）は窓を閉じる側が行う。

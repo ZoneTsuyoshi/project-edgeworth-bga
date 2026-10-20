@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Board\RandomSource;
 
 /** テスト用の固定列の乱数。値は範囲に収めて循環して返す。 */
 final class FixedRandom implements RandomSource

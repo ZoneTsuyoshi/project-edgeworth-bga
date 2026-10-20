@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Data\FlowPhase;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Data\FlowPhase;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\ArrayGlobals;
 

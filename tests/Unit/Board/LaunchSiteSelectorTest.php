@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\Adjacency;
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayoutBuilder;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Board\LaunchSiteSelector;
+use Bga\Games\projectedgeworth\Board\Adjacency;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardLayoutBuilder;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Board\LaunchSiteSelector;
 use PHPUnit\Framework\TestCase;
 
 /** 009 §9.2: zombie の発射拠点配置の既定 */

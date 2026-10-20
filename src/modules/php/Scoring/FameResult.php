@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
 /**
  * 1 人の最終名声と内訳（010 §11.2 の fame_detail の形式）。

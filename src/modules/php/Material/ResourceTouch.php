@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果が触れる資源 1 件（記号と範囲。011 §6-4）。`EffectSpec` では範囲が `HostSatellite` / `EventSatellite` のままで、

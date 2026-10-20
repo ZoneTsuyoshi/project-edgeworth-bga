@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Cards;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\EffectEngine;
-use Bga\Games\ProjectEdgeworth\Effects\EffectViolation;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Question;
-use Bga\Games\ProjectEdgeworth\Effects\Question\QuestionType;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\EffectEngine;
+use Bga\Games\projectedgeworth\Effects\EffectViolation;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Effects\Question\Question;
+use Bga\Games\projectedgeworth\Effects\Question\QuestionType;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\Effects\E5Fixture;
 

@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
 
 /**
  * 売却（手札 1 枚を捨てて 3 マヤ。001 §11-1、008 §2-6）と、支払い不足の売却の同梱。

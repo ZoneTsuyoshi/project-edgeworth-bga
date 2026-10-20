@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\AreaType;
 
 /**
  * 通信確立を全員分まとめて一斉に反映する（007 §7-3、001 U-11・§7-5）。メイン・ボーナス・窓のステージで共通。

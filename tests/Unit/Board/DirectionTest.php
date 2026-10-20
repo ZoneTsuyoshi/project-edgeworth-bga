@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Direction;
 use PHPUnit\Framework\TestCase;
 
 final class DirectionTest extends TestCase

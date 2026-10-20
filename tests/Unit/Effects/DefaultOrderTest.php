@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Pool\DefaultOrder;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Effects\Pool\DefaultOrder;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
 
 /**

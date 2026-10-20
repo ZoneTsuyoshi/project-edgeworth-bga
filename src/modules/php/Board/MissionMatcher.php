@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * ミッション形状の一致判定と 2 枚の割り当て最適化（003 §8）。

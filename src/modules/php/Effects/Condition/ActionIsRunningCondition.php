@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K13 `ACTION_IS_RUNNING`: そのアクションが誰かに選ばれ、実施されるラウンドであること（誰も選んでいなければ EUROPA は使えない。FAQ 行 62）。

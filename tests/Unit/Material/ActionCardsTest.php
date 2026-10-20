@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Material;
 
-use Bga\Games\ProjectEdgeworth\Material\ActionCards;
-use Bga\Games\ProjectEdgeworth\Material\ActionKind;
+use Bga\Games\projectedgeworth\Material\ActionCards;
+use Bga\Games\projectedgeworth\Material\ActionKind;
 use PHPUnit\Framework\TestCase;
 
 final class ActionCardsTest extends TestCase

@@ -7,23 +7,23 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Forbid\Forbid;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\BudgetGainMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\DeployCostMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\FuelConsumeMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\LaunchCostMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\LinkCostMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\LinkTargetExpand;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\NearMissFuelMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\NearMissSuppress;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\PioneerWaiver;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\ProposalCountMod;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Modifier\SellPriceMod;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\Parts\Forbid\Forbid;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\BudgetGainMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\DeployCostMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\FuelConsumeMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\LaunchCostMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\LinkCostMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\LinkTargetExpand;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\NearMissFuelMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\NearMissSuppress;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\PioneerWaiver;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\ProposalCountMod;
+use Bga\Games\projectedgeworth\Effects\Parts\Modifier\SellPriceMod;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * E-1（常時の修正・禁止。011 §8）の部品の登録。M01〜M06・M09〜M13 と F01（M07・M08 は E-3）。

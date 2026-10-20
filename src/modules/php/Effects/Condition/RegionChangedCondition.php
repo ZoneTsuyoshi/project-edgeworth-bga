@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Condition;
+namespace Bga\Games\projectedgeworth\Effects\Condition;
 
-use Bga\Games\ProjectEdgeworth\Material\EffectCondition;
+use Bga\Games\projectedgeworth\Material\EffectCondition;
 
 /**
  * K08 `REGION_CHANGED`: 移動で地域が変わったこと（別の地域から突入した）。`params['regions']` があればその地域への突入に限る。

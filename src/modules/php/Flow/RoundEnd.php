@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
 
 /**
  * 終了判定（009 の 110 EndCheck）。循環フェイズが終わり着陸猶予も外した後の状態で行う（001 §10）。

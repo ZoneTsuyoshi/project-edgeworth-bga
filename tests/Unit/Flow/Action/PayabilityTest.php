@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Flow\Action\Payability;
+use Bga\Games\projectedgeworth\Flow\Action\Payability;
 use PHPUnit\Framework\TestCase;
 
 final class PayabilityTest extends TestCase

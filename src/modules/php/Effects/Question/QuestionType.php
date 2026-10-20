@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 enum QuestionType: string
 {

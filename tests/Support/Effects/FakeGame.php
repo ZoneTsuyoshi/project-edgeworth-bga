@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameMutator;
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
-use Bga\Games\ProjectEdgeworth\Effects\Context\SatelliteState;
-use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Context\GameMutator;
+use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\Context\SatelliteState;
+use Bga\Games\projectedgeworth\Flow\FuelMath;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /**
  * 011 §11-1 の `FakeGame`: `GameView` / `GameMutator` のメモリ実装。衛星・手札・マヤ・山札を組み立てて、効果エンジンを PHPUnit だけで試す。

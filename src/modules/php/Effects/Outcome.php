@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects;
+namespace Bga\Games\projectedgeworth\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Context\StagedLinkRequest;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Context\StagedLinkRequest;
 
 /**
  * 効果 1 回の解決の結果（011 §4-3）。エンジンが events を `collect()` して連鎖させ、logs は窓を閉じるとき通知にまとめる（007 §7-2）。

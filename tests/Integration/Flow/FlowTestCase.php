@@ -9,19 +9,19 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Board\Movement;
-use Bga\Games\ProjectEdgeworth\Board\SatellitePosition;
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitPhase;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Board\Movement;
+use Bga\Games\projectedgeworth\Board\SatellitePosition;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Flow\OrbitPhase;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 use ProjectEdgeworthTests\Integration\Setup\SetupTestCase;
 use ProjectEdgeworthTests\Support\SeededRandom;
 

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /** 着陸 / 着水した衛星 1 機（001 §9-4）。 */
 final class Landing

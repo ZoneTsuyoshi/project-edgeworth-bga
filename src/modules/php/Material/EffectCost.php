@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果を使う代価（011 §2-5）。`amount` は C1 の固定額、`tiers` は C2 の段階（支払い額 => 結果の量）。C3 の枚数は `amount`。

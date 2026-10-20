@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * region テーブル（地域ボードの配置。010 §5.5）。setupNewGame で 1 回だけ書き、ゲーム中は変えない。

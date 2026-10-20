@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects\Cards;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
-use Bga\Games\ProjectEdgeworth\Effects\Query\QueryContext;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitResolver;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
+use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Flow\OrbitResolver;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\Effects\E1Fixture;
 

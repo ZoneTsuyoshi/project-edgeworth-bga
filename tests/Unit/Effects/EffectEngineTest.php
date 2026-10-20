@@ -9,23 +9,23 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Effects;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\GameEvent;
-use Bga\Games\ProjectEdgeworth\Effects\Context\StagedLinkRequest;
-use Bga\Games\ProjectEdgeworth\Effects\EffectViolation;
-use Bga\Games\ProjectEdgeworth\Effects\Outcome;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartCall;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\PartRegistry;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
-use Bga\Games\ProjectEdgeworth\Effects\Question\Field;
-use Bga\Games\ProjectEdgeworth\Effects\Question\FieldType;
-use Bga\Games\ProjectEdgeworth\Material\CardEffects;
-use Bga\Games\ProjectEdgeworth\Material\EffectKind;
-use Bga\Games\ProjectEdgeworth\Material\Hook;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
-use Bga\Games\ProjectEdgeworth\Material\ProjectType;
-use Bga\Games\ProjectEdgeworth\Material\ResourceSymbol;
-use Bga\Games\ProjectEdgeworth\Material\ResourceTouch;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
+use Bga\Games\projectedgeworth\Effects\Context\StagedLinkRequest;
+use Bga\Games\projectedgeworth\Effects\EffectViolation;
+use Bga\Games\projectedgeworth\Effects\Outcome;
+use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
+use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
+use Bga\Games\projectedgeworth\Effects\Question\Answer;
+use Bga\Games\projectedgeworth\Effects\Question\Field;
+use Bga\Games\projectedgeworth\Effects\Question\FieldType;
+use Bga\Games\projectedgeworth\Material\CardEffects;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Material\ProjectType;
+use Bga\Games\projectedgeworth\Material\ResourceSymbol;
+use Bga\Games\projectedgeworth\Material\ResourceTouch;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use ProjectEdgeworthTests\Support\Effects\ArrayCatalog;
 use ProjectEdgeworthTests\Support\Effects\FakeGame;
 use ProjectEdgeworthTests\Support\Effects\ScriptedResultPart;
@@ -441,7 +441,7 @@ final class EffectEngineTest extends EffectsTestCase
     // ---- S05: 連鎖で未解決の効果と衝突する効果が加わる ----
 
     /**
-     * @return array{FakeGame, \Bga\Games\ProjectEdgeworth\Effects\EffectEngine, \ArrayObject<int, string>}
+     * @return array{FakeGame, \Bga\Games\projectedgeworth\Effects\EffectEngine, \ArrayObject<int, string>}
      */
     private function chainEngine(ResourceSymbol $thirdTouches): array
     {
@@ -529,7 +529,7 @@ final class EffectEngineTest extends EffectsTestCase
     /**
      * 2 段の効果（P087 に似せた疑似カード）: 1 段目は強制で自動（引く）、2 段目は強制の手札の選択（捨てる）。
      *
-     * @return array{FakeGame, \Bga\Games\ProjectEdgeworth\Effects\EffectEngine}
+     * @return array{FakeGame, \Bga\Games\projectedgeworth\Effects\EffectEngine}
      */
     private function rollingEngine(): array
     {

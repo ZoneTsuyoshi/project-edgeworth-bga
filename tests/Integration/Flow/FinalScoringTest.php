@@ -9,13 +9,13 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\MissionRepository;
-use Bga\Games\ProjectEdgeworth\Data\RegionRepository;
-use Bga\Games\ProjectEdgeworth\Flow\FinalScoring;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteShape;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\MissionRepository;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Flow\FinalScoring;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Material\SatelliteShape;
 
 /** 009 の 121 FinalScoring。DB の状態が FameCalculator に渡り、内訳が保存される。 */
 final class FinalScoringTest extends FlowTestCase

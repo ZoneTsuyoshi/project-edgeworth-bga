@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * 「全員が同時に選び、全員確定で一斉に処理する」ステップのルール（009 §5、008 §2-1）。

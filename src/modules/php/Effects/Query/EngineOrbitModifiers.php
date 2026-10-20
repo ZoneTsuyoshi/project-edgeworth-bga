@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
-use Bga\Games\ProjectEdgeworth\Flow\NoOrbitModifiers;
-use Bga\Games\ProjectEdgeworth\Flow\OrbitSatellite;
+use Bga\Games\projectedgeworth\Flow\NoOrbitModifiers;
+use Bga\Games\projectedgeworth\Flow\OrbitSatellite;
 
 /**
  * 効果エンジンにつないだ `OrbitModifiers`（`NoOrbitModifiers` の差し替え。011 §3-2）。

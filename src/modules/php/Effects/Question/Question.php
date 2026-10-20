@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 /**
  * 窓の「問い」（011 §6-1、状態 31 の `getArgs` の `_private[playerId].questions` の 1 要素）。

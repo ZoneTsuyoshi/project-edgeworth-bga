@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * staged_link テーブルの読み書きと予約の計算（010 §5.3）。他プレイヤーには見せない（バリアまで）。

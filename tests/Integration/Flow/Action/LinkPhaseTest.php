@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\LinkCommit;
-use Bga\Games\ProjectEdgeworth\Flow\Action\RuleViolation;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\LinkCommit;
+use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 
 final class LinkPhaseTest extends ActionTestCase
 {
@@ -36,7 +36,7 @@ final class LinkPhaseTest extends ActionTestCase
         return ['op' => 'link', 'cell' => $cell, 'sat' => $satId, 'sell' => $sell];
     }
 
-    private function commitOf(\Bga\Games\ProjectEdgeworth\Flow\Action\StepResult $result): LinkCommit
+    private function commitOf(\Bga\Games\projectedgeworth\Flow\Action\StepResult $result): LinkCommit
     {
         $commit = $result->extra['commit'];
         $this->assertInstanceOf(LinkCommit::class, $commit);

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * staged_link テーブルの 1 行 = 窓の中で積まれた、まだコミットされていない通信確立（010 §5.3）。

@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 use ProjectEdgeworthTests\Support\SeededRandom;
 

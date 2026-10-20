@@ -7,23 +7,23 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
-use Bga\Games\ProjectEdgeworth\Data\ActionCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\ChoiceRepository;
-use Bga\Games\ProjectEdgeworth\Data\Database;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\RegionRepository;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCardDefinition;
-use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
-use Bga\Games\ProjectEdgeworth\Material\SatelliteCards;
-use Bga\Games\ProjectEdgeworth\Setup\LaunchPadPlacement;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Data\ActionCardRepository;
+use Bga\Games\projectedgeworth\Data\ChoiceRepository;
+use Bga\Games\projectedgeworth\Data\Database;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Material\ProjectCardDefinition;
+use Bga\Games\projectedgeworth\Material\ProjectCards;
+use Bga\Games\projectedgeworth\Material\SatelliteCards;
+use Bga\Games\projectedgeworth\Setup\LaunchPadPlacement;
 
 /**
  * 計画・アクションフェイズのルールが共有する部品（リポジトリ・盤面・フック）。BGA の Table に依存しない。

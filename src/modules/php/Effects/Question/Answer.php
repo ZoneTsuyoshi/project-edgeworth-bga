@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Question;
+namespace Bga\Games\projectedgeworth\Effects\Question;
 
 /**
  * 効果の問いへの答え（`actUseEffect(entryId, fields, sell)` の `fields` と `sell`。011 §6-1）。

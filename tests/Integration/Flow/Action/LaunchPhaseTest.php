@@ -9,13 +9,13 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Board\Direction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
-use Bga\Games\ProjectEdgeworth\Flow\Action\LaunchOption;
-use Bga\Games\ProjectEdgeworth\Flow\Action\RuleViolation;
-use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
-use Bga\Games\ProjectEdgeworth\Flow\Action\TurnOption;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Board\Direction;
+use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Flow\Action\LaunchOption;
+use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
+use Bga\Games\projectedgeworth\Flow\Action\StepMode;
+use Bga\Games\projectedgeworth\Flow\Action\TurnOption;
 
 final class LaunchPhaseTest extends ActionTestCase
 {

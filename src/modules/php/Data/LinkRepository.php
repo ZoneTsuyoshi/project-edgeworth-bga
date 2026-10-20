@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
-use Bga\Games\ProjectEdgeworth\Board\CubeSlots;
+use Bga\Games\projectedgeworth\Board\CubeSlots;
 
 /**
  * link テーブルの読み書き（010 §5.2）。放棄したキューブは行を作らない。発射拠点は入れない（player.pad_cell）。

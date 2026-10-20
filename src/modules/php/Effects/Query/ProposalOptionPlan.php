@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Query;
+namespace Bga\Games\projectedgeworth\Effects\Query;
 
 /**
  * 企画の選択で使える効果の一覧（011 §6-5 の `ProposalPlan` の `options`）。修正部品 M07・M08 が畳み込む値。

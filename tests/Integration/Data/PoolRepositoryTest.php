@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\PoolRepository;
-use Bga\Games\ProjectEdgeworth\Data\PoolStatus;
+use Bga\Games\projectedgeworth\Data\PoolRepository;
+use Bga\Games\projectedgeworth\Data\PoolStatus;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class PoolRepositoryTest extends DatabaseTestCase

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /** 発射拠点配置の zombie 既定（009 §9.2）。 */
 final class LaunchSiteSelector

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * 現在のフェイズ（グローバル値 flow_phase。010 §7.2）。セットアップの配備フェイズは Deploy。

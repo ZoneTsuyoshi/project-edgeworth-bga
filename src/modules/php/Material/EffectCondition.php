@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果の条件 1 件（011 §2-6）。`params` の形は条件ごと（例: K01 は `['scope' => 'THIS' | 'OTHER_OWN' | 'ANY_OWN']`、

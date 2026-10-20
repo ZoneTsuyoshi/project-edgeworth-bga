@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /** 循環フェイズ 1 回の結果（通知用）。 */
 final class OrbitReport

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * E-4（衛星の操作。011 §8）の効果の定義: 転回（R08）と移動（R07）。`touches` は 007 §10 の付表の「資源」列。

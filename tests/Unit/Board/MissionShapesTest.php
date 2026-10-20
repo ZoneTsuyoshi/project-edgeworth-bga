@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\MissionShapes;
+use Bga\Games\projectedgeworth\Board\MissionShapes;
 use PHPUnit\Framework\TestCase;
 
 final class MissionShapesTest extends TestCase

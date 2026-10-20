@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
 /**
  * 循環フェイズへのカード効果の差し込み口（011 のフック）。既定の NoOrbitModifiers は「修正なし」。

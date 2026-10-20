@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 効果発動タイミング（002 §3.3）。ANYTIME と LAUNCHED_OR_TURNED は凡例に無く実カードにのみ存在する。

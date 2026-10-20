@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\MissionRepository;
+use Bga\Games\projectedgeworth\Data\MissionRepository;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class MissionRepositoryTest extends DatabaseTestCase

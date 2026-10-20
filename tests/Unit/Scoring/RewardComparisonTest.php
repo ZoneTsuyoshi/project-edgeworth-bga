@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\AreaType;
-use Bga\Games\ProjectEdgeworth\Material\RewardCards;
-use Bga\Games\ProjectEdgeworth\Scoring\LinkedCube;
-use Bga\Games\ProjectEdgeworth\Scoring\RewardComparison;
+use Bga\Games\projectedgeworth\Board\AreaType;
+use Bga\Games\projectedgeworth\Material\RewardCards;
+use Bga\Games\projectedgeworth\Scoring\LinkedCube;
+use Bga\Games\projectedgeworth\Scoring\RewardComparison;
 use PHPUnit\Framework\TestCase;
 
 final class RewardComparisonTest extends TestCase
@@ -26,7 +26,7 @@ final class RewardComparisonTest extends TestCase
      * 汎用の状態: 海 (0,0)(0,1)(0,5)(0,23) と陸 (0,10)、発射拠点 (3,10)（陸）。
      * (0,23)-(0,0)-(0,1) は左右の端でつながる。
      *
-     * @return array{\Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard, \Bga\Games\ProjectEdgeworth\Scoring\PlayerState}
+     * @return array{\Bga\Games\projectedgeworth\Scoring\ScoringBoard, \Bga\Games\projectedgeworth\Scoring\PlayerState}
      */
     private function generic(): array
     {
@@ -148,7 +148,7 @@ final class RewardComparisonTest extends TestCase
      * c0 山岳, c1 海, c2 深海, c3 岩礁, c4 陸, c5 森林, c6 海, c7 山岳, c8 海, c9 山岳, c10 雪原, c11 海, c12 岩礁, c13 陸
      * 所有: c1〜c6, c8, c11〜c13（山岳・雪原は所有しない）
      *
-     * @return array{\Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard, \Bga\Games\ProjectEdgeworth\Scoring\PlayerState}
+     * @return array{\Bga\Games\projectedgeworth\Scoring\ScoringBoard, \Bga\Games\projectedgeworth\Scoring\PlayerState}
      */
     private function terrain(): array
     {

@@ -95,7 +95,7 @@
 | 循環フェイズ | 100 | ドライバのみ |
 | 終了 | 110、120、121 | 終了判定、終了時の換金、名声計算 |
 
-- 状態クラスの名前空間は `Bga\Games\ProjectEdgeworth\States`（004 §3）。クラス名は下の表のとおり。状態 ID の定数は `Flow/StateId.php` に置く（`States/` の中の全クラスが状態として読まれるため、定数クラスは `States/` に置かない。姉妹の実績）。
+- 状態クラスの名前空間は `Bga\Games\projectedgeworth\States`（004 §3）。クラス名は下の表のとおり。状態 ID の定数は `Flow/StateId.php` に置く（`States/` の中の全クラスが状態として読まれるため、定数クラスは `States/` に置かない。姉妹の実績）。
 - `transitions` の行き先は、状態クラス名ではなく状態 ID の定数で書く（姉妹の実績）。
 - 状態は **32 個**（GAME 20、ACTIVE_PLAYER 1、MULTIPLE_ACTIVE_PLAYER 11）。private parallel states は採用しない（004 未確定事項 No.3 の暫定案を維持。理由は §5.5）。ドラフト（15・16）は初版では未実装（ID だけ予約。Q-06）で、実装する場合に 32 個になる。初版の実装は 30 個。
 

@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * 褒賞カード 24 面（T001〜T024）の定義（002 §7）。両面の対応は 002 の未確定事項のため持たない。

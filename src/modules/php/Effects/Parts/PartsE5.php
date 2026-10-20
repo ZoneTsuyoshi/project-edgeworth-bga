@@ -7,14 +7,14 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\DeployDeckTopPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\DeployFromHandPart;
-use Bga\Games\ProjectEdgeworth\Effects\Parts\Result\RearrangeStandbyPart;
-use Bga\Games\ProjectEdgeworth\Effects\Query\EffectQueries;
-use Bga\Games\ProjectEdgeworth\Effects\Query\UseMods;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\DeployDeckTopPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\DeployFromHandPart;
+use Bga\Games\projectedgeworth\Effects\Parts\Result\RearrangeStandbyPart;
+use Bga\Games\projectedgeworth\Effects\Query\EffectQueries;
+use Bga\Games\projectedgeworth\Effects\Query\UseMods;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * E-5（配備。011 §8）の結果部品の登録: R09 `DEPLOY_FROM_HAND`、R10 `DEPLOY_DECK_TOP`、R12 `REARRANGE_STANDBY`。

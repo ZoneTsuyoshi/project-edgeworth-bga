@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * held_notif テーブル（窓の保留通知。010 §10.5）。バリア（32）で held_id の昇順に全員へ送り、clear() で空にする。

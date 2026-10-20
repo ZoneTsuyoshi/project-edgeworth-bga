@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\Movement;
-use Bga\Games\ProjectEdgeworth\Board\SatellitePosition;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\Movement;
+use Bga\Games\projectedgeworth\Board\SatellitePosition;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 
 /**
  * 循環フェイズの各ステップの計算（001 §9、007 §4・§5-6）。DB に依存しない純粋関数。

@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Board\BoardPlacement;
-use Bga\Games\ProjectEdgeworth\Setup\GameOptions;
-use Bga\Games\ProjectEdgeworth\Setup\RewardSelection;
-use Bga\Games\ProjectEdgeworth\Setup\SatellitePlanOption;
-use Bga\Games\ProjectEdgeworth\Setup\StartingHand;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Board\BoardPlacement;
+use Bga\Games\projectedgeworth\Setup\GameOptions;
+use Bga\Games\projectedgeworth\Setup\RewardSelection;
+use Bga\Games\projectedgeworth\Setup\SatellitePlanOption;
+use Bga\Games\projectedgeworth\Setup\StartingHand;
 use PHPUnit\Framework\TestCase;
 
 final class GameOptionsTest extends TestCase

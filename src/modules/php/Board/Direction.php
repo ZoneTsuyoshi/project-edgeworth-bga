@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Board;
+namespace Bga\Games\projectedgeworth\Board;
 
 /**
  * 六角形の 6 方向（003 §1.2）。ダブルド座標の差分 (dx, dy) を持つ。

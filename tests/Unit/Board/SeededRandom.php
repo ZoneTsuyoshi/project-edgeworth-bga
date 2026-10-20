@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Board;
 
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Board\RandomSource;
 
 /** テスト用の再現可能な乱数（線形合同法）。 */
 final class SeededRandom implements RandomSource

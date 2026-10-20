@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Board\RandomSource;
-use Bga\Games\ProjectEdgeworth\Data\Database;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Data\Database;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
 
 /**
  * 計画フェイズとアクションフェイズ I〜V のルール層の入口（I-08 の BGA に依存しない部分）。

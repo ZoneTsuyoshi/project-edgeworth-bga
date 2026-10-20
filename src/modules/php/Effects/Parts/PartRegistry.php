@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts;
+namespace Bga\Games\projectedgeworth\Effects\Parts;
 
-use Bga\Games\ProjectEdgeworth\Material\PartCategory;
-use Bga\Games\ProjectEdgeworth\Material\PartId;
+use Bga\Games\projectedgeworth\Material\PartCategory;
+use Bga\Games\projectedgeworth\Material\PartId;
 
 /**
  * `PartId` → 部品のインスタンス（011 §4-3）。未登録の部品を引くと例外（実装前のカードの効果を黙って無視しない）。

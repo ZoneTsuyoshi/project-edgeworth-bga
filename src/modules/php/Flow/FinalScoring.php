@@ -7,24 +7,24 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow;
+namespace Bga\Games\projectedgeworth\Flow;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardGeometry;
-use Bga\Games\ProjectEdgeworth\Board\BoardLayout;
-use Bga\Games\ProjectEdgeworth\Data\CardLocation;
-use Bga\Games\ProjectEdgeworth\Data\GlobalValues;
-use Bga\Games\ProjectEdgeworth\Data\LinkRepository;
-use Bga\Games\ProjectEdgeworth\Data\MissionRepository;
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
-use Bga\Games\ProjectEdgeworth\Data\ProjectCardRepository;
-use Bga\Games\ProjectEdgeworth\Data\RegionRepository;
-use Bga\Games\ProjectEdgeworth\Data\SatelliteRepository;
-use Bga\Games\ProjectEdgeworth\Scoring\FameCalculator;
-use Bga\Games\ProjectEdgeworth\Scoring\FameResult;
-use Bga\Games\ProjectEdgeworth\Scoring\LinkedCube;
-use Bga\Games\ProjectEdgeworth\Scoring\PlayerState;
-use Bga\Games\ProjectEdgeworth\Scoring\SatelliteState;
-use Bga\Games\ProjectEdgeworth\Scoring\ScoringBoard;
+use Bga\Games\projectedgeworth\Board\BoardGeometry;
+use Bga\Games\projectedgeworth\Board\BoardLayout;
+use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\GlobalValues;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
+use Bga\Games\projectedgeworth\Data\MissionRepository;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\ProjectCardRepository;
+use Bga\Games\projectedgeworth\Data\RegionRepository;
+use Bga\Games\projectedgeworth\Data\SatelliteRepository;
+use Bga\Games\projectedgeworth\Scoring\FameCalculator;
+use Bga\Games\projectedgeworth\Scoring\FameResult;
+use Bga\Games\projectedgeworth\Scoring\LinkedCube;
+use Bga\Games\projectedgeworth\Scoring\PlayerState;
+use Bga\Games\projectedgeworth\Scoring\SatelliteState;
+use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 
 /**
  * 最終得点（009 の 121 FinalScoring）。DB の状態から PlayerState を組み立て、FameCalculator に渡して

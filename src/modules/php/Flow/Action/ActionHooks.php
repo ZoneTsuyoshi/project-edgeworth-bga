@@ -7,9 +7,9 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
-use Bga\Games\ProjectEdgeworth\Data\Satellite;
+use Bga\Games\projectedgeworth\Data\Satellite;
 
 /**
  * カード効果が数量・候補を変えるための問い合わせ口（011 §3-2 の問い合わせフックのうち I〜V と売却に関わるもの）。

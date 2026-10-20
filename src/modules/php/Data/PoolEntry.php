@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Data;
+namespace Bga\Games\projectedgeworth\Data;
 
 /**
  * pool テーブルの 1 行 = 窓の中でトリガーした効果 1 件（010 §9.5）。context・state の中身は 011 が定める。

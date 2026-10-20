@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * カード → 効果の定義（011 §7 の表）。`name_id` をキーに最初の呼び出しで 1 度だけ組み立てる。

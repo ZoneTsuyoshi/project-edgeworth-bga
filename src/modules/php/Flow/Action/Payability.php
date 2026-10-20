@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Flow\Action;
+namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
  * あるコストを、所持マヤ（と手札の売却）で払えるか（008 §2-6）。args の「売却すれば払える」の表示に使う。

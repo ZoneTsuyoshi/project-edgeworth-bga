@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * プロジェクトカード 1 枚の定義（002 §4.1）。効果は `nameId` で識別する（002 §3.1。011 の EffectSpec はこの `nameId` で引く）。

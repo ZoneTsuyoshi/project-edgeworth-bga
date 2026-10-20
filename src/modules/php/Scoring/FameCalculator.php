@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Scoring;
+namespace Bga\Games\projectedgeworth\Scoring;
 
-use Bga\Games\ProjectEdgeworth\Board\MissionMatcher;
-use Bga\Games\ProjectEdgeworth\Material\RewardCards;
+use Bga\Games\projectedgeworth\Board\MissionMatcher;
+use Bga\Games\projectedgeworth\Material\RewardCards;
 
 /**
  * ゲーム終了時の名声計算（001 §12 の I〜IX）。BGA・DB に依存しない。

@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Integration\Data;
 
-use Bga\Games\ProjectEdgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Data\PlayerValues;
 use ProjectEdgeworthTests\Support\DatabaseTestCase;
 
 final class PlayerValuesTest extends DatabaseTestCase

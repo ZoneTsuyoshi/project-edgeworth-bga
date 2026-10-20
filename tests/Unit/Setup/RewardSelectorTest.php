@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Unit\Setup;
 
-use Bga\Games\ProjectEdgeworth\Board\BoardFace;
-use Bga\Games\ProjectEdgeworth\Material\RewardCards;
-use Bga\Games\ProjectEdgeworth\Material\RewardMark;
-use Bga\Games\ProjectEdgeworth\Setup\RewardSelection;
-use Bga\Games\ProjectEdgeworth\Setup\RewardSelector;
+use Bga\Games\projectedgeworth\Board\BoardFace;
+use Bga\Games\projectedgeworth\Material\RewardCards;
+use Bga\Games\projectedgeworth\Material\RewardMark;
+use Bga\Games\projectedgeworth\Setup\RewardSelection;
+use Bga\Games\projectedgeworth\Setup\RewardSelector;
 use PHPUnit\Framework\TestCase;
 use ProjectEdgeworthTests\Support\SeededRandom;
 

@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Effects\Parts\Result;
+namespace Bga\Games\projectedgeworth\Effects\Parts\Result;
 
-use Bga\Games\ProjectEdgeworth\Effects\Context\EffectContext;
-use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
+use Bga\Games\projectedgeworth\Effects\Context\EffectContext;
+use Bga\Games\projectedgeworth\Flow\FuelMath;
 
 /**
  * 配備・除去・付け替えで燃料庫の数 C が変わるときの、消費量 c の調整（申し送り N-1、001 §4-4 の U-6）。

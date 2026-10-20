@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\ProjectEdgeworth\Material;
+namespace Bga\Games\projectedgeworth\Material;
 
 /**
  * E-1（常時の修正・禁止。011 §8）の効果の定義。011 §7 の表の 1 行が 1 つの `EffectSpec`。`CardEffects::build()` が取り込む。
