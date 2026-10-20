@@ -1,0 +1,326 @@
+{
+ "sample": "three-players-advanced",
+ "state": "DeployMainChoose",
+ "active": true,
+ "maya": 8,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "_private": {
+   "myChoice": null,
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3,
+   "targets": {
+    "3": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true,
+      "useMods": {
+       "options": [
+        {
+         "hostKey": "P:19",
+         "cardKey": "fleet_commander",
+         "reduction": 2,
+         "cost": 9
+        }
+       ],
+       "all": 9
+      }
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true,
+      "useMods": {
+       "options": [
+        {
+         "hostKey": "P:19",
+         "cardKey": "fleet_commander",
+         "reduction": 2,
+         "cost": 9
+        }
+       ],
+       "all": 9
+      }
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 6,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true,
+      "useMods": {
+       "options": [
+        {
+         "hostKey": "P:19",
+         "cardKey": "fleet_commander",
+         "reduction": 2,
+         "cost": 9
+        }
+       ],
+       "all": 9
+      }
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 6,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ],
+    "18": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 12,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 12,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 7,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 12,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 7,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ],
+    "44": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 6,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 6,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ],
+    "51": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 6,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 6,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ],
+    "70": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 6,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 11,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 6,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ],
+    "88": [
+     {
+      "satId": 11,
+      "tier": 4,
+      "cost": 10,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 12,
+      "tier": 2,
+      "cost": 10,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 13,
+      "tier": 1,
+      "cost": 5,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 14,
+      "tier": 2,
+      "cost": 10,
+      "blocked": null,
+      "minSales": 0,
+      "selectable": true
+     },
+     {
+      "satId": 15,
+      "tier": 5,
+      "cost": 5,
+      "blocked": "full",
+      "minSales": 0,
+      "selectable": false
+     }
+    ]
+   }
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-hand-card[data-id=\"51\"]"
+  },
+  {
+   "click": ".pe-sat[data-sat-id=\"12\"]"
+  },
+  {
+   "click": ".pe-picker-slot:nth-child(1) .pe-picker-card"
+  }
+ ]
+}

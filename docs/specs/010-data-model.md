@@ -629,9 +629,11 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N31 | `gameEndTriggered` | 全員 | `players`（終了条件を満たした ID 配列）、`reasons`（`satellites` / `links`） | `The game ends after this round` | 110 が終了と判定したとき。IX の +3 の対象は公開 |
 | N32 | `finalScore` | 全員 | `player_id`、`player_name`、`fame`、`detail`（§11.2 の JSON）、`missions`（そのプレイヤーのミッション番号と達成状況） | `${player_name} scores ${fame} fame` | 121。全員分を席順に 1 件ずつ。内訳の表（bga-score-sheet 候補。004）を出す。ミッションをここで公開 |
 | N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "drawnCount", "cubesLeft"}}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
+| N34 | `effectQuestions` | 本人 | 31 の args の `_private[playerId]` と同じ形（`windowId`、`pending`、`questions`、`hand`、`sellValue`）。答えた後で問いが無ければ `questions` は空 | `''` | 31 の `actUseEffect` / `actSkipEffect` / `actOrderEffects` の直後。31 の args は入場時のものなので、クライアントが残りの問い（ORDER の次の EFFECT、二段階の効果の二段目など）を知る。保留に積まず即時に送る（本人の問いは公開情報ではない） |
+| N35 | `effectWaiting` | 全員 | `waiting`（`[{ "player_id", "sources": [カードキー] }]`。31 の args の公開部分と同じ） | `''` | N34 と同時、および zombie の処理の後。待機表示「Waiting for X (CARD_NAME)」（008 §5-1）を更新する。カードは公開情報 |
 
 - 窓の外の GAME 状態（コミット）で出す通知は、その場で `notify->all` を呼ぶ（リクエストの終わりに順序どおり届く）。**窓の中（状態 31）の他人に見える通知**は §10.5 の規則に従う。
-- 通知のうち「本人」宛てなのは N3・N9・N22・N25 の 4 種。他は全員宛て。
+- 通知のうち「本人」宛てなのは N3・N9・N22・N25・N34 の 5 種。他は全員宛て。
 - N8 + N9 の対、N10、N12 は他の通知と一緒に使われる共通部品（例: 山岳ボーナス = N8 + N9、森林ボーナス = N12、深海 = N19）。区域ボーナスを個別の通知にしない。
 
 #### 10.3 公開通知に載せてはいけない項目

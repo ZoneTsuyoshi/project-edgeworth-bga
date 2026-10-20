@@ -387,6 +387,27 @@ final class Notices
     }
 
     /**
+     * N34: 窓（状態 31）の本人の残りの問い。答えるたびに本人だけへ送る（状態 31 の args は入場時のものなので、クライアントが残りの問いを知るため）。
+     * `private` は 31 の args の `_private[playerId]` と同じ形（windowId・pending・questions・hand・sellValue）。
+     *
+     * @param array<string, mixed> $private
+     */
+    public function effectQuestions(int $playerId, array $private): Notice
+    {
+        return new Notice('effectQuestions', '', $private, $playerId);
+    }
+
+    /**
+     * N35: 窓（状態 31）の待機表示（誰が・どのカードの選択中か。カードは公開情報。008 §5-1）。答えるたびに全員へ送る。
+     *
+     * @param list<array{player_id: int, sources: list<string>}> $waiting
+     */
+    public function effectWaiting(array $waiting): Notice
+    {
+        return new Notice('effectWaiting', '', ['waiting' => $waiting]);
+    }
+
+    /**
      * N30
      *
      * @param list<int> $cards

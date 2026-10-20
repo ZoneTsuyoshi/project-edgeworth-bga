@@ -1,0 +1,167 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "maya": 3,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "EFFECT",
+     "entryId": 10,
+     "cardKey": "procurement_officer",
+     "mandatory": false,
+     "cost": {
+      "kind": "PAY_MAYA",
+      "amount": 4,
+      "canPay": false,
+      "shortfall": 1,
+      "canPayBySelling": true
+     },
+     "fields": [],
+     "preview": {}
+    },
+    {
+     "type": "EFFECT",
+     "entryId": 11,
+     "cardKey": "twin_deploy_technician",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "pairs",
+       "type": "PAIRS",
+       "min": 1,
+       "max": 1,
+       "candidates": [
+        [
+         44,
+         13
+        ],
+        [
+         51,
+         13
+        ],
+        [
+         44,
+         11
+        ]
+       ],
+       "default": null
+      },
+      {
+       "key": "useMods",
+       "type": "USE_MODS",
+       "min": 0,
+       "max": 1,
+       "candidates": [
+        "P:19"
+       ],
+       "default": null
+      }
+     ],
+     "preview": {
+      "costs": [
+       {
+        "card": 44,
+        "sat": 13,
+        "cost": 8
+       },
+       {
+        "card": 51,
+        "sat": 13,
+        "cost": 6
+       },
+       {
+        "card": 44,
+        "sat": 11,
+        "cost": 13
+       }
+      ]
+     }
+    },
+    {
+     "type": "EFFECT",
+     "entryId": 12,
+     "cardKey": "acceleration_booster",
+     "mandatory": false,
+     "cost": {
+      "kind": "PAY_MAYA_TIER",
+      "tiers": {
+       "2": 1,
+       "3": 2,
+       "4": 3,
+       "5": 4
+      },
+      "canPay": true,
+      "shortfall": 0,
+      "canPayBySelling": true
+     },
+     "fields": [
+      {
+       "key": "tier",
+       "type": "AMOUNT",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        2,
+        3,
+        4
+       ],
+       "default": null
+      }
+     ],
+     "preview": {
+      "tiers": {
+       "2": 1,
+       "3": 2,
+       "4": 3,
+       "5": 4
+      }
+     }
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-effect[data-entry=\"11\"] .pe-chip-btn"
+  }
+ ]
+}

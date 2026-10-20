@@ -14,11 +14,11 @@ export function buildSource() {
   const byId = (list, pick) => Object.fromEntries(list.map((c) => [c.id, pick(c)]));
   const info = {
     projects: byId(spec.projects, (c) => ({
-      name: c.nameEn, type: c.type, cost: c.cost, fame: c.fame, fuelSlots: c.fuelSlots,
+      nameId: c.nameId, name: c.nameEn, type: c.type, cost: c.cost, fame: c.fame, fuelSlots: c.fuelSlots,
       timing: c.timing, kind: c.effectKind, active: c.activeCondition, text: c.textEn,
     })),
     satellites: byId(spec.satellites, (c) => ({
-      shape: c.shape, plan: c.plan, color: c.color, launchCost: c.launchCost, fame: c.fame, fuelSlots: c.fuelSlots,
+      nameId: c.nameId, shape: c.shape, plan: c.plan, color: c.color, launchCost: c.launchCost, fame: c.fame, fuelSlots: c.fuelSlots,
       timing: c.timing, kind: c.effectKind, active: c.activeCondition, text: c.textEn,
     })),
     rewards: byId(spec.rewards, (c) => ({ name: c.nameEn, compare: c.compareEn, points: c.points })),

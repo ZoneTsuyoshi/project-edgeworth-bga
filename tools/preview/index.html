@@ -15,14 +15,21 @@
   .pv-panel { margin-bottom: 8px; padding: 6px 8px; border-radius: 6px; background: #fff; }
   html[data-theme="dark"] .pv-panel { background: #262b36; }
   #page-title { padding: 6px 10px; background: #2b4a6f; color: #fff; }
+  #pv-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  #pv-buttons button { min-height: 28px; padding: 2px 12px; border: 1px solid #fff8; border-radius: 4px; background: #3e73b0; color: #fff; }
+  #pv-buttons button.pv-secondary { background: #6b7a8c; }
+  #pv-buttons button.pv-alert { background: #b42318; }
+  #pv-buttons button:disabled { opacity: 0.4; }
+  #pv-log { margin: 0; padding: 4px 10px; background: #0a1224; color: #9fe3b0; font: 11px/1.4 monospace; white-space: pre-wrap; }
   #pv-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px; background: #0003; }
   body.pv-narrow #pv-layout { flex-direction: column-reverse; align-items: stretch; }
   body.pv-narrow #pv-side { flex-basis: auto; width: 100%; }
 </style>
 </head>
 <body>
-<div id="page-title">Preview status bar (BGA outside)</div>
+<div id="page-title"><div id="pv-title">Preview status bar (BGA outside)</div><div id="pv-buttons"></div></div>
 <div id="pv-tools"></div>
+<pre id="pv-log" hidden></pre>
 <div id="pv-layout">
   <div id="game_play_area"></div>
   <aside id="pv-side"></aside>

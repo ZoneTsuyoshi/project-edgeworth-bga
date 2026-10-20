@@ -10,13 +10,16 @@ import { PieceLayer } from '../board/PieceLayer.js';
 import { FieldView } from '../cards/FieldView.js';
 import { Tooltip } from '../cards/Tooltip.js';
 import { BottomSheet } from './BottomSheet.js';
+import { ChoicePanel } from './ChoicePanel.js';
 import { el } from './dom.js';
 import { Layout } from './Layout.js';
 import { normalizeGamedatas } from './normalize.js';
 import { PhaseBand } from './PhaseBand.js';
 import { PlayerArea } from './PlayerArea.js';
 import { PlayerPanel } from './PlayerPanel.js';
+import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
+import { scoresFromGamedatas } from '../states/logic/score.js';
 
 export class GameView {
     /**
@@ -41,6 +44,8 @@ export class GameView {
 
         this.bandBox = el('div', { id: 'pe-phase-band' });
         this.fieldBox = el('div', { id: 'pe-field' });
+        this.panelBox = el('section', { id: 'pe-choice-panel', 'aria-live': 'polite' });
+        this.scoreBox = el('section', { id: 'pe-score' });
         this.boardWrap = el('section', { id: 'pe-board-wrap', class: 'pe-board-wrap' });
         this.sheetBox = el('div', { id: 'pe-sheet' });
         this.meBox = el('div', { id: 'pe-me' });
@@ -53,7 +58,7 @@ export class GameView {
             onClick: () => this.setDetailAll(!this.detailAll),
         }, [_('Detail view')]);
         const boardHead = el('div', { class: 'pe-board-head' }, [el('span', { class: 'pe-board-title' }, [_('Board')])]);
-        this.root.append(this.bandBox, this.fieldBox, this.boardWrap, this.meBox, this.othersBox);
+        this.root.append(this.bandBox, this.fieldBox, this.panelBox, this.scoreBox, this.boardWrap, this.meBox, this.othersBox);
 
         this.band = new PhaseBand(this.bandBox);
         this.field = new FieldView(env, this.tooltip, this.fieldBox);
@@ -64,6 +69,12 @@ export class GameView {
         this.highlights = new Highlights(this.board);
         this.pieces = new PieceLayer(this.board, { onSatelliteClick: (satId) => this.focusSatellite(satId) });
         this.sheet = new BottomSheet(this.sheetBox);
+        this.panel = new ChoicePanel(this.panelBox);
+        this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
+        /** @type {Set<(name: string) => void>} 手札・マヤ・衛星などのモデルが通知で変わったときに呼ぶ（操作中の状態が表示を直す） */
+        this.modelListeners = new Set();
+        /** @type {{ update: (a: Record<string, any>) => void, setWaiting: (w: unknown) => void, close: () => void } | null} 効果の窓（状態 31）の UI。窓の通知を渡す */
+        this.effectUi = null;
         this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12);
         boardHead.append(this.layout.renderTools());
         this.stateFrame = new StateFrame(this);
@@ -110,11 +121,33 @@ export class GameView {
         this.refreshPanels();
         this.refreshMarks();
         this.syncPieces();
+        this.score.setAll(scoresFromGamedatas(model.finalScores, model.playerOrder));
         // スマホの横スクロールの初期位置は自分の発射拠点の区域が中央に来る位置（012 §3.8）
         const pad = model.me === null ? null : model.players[model.me]?.padCell;
         if (pad !== null && pad !== undefined && cols > 0) {
             requestAnimationFrame(() => this.board.scrollToCell(pad));
         }
+    }
+
+    /**
+     * モデルが通知で変わったことを、操作中の状態に知らせる。
+     * @param {string} name 通知名
+     */
+    emitModelChanged(name) {
+        for (const listener of [...this.modelListeners]) {
+            listener(name);
+        }
+    }
+
+    /**
+     * 衛星の表示名（形状。例: HAMMER）。
+     * @param {number} satId
+     * @returns {string}
+     */
+    satName(satId) {
+        const found = this.findSatellite(satId);
+        const shape = found?.sat.shape ?? `#${satId}`;
+        return shape.charAt(0) + shape.slice(1).toLowerCase();
     }
 
     /** @returns {import('./normalize.js').GameModel} */

@@ -34,6 +34,14 @@ const SATELLITE_FUEL_COUNT = 2;
  */
 
 /**
+ * 選択モードの衛星。state: selectable = 選べる、sellable = 売却すれば選べる（破線）、blocked = 選べない（グレー。理由は note）、selected = 選択中。
+ * @typedef {object} SatellitePick
+ * @property {'selectable' | 'sellable' | 'blocked' | 'selected'} state
+ * @property {string} [note] コストや選べない理由
+ * @property {() => void} onPick
+ */
+
+/**
  * 燃料の表示値。c = 消費、C = 容量。R = C - c。燃料切れは c > C（008 §7）。
  * @param {number} fuelUsed
  * @param {number} capacity
@@ -81,7 +89,39 @@ export class SatelliteView {
         /** 詳細表示（紙どおり）か */
         this.detail = false;
         this.root = el('div', { class: 'pe-sat', dataset: { satId: sat.satId } });
+        /** @type {SatellitePick | null} */
+        this.pick = null;
+        // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
+        this.root.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement} */ (e.target);
+            if (this.pick === null || this.pick.state === 'blocked' || target.closest('.pe-sat-detail-btn') !== null) {
+                return;
+            }
+            this.pick.onPick();
+        });
         this.render();
+    }
+
+    /**
+     * 選択モードにする（配備先・打ち上げ / 転回の衛星・通信確立の衛星など。理由を note に出す）。null で解除。
+     * @param {SatellitePick | null} pick
+     */
+    setPick(pick) {
+        this.pick = pick;
+        this.applyPick();
+    }
+
+    /** 選択モードの見た目（枠と、コスト・選べない理由の札）を今の pick に合わせる */
+    applyPick() {
+        const pick = this.pick;
+        for (const state of ['selectable', 'sellable', 'blocked', 'selected']) {
+            this.root.classList.toggle(`pe-sat-${state}`, pick?.state === state);
+        }
+        this.root.classList.toggle('pe-sat-pickable', pick !== null && pick.state !== 'blocked');
+        this.root.querySelector(':scope > .pe-sat-note')?.remove();
+        if (pick?.note !== undefined && pick.note !== '') {
+            this.root.prepend(el('div', { class: `pe-sat-note pe-sat-note-${pick.state}`, role: 'status' }, [pick.note]));
+        }
     }
 
     /**
@@ -120,6 +160,7 @@ export class SatelliteView {
             this.renderFuel(),
             this.renderFooter(),
         );
+        this.applyPick();
     }
 
     /** 衛星カード（横長）。拡大表示を結びつける */

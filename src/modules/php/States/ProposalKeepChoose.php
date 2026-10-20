@@ -48,7 +48,7 @@ class ProposalKeepChoose extends ChooseState
     #[PossibleAction]
     #[CheckAction(false)]
     public function actConfirmKeep(
-        #[IntArrayParam] ?array $keep,
+        #[IntArrayParam] ?array $keep = null,
         #[IntArrayParam] ?array $handDiscard = null,
         #[JsonParam(alphanum: false)] ?array $optionUses = null,
         #[IntArrayParam] ?array $sell = null,

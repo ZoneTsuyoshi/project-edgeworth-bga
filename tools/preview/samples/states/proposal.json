@@ -1,0 +1,92 @@
+{
+ "sample": "three-players-advanced",
+ "state": "ProposalKeepChoose",
+ "active": true,
+ "maya": 6,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "keepCount": {
+   "2310001": 2,
+   "2310002": 2,
+   "2310003": 2
+  },
+  "_private": {
+   "myChoice": null,
+   "drawn": [
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "keep": 2,
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3,
+   "extra": {
+    "handDiscard": true,
+    "handCandidates": [
+     3,
+     18,
+     44,
+     51,
+     70,
+     88
+    ],
+    "options": [
+     {
+      "hostKey": "P:70",
+      "cardKey": "spin_off",
+      "kind": "EXTRA_DISCARD",
+      "reward": 7,
+      "tiers": []
+     },
+     {
+      "hostKey": "P:72",
+      "cardKey": "lanchester",
+      "kind": "KEEP_PURCHASE",
+      "reward": 0,
+      "tiers": {
+       "4": 1,
+       "7": 2,
+       "10": 3
+      },
+      "affordable": [
+       4
+      ],
+      "affordableBySelling": [
+       4,
+       7
+      ],
+      "maxKeep": 5
+     }
+    ]
+   }
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-picker-slot:nth-child(1) .pe-picker-card"
+  },
+  {
+   "click": ".pe-picker-slot:nth-child(2) .pe-picker-card"
+  },
+  {
+   "click": "input[type=\"radio\"][name=\"pe-opt-P:72\"]:not(:checked):not(:disabled)",
+   "nth": 2
+  }
+ ]
+}

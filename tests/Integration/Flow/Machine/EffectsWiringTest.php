@@ -163,6 +163,11 @@ final class EffectsWiringTest extends MachineTestCase
         $maya = $this->playerValues->maya(101);
         $hand = count($this->hand(101));
 
+        // 答える前の進み具合の通知は、args と同じ問い・待機表示を載せる
+        $before = $this->machine->windows()->progressNotices(101);
+        self::assertSame($args['_private'][101], $before[0]->args);
+        self::assertSame(['waiting' => $args['waiting']], $before[1]->args);
+
         // 再読み込み
         $this->boot();
         self::assertSame([101], $this->machine->windows()->playersNeedingInput());
@@ -185,6 +190,14 @@ final class EffectsWiringTest extends MachineTestCase
             self::assertSame(101, $notice->to);
         }
         self::assertGreaterThan(0, $this->rows('held_notif'));
+
+        // 答えた後は、本人に残りの問い（もう無い）、全員に待機表示（もう誰も待っていない）を送る（状態 31 の args は入場時のもの）
+        $progress = $this->machine->windows()->progressNotices(101);
+        self::assertSame(['effectQuestions', 'effectWaiting'], array_map(static fn($n): string => $n->name, $progress));
+        self::assertSame(101, $progress[0]->to);
+        self::assertSame([], $progress[0]->args['questions']);
+        self::assertNull($progress[1]->to);
+        self::assertSame([], $progress[1]->args['waiting']);
 
         // バリアまでは、他人の画面に変化が見えない
         $theirs = (new PublicView($this->machine->ctx))->build(102)['playerData'][101];

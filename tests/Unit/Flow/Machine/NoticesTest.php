@@ -51,6 +51,20 @@ final class NoticesTest extends TestCase
         self::assertSame([], $this->notices()->cardsDrawn(5, [], 'hand', 'bonus', 50, 3));
     }
 
+    public function testEffectWindowProgressNoticesCarryQuestionsPrivatelyAndWaitingPublicly(): void
+    {
+        $private = ['windowId' => 'B3', 'pending' => [], 'questions' => [], 'hand' => [1], 'sellValue' => 3];
+        $questions = $this->notices()->effectQuestions(5, $private);
+        self::assertSame('effectQuestions', $questions->name);
+        self::assertSame(5, $questions->to);
+        self::assertSame($private, $questions->args);
+
+        $waiting = $this->notices()->effectWaiting([['player_id' => 6, 'sources' => ['lanchester']]]);
+        self::assertSame('effectWaiting', $waiting->name);
+        self::assertNull($waiting->to);
+        self::assertSame(['waiting' => [['player_id' => 6, 'sources' => ['lanchester']]]], $waiting->args);
+    }
+
     public function testMayaChangedPicksMessageBySign(): void
     {
         $gain = $this->notices()->mayaChanged(5, 6, 26, 'bonus');

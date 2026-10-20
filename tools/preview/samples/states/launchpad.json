@@ -1,0 +1,24 @@
+{
+ "sample": "three-players-advanced",
+ "state": "SetupLaunchPadPlace",
+ "active": true,
+ "args": {
+  "vacantCells": [
+   2,
+   3,
+   4,
+   10,
+   11,
+   24,
+   25,
+   26,
+   36
+  ]
+ },
+ "steps": [
+  {
+   "click": ".pe-hl-selectable",
+   "cell": 25
+  }
+ ]
+}

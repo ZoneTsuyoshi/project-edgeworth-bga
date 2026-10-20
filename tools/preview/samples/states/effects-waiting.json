@@ -1,0 +1,25 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": false,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ]
+ },
+ "steps": []
+}

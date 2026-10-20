@@ -1,0 +1,28 @@
+{
+ "sample": "three-players-advanced",
+ "state": "PlanningPlot",
+ "active": true,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "_private": {
+   "myChoice": null,
+   "selectable": [
+    1,
+    2,
+    5
+   ]
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-action-card[data-no=\"2\"]"
+  }
+ ]
+}

@@ -3,7 +3,6 @@
  * 細部は状態機械（I-07）の状態クラスとのつなぎ込みで仕上げる。ここでは次を用意する。
  *   - 同時選択の args（`participants`・`confirmed`・`_private`）から確定の印と待機表示を出す
  *   - 区域を選ぶ（ハイライト + タップ）、アクションカード・手札を選ぶ、コストの内訳と方向パッド（ボトムシート）を出す
- *   - args の形ごとの既定の対応（`vacantCells`、`_private.linkable`、`_private.selectable`）
  * ステータスバーのボタン（[Confirm]・[Pass]・[Change my choice]）は状態クラスが `bga.statusBar` に出す。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -50,20 +49,10 @@ export class StateFrame {
         }
         this.view.refreshMarks();
 
-        const mine = m.me === null ? undefined : args._private?.[m.me] ?? args._private;
+        // 区域・アクション・手札・衛星の選択は、状態ごとのクラス（states/）が isActive と args の `_private` から組み立てる。
+        // ここは確定の印と待機表示だけを標準の args の形（participants・confirmed）から出す。
         if (!isActive) {
             this.leaveSelection();
-            return;
-        }
-        // 区域の選択: 空いている区域（11）、通信確立の候補（81・82。売却すれば払える区域は破線）
-        if (Array.isArray(args.vacantCells)) {
-            this.selectCells(args.vacantCells.map((/** @type {unknown} */ c) => ({ cell: int(c), kind: 'selectable' })));
-        } else if (Array.isArray(mine?.linkable)) {
-            this.selectCells(mine.linkable.map((/** @type {any} */ l) => ({ cell: int(l.cell), kind: l.sell === true ? 'sellable' : 'selectable' })));
-        }
-        // 計画フェイズ: 選べるアクションカード
-        if (Array.isArray(mine?.selectable) && m.me !== null) {
-            this.view.areas.get(m.me)?.actions.setSelectable(mine.selectable.map((/** @type {unknown} */ n) => int(n)));
         }
     }
 

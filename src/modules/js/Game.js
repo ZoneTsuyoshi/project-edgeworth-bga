@@ -5,7 +5,13 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { dispatchNotification, HANDLERS } from './notifications.js';
-import { ChoiceState, PlanningPlot, SetupLaunchPadPlace } from './states/ChoiceState.js';
+import { DeployState } from './states/DeployState.js';
+import { EffectWindowState } from './states/EffectWindowState.js';
+import { LaunchState } from './states/LaunchState.js';
+import { LinkState } from './states/LinkState.js';
+import { MulliganState } from './states/MulliganState.js';
+import { PlanningPlot, SetupLaunchPadPlace } from './states/PlacementStates.js';
+import { ProposalState } from './states/ProposalState.js';
 import { GameView } from './ui/GameView.js';
 
 /**
@@ -41,12 +47,18 @@ export class Game {
         /** @type {GameView | null} */
         this.view = null;
         this.bga.states.register('PlaceholderWait', new PlaceholderWait(this, bga));
-        // 状態クラスはサーバー側の States/ のクラス名で登録する。操作の仕上げがある状態は個別クラス、他の同時選択は枠だけの ChoiceState
+        // 状態クラスはサーバー側の States/ のクラス名で登録する（状態 11・13・22・31・61・62・71・72・81・82・91 の操作 UI）
         this.bga.states.register('SetupLaunchPadPlace', new SetupLaunchPadPlace(this, bga));
+        this.bga.states.register('SetupMulligan', new MulliganState(this, bga));
         this.bga.states.register('PlanningPlot', new PlanningPlot(this, bga));
-        for (const name of ['SetupMulligan', 'DeployMainChoose', 'DeployBonusChoose', 'LaunchMainChoose', 'LaunchBonusChoose', 'LinkMainChoose', 'LinkBonusChoose', 'ProposalKeepChoose']) {
-            this.bga.states.register(name, new ChoiceState(this, bga));
-        }
+        this.bga.states.register('EffectWindowResolve', new EffectWindowState(this, bga));
+        this.bga.states.register('DeployMainChoose', new DeployState(this, bga));
+        this.bga.states.register('DeployBonusChoose', new DeployState(this, bga));
+        this.bga.states.register('LaunchMainChoose', new LaunchState(this, bga));
+        this.bga.states.register('LaunchBonusChoose', new LaunchState(this, bga));
+        this.bga.states.register('LinkMainChoose', new LinkState(this, bga));
+        this.bga.states.register('LinkBonusChoose', new LinkState(this, bga, true));
+        this.bga.states.register('ProposalKeepChoose', new ProposalState(this, bga));
     }
 
     /**

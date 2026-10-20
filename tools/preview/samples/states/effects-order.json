@@ -1,0 +1,75 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "ORDER",
+     "entries": [
+      {
+       "entryId": 1,
+       "cardKey": "twin_deploy_technician",
+       "forced": false
+      },
+      {
+       "entryId": 2,
+       "cardKey": "first_penguin",
+       "forced": true
+      },
+      {
+       "entryId": 3,
+       "cardKey": "juggler",
+       "forced": false
+      }
+     ],
+     "defaultOrder": [
+      2,
+      1,
+      3
+     ]
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-order-row[data-entry=\"3\"] button[aria-label=\"Move to the top\"]"
+  }
+ ]
+}

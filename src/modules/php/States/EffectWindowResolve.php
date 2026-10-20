@@ -118,6 +118,7 @@ class EffectWindowResolve extends GameState
     public function zombie(int $playerId): void
     {
         $this->game->peSend($this->game->peMachine()->windows()->zombie($playerId));
+        $this->game->peSend($this->game->peMachine()->windows()->waitingNotices());
         $this->game->gamestate->setPlayerNonMultiactive($playerId, 'allDone');
     }
 
@@ -133,6 +134,8 @@ class EffectWindowResolve extends GameState
         }
         $this->game->giveExtraTime($playerId);
         $this->game->peSend($notices);
+        // 状態 31 の args は入場時のもの。残りの問い（N34）と待機表示（N35）を送る
+        $this->game->peSend($this->game->peMachine()->windows()->progressNotices($playerId));
         if (!in_array($playerId, $this->game->peMachine()->windows()->playersNeedingInput(), true)) {
             $this->game->gamestate->setPlayerNonMultiactive($playerId, 'allDone');
         }

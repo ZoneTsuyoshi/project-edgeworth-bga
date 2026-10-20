@@ -1,11 +1,19 @@
 /**
  * BGA の外で画面を描く簡易プレビュー（tools/preview/index.html）。getAllDatas の見本 JSON（010 §8.2）を読み、
  * ui/GameView.js に渡す。通知は同じ表（notifications.js）で再生できる。静的サーバーで開く: `npx http-server . -p 8765` → /tools/preview/
- * クエリ: ?sample=three-players-advanced|two-players-standard-6col、?theme=dark、?layout=narrow（パネルを上へ）、?demo=select|dpad|move|detail
+ * クエリ: ?sample=three-players-advanced|two-players-standard-6col、?theme=dark、?layout=narrow（パネルを上へ）、?demo=select|dpad|move|detail、
+ *   ?state=<samples/states/ の見本名>（状態の操作 UI。BGA の statusBar / actions は代用品。steps で操作を再生する）
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { GameView } from '../../src/modules/js/ui/GameView.js';
 import { dispatchNotification } from '../../src/modules/js/notifications.js';
+import { DeployState } from '../../src/modules/js/states/DeployState.js';
+import { EffectWindowState } from '../../src/modules/js/states/EffectWindowState.js';
+import { LaunchState } from '../../src/modules/js/states/LaunchState.js';
+import { LinkState } from '../../src/modules/js/states/LinkState.js';
+import { MulliganState } from '../../src/modules/js/states/MulliganState.js';
+import { PlanningPlot, SetupLaunchPadPlace } from '../../src/modules/js/states/PlacementStates.js';
+import { ProposalState } from '../../src/modules/js/states/ProposalState.js';
 
 const params = new URLSearchParams(location.search);
 const sampleName = params.get('sample') ?? 'three-players-advanced';
@@ -15,6 +23,15 @@ if (params.get('theme') === 'dark') {
 if (params.get('layout') === 'narrow') {
     document.body.classList.add('pv-narrow');
 }
+
+// 例外は画面の上に出す（headless のスクリーンショットで原因が分かるように）
+window.addEventListener('error', (e) => {
+    const box = document.getElementById('pv-log');
+    if (box !== null) {
+        box.hidden = false;
+        box.textContent += `ERROR ${e.message}\n${e.error?.stack ?? ''}\n`;
+    }
+});
 
 // BGA のグローバルの代用
 window._ = (/** @type {string} */ s) => s;
@@ -100,4 +117,86 @@ addTool('clear', () => {
 const demo = params.get('demo');
 if (demo !== null && demo in demos) {
     requestAnimationFrame(() => setTimeout(() => /** @type {Record<string, () => void>} */ (demos)[demo](), 300));
+}
+
+// ---- 状態の操作 UI（?state=<見本名>） ----
+const stateName = params.get('state');
+if (stateName !== null) {
+    const plan = await (await fetch(`./samples/states/${stateName}.json`)).json();
+    const titleBox = /** @type {HTMLElement} */ (document.getElementById('pv-title'));
+    const buttonBox = /** @type {HTMLElement} */ (document.getElementById('pv-buttons'));
+    const logBox = /** @type {HTMLElement} */ (document.getElementById('pv-log'));
+    /** BGA の代用品: ステータスバーと performAction（送った引数を画面の上に出す） */
+    const bga = {
+        statusBar: {
+            setTitle: (/** @type {string} */ text) => {
+                titleBox.textContent = text.replaceAll('${you}', 'You');
+            },
+            addActionButton: (/** @type {string} */ label, /** @type {() => void} */ fn, /** @type {{ color?: string, disabled?: boolean }} */ opts = {}) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.textContent = label;
+                b.disabled = opts.disabled === true;
+                if (opts.color === 'secondary' || opts.color === 'alert') {
+                    b.className = `pv-${opts.color}`;
+                }
+                b.addEventListener('click', fn);
+                buttonBox.append(b);
+            },
+            removeActionButtons: () => buttonBox.replaceChildren(),
+        },
+        actions: {
+            performAction: async (/** @type {string} */ name, /** @type {Record<string, any>} */ args, /** @type {unknown} */ opts) => {
+                logBox.hidden = false;
+                logBox.textContent += `${name} ${JSON.stringify(args)} ${opts === undefined ? '' : JSON.stringify(opts)}\n`;
+                if (name === 'actSell') {
+                    const self = view.m.me ?? 0;
+                    await dispatchNotification(view, 'cardsDiscarded', { player_id: self, cards: args.cardIds, reason: 'sell' });
+                    await dispatchNotification(view, 'mayaChanged', { player_id: self, maya: view.m.players[self].maya + 3 * args.cardIds.length });
+                }
+                return true;
+            },
+        },
+    };
+    const game = { view };
+    const classes = {
+        SetupLaunchPadPlace: () => new SetupLaunchPadPlace(game, bga),
+        SetupMulligan: () => new MulliganState(game, bga),
+        PlanningPlot: () => new PlanningPlot(game, bga),
+        EffectWindowResolve: () => new EffectWindowState(game, bga),
+        DeployMainChoose: () => new DeployState(game, bga),
+        DeployBonusChoose: () => new DeployState(game, bga),
+        LaunchMainChoose: () => new LaunchState(game, bga),
+        LaunchBonusChoose: () => new LaunchState(game, bga),
+        LinkMainChoose: () => new LinkState(game, bga),
+        LinkBonusChoose: () => new LinkState(game, bga, true),
+        ProposalKeepChoose: () => new ProposalState(game, bga),
+    };
+    if (plan.maya !== undefined && view.m.me !== null) {
+        view.m.players[view.m.me].maya = plan.maya;
+        view.panels.get(view.m.me)?.update({});
+    }
+    const sleep = (/** @type {number} */ ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    if (plan.state !== null) {
+        const state = /** @type {Record<string, () => any>} */ (classes)[plan.state]();
+        state.onEnteringState(plan.args, plan.active);
+        Object.assign(window, { peState: state });
+    }
+    for (const [name, args] of plan.notifications ?? []) {
+        await dispatchNotification(view, name, args);
+    }
+    for (const step of plan.steps ?? []) {
+        await sleep(120);
+        if (step.click !== undefined) {
+            const nodes = document.querySelectorAll(step.click);
+            /** @type {HTMLElement | undefined} */ (nodes[(step.nth ?? 1) - 1])?.click();
+        } else if (step.clickText !== undefined) {
+            [...buttonBox.querySelectorAll('button')].find((b) => b.textContent === step.clickText)?.click();
+        } else if (step.cellClick !== undefined) {
+            view.stateFrame.handleCellPick(step.cellClick);
+        } else if (step.wait !== undefined) {
+            await sleep(step.wait);
+        }
+    }
+    document.body.dataset.ready = 'true';
 }

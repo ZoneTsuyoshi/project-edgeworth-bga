@@ -74,6 +74,18 @@ export class PlayerArea {
     }
 
     /**
+     * 衛星を選べるようにする（map に無い衛星は選択の対象外）。null で解除。
+     * @param {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>> | null} picks
+     * @param {(satId: number) => void} [onPick]
+     */
+    setSatPicks(picks, onPick = () => {}) {
+        for (const [satId, view] of this.sats) {
+            const spec = picks?.get(satId);
+            view.setPick(spec === undefined ? null : { ...spec, onPick: () => onPick(satId) });
+        }
+    }
+
+    /**
      * @param {number} satId
      * @returns {SatelliteView | undefined}
      */

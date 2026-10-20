@@ -1,0 +1,327 @@
+{
+ "sample": "three-players-advanced",
+ "state": null,
+ "active": false,
+ "args": {},
+ "notifications": [
+  [
+   "finalScore",
+   {
+    "player_id": 2310001,
+    "fame": 184,
+    "detail": {
+     "total": 184,
+     "I": {
+      "points": 28,
+      "budget": 28
+     },
+     "II": {
+      "points": 3,
+      "maya": 33
+     },
+     "III": {
+      "points": 20,
+      "land": 3,
+      "sea": 14,
+      "cells": []
+     },
+     "IV": {
+      "points": 28,
+      "regions": [
+       "A",
+       "B",
+       "C",
+       "D",
+       "E",
+       "F",
+       "G"
+      ]
+     },
+     "V": {
+      "points": 23,
+      "missions": [
+       {
+        "mission": 3,
+        "tier": "EXTRA",
+        "points": 18,
+        "cells": []
+       },
+       {
+        "mission": 9,
+        "tier": "EASY",
+        "points": 5,
+        "cells": []
+       }
+      ]
+     },
+     "VI": {
+      "points": 20,
+      "sats": [
+       {
+        "sat_id": 11,
+        "fame": 5
+       },
+       {
+        "sat_id": 12,
+        "fame": 5
+       },
+       {
+        "sat_id": 14,
+        "fame": 10
+       }
+      ]
+     },
+     "VII": {
+      "points": 35,
+      "a": 20,
+      "b": 5,
+      "c": 10
+     },
+     "VIII": {
+      "points": 24,
+      "rewards": [
+       {
+        "card": "T001",
+        "value": 13,
+        "rank": 1,
+        "points": 18
+       },
+       {
+        "card": "T013",
+        "value": 4,
+        "rank": 2,
+        "points": 6
+       }
+      ]
+     },
+     "IX": {
+      "points": 3
+     }
+    },
+    "missions": [
+     {
+      "mission": 1,
+      "achieved": false
+     },
+     {
+      "mission": 9,
+      "achieved": true
+     }
+    ]
+   }
+  ],
+  [
+   "finalScore",
+   {
+    "player_id": 2310002,
+    "fame": 120,
+    "detail": {
+     "total": 120,
+     "I": {
+      "points": 14,
+      "budget": 14
+     },
+     "II": {
+      "points": 3,
+      "maya": 33
+     },
+     "III": {
+      "points": 20,
+      "land": 3,
+      "sea": 14,
+      "cells": []
+     },
+     "IV": {
+      "points": 28,
+      "regions": [
+       "A",
+       "B",
+       "C",
+       "D",
+       "E",
+       "F",
+       "G"
+      ]
+     },
+     "V": {
+      "points": 23,
+      "missions": [
+       {
+        "mission": 3,
+        "tier": "EXTRA",
+        "points": 18,
+        "cells": []
+       },
+       {
+        "mission": 9,
+        "tier": "EASY",
+        "points": 5,
+        "cells": []
+       }
+      ]
+     },
+     "VI": {
+      "points": 20,
+      "sats": [
+       {
+        "sat_id": 11,
+        "fame": 5
+       },
+       {
+        "sat_id": 12,
+        "fame": 5
+       },
+       {
+        "sat_id": 14,
+        "fame": 10
+       }
+      ]
+     },
+     "VII": {
+      "points": 35,
+      "a": 20,
+      "b": 5,
+      "c": 10
+     },
+     "VIII": {
+      "points": 24,
+      "rewards": [
+       {
+        "card": "T001",
+        "value": 13,
+        "rank": 1,
+        "points": 18
+       },
+       {
+        "card": "T013",
+        "value": 4,
+        "rank": 2,
+        "points": 6
+       }
+      ]
+     },
+     "IX": {
+      "points": 3
+     }
+    },
+    "missions": [
+     {
+      "mission": 3,
+      "achieved": true
+     },
+     {
+      "mission": 5,
+      "achieved": false
+     }
+    ]
+   }
+  ],
+  [
+   "finalScore",
+   {
+    "player_id": 2310003,
+    "fame": 120,
+    "detail": {
+     "total": 120,
+     "I": {
+      "points": 14,
+      "budget": 14
+     },
+     "II": {
+      "points": 3,
+      "maya": 33
+     },
+     "III": {
+      "points": 20,
+      "land": 3,
+      "sea": 14,
+      "cells": []
+     },
+     "IV": {
+      "points": 28,
+      "regions": [
+       "A",
+       "B",
+       "C",
+       "D",
+       "E",
+       "F",
+       "G"
+      ]
+     },
+     "V": {
+      "points": 23,
+      "missions": [
+       {
+        "mission": 3,
+        "tier": "EXTRA",
+        "points": 18,
+        "cells": []
+       },
+       {
+        "mission": 9,
+        "tier": "EASY",
+        "points": 5,
+        "cells": []
+       }
+      ]
+     },
+     "VI": {
+      "points": 20,
+      "sats": [
+       {
+        "sat_id": 11,
+        "fame": 5
+       },
+       {
+        "sat_id": 12,
+        "fame": 5
+       },
+       {
+        "sat_id": 14,
+        "fame": 10
+       }
+      ]
+     },
+     "VII": {
+      "points": 35,
+      "a": 20,
+      "b": 5,
+      "c": 10
+     },
+     "VIII": {
+      "points": 24,
+      "rewards": [
+       {
+        "card": "T001",
+        "value": 13,
+        "rank": 1,
+        "points": 18
+       },
+       {
+        "card": "T013",
+        "value": 4,
+        "rank": 2,
+        "points": 6
+       }
+      ]
+     },
+     "IX": {
+      "points": 3
+     }
+    },
+    "missions": [
+     {
+      "mission": 2,
+      "achieved": false
+     },
+     {
+      "mission": 4,
+      "achieved": false
+     }
+    ]
+   }
+  ]
+ ],
+ "steps": []
+}

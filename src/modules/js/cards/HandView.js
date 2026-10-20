@@ -75,6 +75,15 @@ export class HandView {
         this.render();
     }
 
+    /**
+     * 選択中のカードを置き換える（選択モードのまま描き直す）。
+     * @param {number[]} ids
+     */
+    setChosen(ids) {
+        this.sel.chosen = new Set(ids.filter((id) => this.ids.includes(id)));
+        this.render();
+    }
+
     /** @returns {number[]} */
     selected() {
         return [...this.sel.chosen];

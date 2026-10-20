@@ -1,0 +1,199 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "EFFECT",
+     "entryId": 20,
+     "cardKey": "euro_africa_relay_network",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "area",
+       "type": "AREA",
+       "min": 1,
+       "max": 1,
+       "candidates": [
+        22,
+        32,
+        34
+       ],
+       "default": null
+      },
+      {
+       "key": "direction",
+       "type": "DIRECTION",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        "NE",
+        "SE",
+        "NW",
+        "SW"
+       ],
+       "default": null
+      },
+      {
+       "key": "satellite",
+       "type": "SATELLITE",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        11,
+        12,
+        14
+       ],
+       "default": null
+      },
+      {
+       "key": "cards",
+       "type": "CARDS",
+       "min": 1,
+       "max": 1,
+       "candidates": [
+        3,
+        18,
+        44,
+        51,
+        70,
+        88
+       ],
+       "default": null
+      }
+     ],
+     "preview": {}
+    },
+    {
+     "type": "EFFECT",
+     "entryId": 21,
+     "cardKey": "juggler",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "assignment",
+       "type": "ASSIGNMENT",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        {
+         "card": 5,
+         "sat": 13
+        },
+        {
+         "card": 6,
+         "sat": 13
+        }
+       ],
+       "default": {
+        "5": 13,
+        "6": 13
+       }
+      }
+     ],
+     "preview": {
+      "satellites": [
+       13,
+       15
+      ]
+     }
+    },
+    {
+     "type": "EFFECT",
+     "entryId": 22,
+     "cardKey": "ground_link",
+     "mandatory": false,
+     "cost": {
+      "kind": "DISCARD_COST",
+      "amount": 2,
+      "canPay": true
+     },
+     "fields": [
+      {
+       "key": "pairs",
+       "type": "PAIRS",
+       "min": 1,
+       "max": 1,
+       "candidates": [
+        [
+         11,
+         22
+        ],
+        [
+         14,
+         34
+        ]
+       ],
+       "default": null
+      }
+     ],
+     "preview": {
+      "links": [
+       {
+        "sat": 11,
+        "cell": 22,
+        "cost": 8,
+        "areaCost": 5,
+        "pioneer": 3,
+        "special": 0,
+        "costWithMods": 8
+       },
+       {
+        "sat": 14,
+        "cell": 34,
+        "cost": 26,
+        "areaCost": 20,
+        "pioneer": 6,
+        "special": 0,
+        "costWithMods": 26
+       }
+      ]
+     }
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": []
+}

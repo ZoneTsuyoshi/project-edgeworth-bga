@@ -7,6 +7,7 @@
  */
 import { chipInfo } from './cards/card-text.js';
 import { projectKey } from './cards/sprite-layout.js';
+import { scoreFromNotification } from './states/logic/score.js';
 import { int } from './ui/dom.js';
 
 /**
@@ -380,10 +381,24 @@ export const HANDLERS = {
     }
   },
 
-  // N26: 窓の終わり。適用済みの ev_id の記録を整理する
+  // N26: 窓の終わり。適用済みの ev_id の記録を整理し、窓の問いの枠と待機表示を片付ける。
+  // 窓の途中の変化（EUROPA の宣言など）には専用の通知が無いので、ここで全員の表示をモデルに合わせ直す
   windowClosed(view) {
     view.m.window = null;
     view.appliedEvents.clear();
+    view.effectUi?.close();
+    view.refreshAllPlayers();
+    view.refreshMarks();
+  },
+
+  // 窓の問いの更新（本人宛て。状態 31 の args は入場時のものなので、答えるたびに残りの問いをここで受け取る。N34）
+  effectQuestions(view, a) {
+    view.effectUi?.update(a);
+  },
+
+  // 窓の待機表示の更新（全員宛て。誰が・どのカードの選択中か。カードは公開情報。N35）
+  effectWaiting(view, a) {
+    view.effectUi?.setWaiting(a.waiting);
   },
 
   // N27（保留）: [Use]・自動の強制効果。使用済みマークを付ける。
@@ -460,6 +475,7 @@ export const HANDLERS = {
     const pid = int(a.player_id);
     view.areas.get(pid)?.setMarks({ isBase: view.m.basePlayer === pid, finalFame: int(a.fame) });
     view.band.set({ phase: 'END' });
+    view.score.add(scoreFromNotification(a));
   },
 
   // N33: 山と手札の枚数カウンターを再同期（変更があった者だけ）
@@ -512,4 +528,5 @@ export async function dispatchNotification(view, name, args) {
     view.appliedEvents.add(ev);
   }
   await handler(view, args);
+  view.emitModelChanged(name);
 }

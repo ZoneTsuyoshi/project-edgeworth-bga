@@ -2,6 +2,7 @@
 export const CARD_INFO = {
  "projects": {
   "P001": {
+   "nameId": "aviation_engineer",
    "name": "Aviation Engineer",
    "type": "CREW",
    "cost": 5,
@@ -13,6 +14,7 @@ export const CARD_INFO = {
    "text": "In the Planning Phase \"Retrieve Action Cards\" step, if your upright Action Card is \"II Deploy\" or \"III Launch/Turn\", return it to your hand. That is, you can choose \"II Deploy\" or \"III Launch/Turn\" in consecutive rounds."
   },
   "P002": {
+   "nameId": "aviation_commander",
    "name": "Aviation Commander",
    "type": "CREW",
    "cost": 5,
@@ -24,6 +26,7 @@ export const CARD_INFO = {
    "text": "In the Planning Phase \"Retrieve Action Cards\" step, if your upright Action Card is \"IV Establish Link\" or \"V Proposal\", return it to your hand. That is, you can choose \"IV Establish Link\" or \"V Proposal\" in consecutive rounds."
   },
   "P003": {
+   "nameId": "lonesome_rabbit",
    "name": "Lonesome Rabbit",
    "type": "CREW",
    "cost": 6,
@@ -35,6 +38,7 @@ export const CARD_INFO = {
    "text": "If your action choice does not overlap with that of any other player, +2 [Maya]."
   },
   "P004": {
+   "nameId": "course_corrector",
    "name": "Course Corrector",
    "type": "CREW",
    "cost": 3,
@@ -46,6 +50,7 @@ export const CARD_INFO = {
    "text": "During the Budget Phase, you may pay 2 [Maya]. If you do, choose one of your satellites, spend 1 [Fuel], and move it forward 1 area."
   },
   "P005": {
+   "nameId": "procurement_officer",
    "name": "Procurement Officer",
    "type": "CREW",
    "cost": 5,
@@ -57,6 +62,7 @@ export const CARD_INFO = {
    "text": "In the Budget Phase, you may pay 4 [Maya]. If you do, draw 1 Project card."
   },
   "P006": {
+   "nameId": "budget_negotiator",
    "name": "Budget Negotiator",
    "type": "CREW",
    "cost": 7,
@@ -68,6 +74,7 @@ export const CARD_INFO = {
    "text": "At the start of the Budget Phase, you may pay 5 [Maya]. If you do, +1 [Budget]."
   },
   "P007": {
+   "nameId": "master_negotiator",
    "name": "Master Negotiator",
    "type": "CREW",
    "cost": 9,
@@ -79,6 +86,7 @@ export const CARD_INFO = {
    "text": "In the Budget Phase, when you gain an Action Selection Bonus, +2 [Maya]."
   },
   "P008": {
+   "nameId": "integrated_operator",
    "name": "Integrated Operator",
    "type": "CREW",
    "cost": 10,
@@ -90,6 +98,7 @@ export const CARD_INFO = {
    "text": "For each of your satellites that has [CREW], [DEVICE] and [SOFTWARE] all deployed, the [Maya] you can gain in the Budget Phase is +2."
   },
   "P009": {
+   "nameId": "first_penguin",
    "name": "First Penguin",
    "type": "CREW",
    "cost": 3,
@@ -101,6 +110,7 @@ export const CARD_INFO = {
    "text": "When this card is deployed, draw 1 Project card."
   },
   "P010": {
+   "nameId": "ground_mechanic",
    "name": "Ground Mechanic",
    "type": "CREW",
    "cost": 4,
@@ -112,6 +122,7 @@ export const CARD_INFO = {
    "text": "Deployment cost for this satellite -2."
   },
   "P011": {
+   "nameId": "twin_deploy_technician",
    "name": "Twin Deploy Technician",
    "type": "CREW",
    "cost": 4,
@@ -123,6 +134,7 @@ export const CARD_INFO = {
    "text": "When a [DEVICE] card is deployed to this satellite, you may pay its deployment cost to deploy 1 [DEVICE] card to any satellite of yours."
   },
   "P012": {
+   "nameId": "docking_mechanic",
    "name": "Docking Mechanic",
    "type": "CREW",
    "cost": 4,
@@ -134,6 +146,7 @@ export const CARD_INFO = {
    "text": "Deployment cost for this satellite -3."
   },
   "P013": {
+   "nameId": "crew_commander",
    "name": "Crew Commander",
    "type": "CREW",
    "cost": 7,
@@ -145,6 +158,7 @@ export const CARD_INFO = {
    "text": "When a [CREW] is deployed to this satellite, +1 [Budget]."
   },
   "P014": {
+   "nameId": "crew_coordinator",
    "name": "Crew Coordinator",
    "type": "CREW",
    "cost": 7,
@@ -156,6 +170,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [CREW] cards deployed to this satellite -3."
   },
   "P015": {
+   "nameId": "device_installer",
    "name": "Device Installer",
    "type": "CREW",
    "cost": 7,
@@ -167,6 +182,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [DEVICE] cards deployed to this satellite -3."
   },
   "P016": {
+   "nameId": "system_architect",
    "name": "System Architect",
    "type": "CREW",
    "cost": 7,
@@ -178,6 +194,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [SOFTWARE] cards deployed to this satellite -3."
   },
   "P017": {
+   "nameId": "chief_device_officer",
    "name": "Chief Device Officer",
    "type": "CREW",
    "cost": 7,
@@ -189,6 +206,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [DEVICE] deployed to this satellite -4."
   },
   "P018": {
+   "nameId": "squadron_aide",
    "name": "Squadron Aide",
    "type": "CREW",
    "cost": 7,
@@ -200,6 +218,7 @@ export const CARD_INFO = {
    "text": "Deployment cost for all your satellites -1."
   },
   "P019": {
+   "nameId": "fleet_commander",
    "name": "Fleet Commander",
    "type": "CREW",
    "cost": 7,
@@ -211,6 +230,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [CREW] for all your satellites -2."
   },
   "P020": {
+   "nameId": "fleet_engineer",
    "name": "Fleet Engineer",
    "type": "CREW",
    "cost": 7,
@@ -222,6 +242,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [DEVICE] for all your satellites -2."
   },
   "P021": {
+   "nameId": "fleet_architect",
    "name": "Fleet Architect",
    "type": "CREW",
    "cost": 7,
@@ -233,6 +254,7 @@ export const CARD_INFO = {
    "text": "Deployment cost of [SOFTWARE] for all your satellites -2."
   },
   "P022": {
+   "nameId": "juggler",
    "name": "Juggler",
    "type": "CREW",
    "cost": 8,
@@ -244,6 +266,7 @@ export const CARD_INFO = {
    "text": "When this card is deployed, rearrange all Project cards on your standby (inactive) satellites as you like. However, \"On Deploy\" effects are not triggered."
   },
   "P023": {
+   "nameId": "integrated_planner",
    "name": "Integrated Planner",
    "type": "CREW",
    "cost": 9,
@@ -255,6 +278,7 @@ export const CARD_INFO = {
    "text": "When a Project card is deployed to this satellite, draw 1 Project card."
   },
   "P024": {
+   "nameId": "swap_technician",
    "name": "Swap Technician",
    "type": "CREW",
    "cost": 10,
@@ -266,6 +290,7 @@ export const CARD_INFO = {
    "text": "When this card is deployed, you may choose one of your active satellites. If you do, swap its active state, fuel consumption and location with this satellite."
   },
   "P025": {
+   "nameId": "pioneering_gorilla",
    "name": "Pioneering Gorilla",
    "type": "CREW",
    "cost": 10,
@@ -277,6 +302,7 @@ export const CARD_INFO = {
    "text": "When a [SOFTWARE] is deployed to this satellite, draw 2 Project cards."
   },
   "P026": {
+   "nameId": "french_bulldog",
    "name": "French Bulldog",
    "type": "CREW",
    "cost": 10,
@@ -288,6 +314,7 @@ export const CARD_INFO = {
    "text": "When deploying this card, deployment cost -2 for each card already on the target satellite."
   },
   "P027": {
+   "nameId": "personnel_planner",
    "name": "Personnel Planner",
    "type": "CREW",
    "cost": 11,
@@ -299,6 +326,7 @@ export const CARD_INFO = {
    "text": "When a [CREW] is deployed to any of your satellites, draw 1 Project card."
   },
   "P028": {
+   "nameId": "equipment_planner",
    "name": "Equipment Planner",
    "type": "CREW",
    "cost": 11,
@@ -310,6 +338,7 @@ export const CARD_INFO = {
    "text": "When a [DEVICE] is deployed to any of your satellites, draw 1 Project card."
   },
   "P029": {
+   "nameId": "it_planner",
    "name": "IT Planner",
    "type": "CREW",
    "cost": 11,
@@ -321,6 +350,7 @@ export const CARD_INFO = {
    "text": "When a [SOFTWARE] is deployed to any of your satellites, draw 1 Project card."
   },
   "P030": {
+   "nameId": "talent_development_officer",
    "name": "Talent Development Officer",
    "type": "CREW",
    "cost": 12,
@@ -332,6 +362,7 @@ export const CARD_INFO = {
    "text": "When a [CREW] is deployed to any of your satellites, [Budget] +1."
   },
   "P031": {
+   "nameId": "equipment_investment_officer",
    "name": "Equipment Investment Officer",
    "type": "CREW",
    "cost": 12,
@@ -343,6 +374,7 @@ export const CARD_INFO = {
    "text": "When a [DEVICE] is deployed to any of your satellites, [Budget] +1."
   },
   "P032": {
+   "nameId": "it_investment_officer",
    "name": "IT Investment Officer",
    "type": "CREW",
    "cost": 12,
@@ -354,6 +386,7 @@ export const CARD_INFO = {
    "text": "When a [SOFTWARE] is deployed to any of your satellites, [Budget] +1."
   },
   "P033": {
+   "nameId": "seventh_prince",
    "name": "Seventh Prince",
    "type": "CREW",
    "cost": 8,
@@ -365,6 +398,7 @@ export const CARD_INFO = {
    "text": "Project cards cannot be deployed to this satellite."
   },
   "P034": {
+   "nameId": "acceleration_booster",
    "name": "Acceleration Booster",
    "type": "DEVICE",
    "cost": 5,
@@ -376,6 +410,7 @@ export const CARD_INFO = {
    "text": "When this satellite is launched, you may pay 2/3/4/5 [Maya]. If you do, move this satellite forward 1/2/3/4 areas and spend 1/2/3/4 [Fuel]. No near-miss check is made for the areas passed through, but the landing/splashdown check is made."
   },
   "P035": {
+   "nameId": "gamble_system",
    "name": "Gamble System",
    "type": "DEVICE",
    "cost": 7,
@@ -387,6 +422,7 @@ export const CARD_INFO = {
    "text": "When this satellite is launched, discard this card. Instead, deploy the top card of the Project deck to this satellite without paying its deployment cost. The newly deployed card's \"On Deploy\" and \"On Launch\" effects are triggered."
   },
   "P036": {
+   "nameId": "lightweight_frame",
    "name": "Lightweight Frame",
    "type": "DEVICE",
    "cost": 7,
@@ -398,6 +434,7 @@ export const CARD_INFO = {
    "text": "When you launch a satellite, launch cost -1 for each card deployed to that satellite."
   },
   "P037": {
+   "nameId": "attitude_controller",
    "name": "Attitude Controller",
    "type": "DEVICE",
    "cost": 7,
@@ -409,6 +446,7 @@ export const CARD_INFO = {
    "text": "When this satellite turns, draw 1 Project card."
   },
   "P038": {
+   "nameId": "fuel_transfer_pipe",
    "name": "Fuel Transfer Pipe",
    "type": "DEVICE",
    "cost": 7,
@@ -420,6 +458,7 @@ export const CARD_INFO = {
    "text": "When you launch a satellite, you may reduce [Fuel] by any amount up to that satellite's loaded fuel. If you do, choose another of your active satellites and recover its fuel by the amount reduced. However, it cannot recover beyond its initial fuel slot."
   },
   "P039": {
+   "nameId": "sensor_array",
    "name": "Sensor Array",
    "type": "DEVICE",
    "cost": 9,
@@ -431,6 +470,7 @@ export const CARD_INFO = {
    "text": "When this satellite is launched, draw Project cards equal to the number of [DEVICE] cards deployed to this satellite."
   },
   "P040": {
+   "nameId": "launch_assist_unit",
    "name": "Launch Assist Unit",
    "type": "DEVICE",
    "cost": 9,
@@ -442,6 +482,7 @@ export const CARD_INFO = {
    "text": "Launch cost of your satellites -3."
   },
   "P041": {
+   "nameId": "launch_contract_unit",
    "name": "Launch Contract Unit",
    "type": "DEVICE",
    "cost": 12,
@@ -453,6 +494,7 @@ export const CARD_INFO = {
    "text": "When you launch a satellite, +1 [Budget]."
   },
   "P042": {
+   "nameId": "dancing_dog_robot",
    "name": "Dancing Dog Robot",
    "type": "DEVICE",
    "cost": 15,
@@ -464,6 +506,7 @@ export const CARD_INFO = {
    "text": "When this satellite is launched, [Budget] +1 for each [DEVICE] card deployed to this satellite."
   },
   "P043": {
+   "nameId": "regenerative_thruster",
    "name": "Regenerative Thruster",
    "type": "DEVICE",
    "cost": 5,
@@ -475,6 +518,7 @@ export const CARD_INFO = {
    "text": "When this satellite turns, recover 1 [Fuel]."
   },
   "P044": {
+   "nameId": "formation_sync_unit",
    "name": "Formation Sync Unit",
    "type": "DEVICE",
    "cost": 6,
@@ -486,6 +530,7 @@ export const CARD_INFO = {
    "text": "When another of your satellites turns, this satellite may turn."
   },
   "P045": {
+   "nameId": "orbital_repair_dock",
    "name": "Orbital Repair Dock",
    "type": "DEVICE",
    "cost": 7,
@@ -497,6 +542,7 @@ export const CARD_INFO = {
    "text": "When this satellite turns, you may pay deployment cost to deploy 1 Project card to this satellite."
   },
   "P046": {
+   "nameId": "fixed_orbit_unit",
    "name": "Fixed Orbit Unit",
    "type": "DEVICE",
    "cost": 7,
@@ -508,6 +554,7 @@ export const CARD_INFO = {
    "text": "This satellite cannot turn."
   },
   "P047": {
+   "nameId": "tornado_bit",
    "name": "Tornado Bit",
    "type": "DEVICE",
    "cost": 9,
@@ -519,6 +566,7 @@ export const CARD_INFO = {
    "text": "When this satellite turns, you may pay the special link cost to establish a link."
   },
   "P048": {
+   "nameId": "variable_orbit_unit",
    "name": "Variable Orbit Unit",
    "type": "DEVICE",
    "cost": 5,
@@ -530,6 +578,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, it may turn."
   },
   "P049": {
+   "nameId": "solar_panel",
    "name": "Solar Panel",
    "type": "DEVICE",
    "cost": 6,
@@ -541,6 +590,7 @@ export const CARD_INFO = {
    "text": "Each time this satellite establishes a link, recover 1 [Fuel]."
   },
   "P050": {
+   "nameId": "euro_africa_relay_network",
    "name": "Euro-Africa Relay Network",
    "type": "DEVICE",
    "cost": 6,
@@ -552,6 +602,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [A][C][E], you may additionally pay the special link cost. If you do, choose another of your satellites in region [A][C][E] and establish a link with it."
   },
   "P051": {
+   "nameId": "americas_asia_relay_network",
    "name": "Americas-Asia Relay Network",
    "type": "DEVICE",
    "cost": 6,
@@ -563,6 +614,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [B][D][F], you may additionally pay the special link cost. If you do, choose another of your satellites in region [B][D][F] and establish a link with it."
   },
   "P052": {
+   "nameId": "continental_antenna",
    "name": "Continental Antenna",
    "type": "DEVICE",
    "cost": 7,
@@ -574,6 +626,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, adjacent [Land] areas are also added to the target areas."
   },
   "P053": {
+   "nameId": "starboard_antenna",
    "name": "Starboard Antenna",
    "type": "DEVICE",
    "cost": 7,
@@ -585,6 +638,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, the 2 adjacent areas on the right side relative to its heading are also added to the target areas."
   },
   "P054": {
+   "nameId": "port_antenna",
    "name": "Port Antenna",
    "type": "DEVICE",
    "cost": 7,
@@ -596,6 +650,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, the 2 adjacent areas on the left side relative to its heading are also added to the target areas."
   },
   "P055": {
+   "nameId": "stealth_ship",
    "name": "Stealth Ship",
    "type": "DEVICE",
    "cost": 7,
@@ -607,6 +662,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link to an area that another player has already linked, you do not pay the pioneer cost to that player."
   },
   "P056": {
+   "nameId": "forward_wide_area_transmitter",
    "name": "Forward Wide-Area Transmitter",
    "type": "DEVICE",
    "cost": 8,
@@ -618,6 +674,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, you may additionally pay the special link cost. If you do, additionally establish a link with the adjacent area ahead of this satellite's heading."
   },
   "P057": {
+   "nameId": "rear_wide_area_transmitter",
    "name": "Rear Wide-Area Transmitter",
    "type": "DEVICE",
    "cost": 8,
@@ -629,6 +686,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, you may additionally pay the special link cost. If you do, additionally establish a link with the adjacent area behind this satellite's heading."
   },
   "P058": {
+   "nameId": "crimson_remote_comm_unit",
    "name": "Crimson Remote Comm Unit",
    "type": "DEVICE",
    "cost": 8,
@@ -640,6 +698,7 @@ export const CARD_INFO = {
    "text": "When another of your satellites establishes a link in region [C][E], you may pay the special link cost to have this satellite establish a link too."
   },
   "P059": {
+   "nameId": "lapis_remote_comm_unit",
    "name": "Lapis Remote Comm Unit",
    "type": "DEVICE",
    "cost": 8,
@@ -651,6 +710,7 @@ export const CARD_INFO = {
    "text": "When another of your satellites establishes a link in region [D][F], you may pay the special link cost to have this satellite establish a link too."
   },
   "P060": {
+   "nameId": "north_sea_waveform_relay",
    "name": "North Sea Waveform Relay",
    "type": "DEVICE",
    "cost": 8,
@@ -662,6 +722,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [A][G], you may pay the special link cost. If you do, choose 1 adjacent [Land] area and additionally establish a link there."
   },
   "P061": {
+   "nameId": "south_russia_waveform_relay",
    "name": "South Russia Waveform Relay",
    "type": "DEVICE",
    "cost": 8,
@@ -673,6 +734,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [B][H], you may pay the special link cost. If you do, choose 1 adjacent [Land] area and additionally establish a link there."
   },
   "P062": {
+   "nameId": "dust_ocean_antenna",
    "name": "Dust Ocean Antenna",
    "type": "DEVICE",
    "cost": 6,
@@ -684,6 +746,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [E][G], adjacent [Sea] areas are added to the target areas."
   },
   "P063": {
+   "nameId": "chile_ocean_antenna",
    "name": "Chile Ocean Antenna",
    "type": "DEVICE",
    "cost": 6,
@@ -695,6 +758,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [F][H], adjacent [Sea] areas are added to the target areas."
   },
   "P064": {
+   "nameId": "forward_beam_antenna",
    "name": "Forward Beam Antenna",
    "type": "DEVICE",
    "cost": 10,
@@ -706,6 +770,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, the 3 adjacent areas ahead of its heading are added to the target areas."
   },
   "P065": {
+   "nameId": "rear_beam_antenna",
    "name": "Rear Beam Antenna",
    "type": "DEVICE",
    "cost": 10,
@@ -717,6 +782,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link, the 3 adjacent areas behind its heading are added to the target areas."
   },
   "P066": {
+   "nameId": "signal_blocker",
    "name": "Signal Blocker",
    "type": "DEVICE",
    "cost": 10,
@@ -728,6 +794,7 @@ export const CARD_INFO = {
    "text": "This satellite cannot establish a link."
   },
   "P067": {
+   "nameId": "churyumov",
    "name": "Churyumov",
    "type": "SOFTWARE",
    "cost": 3,
@@ -739,6 +806,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, the number of Project cards you draw increases by 1. However, the number you keep in hand does not change."
   },
   "P068": {
+   "nameId": "shannon_entropy",
    "name": "Shannon Entropy",
    "type": "SOFTWARE",
    "cost": 4,
@@ -750,6 +818,7 @@ export const CARD_INFO = {
    "text": "When discarding Project cards in the Proposal Phase, you may discard cards other than those drawn during the Proposal Phase."
   },
   "P069": {
+   "nameId": "roscosmos",
    "name": "Roscosmos",
    "type": "SOFTWARE",
    "cost": 6,
@@ -761,6 +830,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, you may pay 4 [Maya]. If you do, +1 [Budget]."
   },
   "P070": {
+   "nameId": "spin_off",
    "name": "Spin-off",
    "type": "SOFTWARE",
    "cost": 6,
@@ -772,6 +842,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, you may additionally discard 1 Project card. If you do, +7 [Maya]."
   },
   "P071": {
+   "nameId": "chandrasekhar",
    "name": "Chandrasekhar",
    "type": "SOFTWARE",
    "cost": 6,
@@ -783,6 +854,7 @@ export const CARD_INFO = {
    "text": "For the Proposal Phase Action Selection Bonus, both the number drawn and the number kept in hand increase by 1."
   },
   "P072": {
+   "nameId": "lanchester",
    "name": "Lanchester",
    "type": "SOFTWARE",
    "cost": 6,
@@ -794,6 +866,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, you may pay 4/7/10 [Maya]. If you do, the number you keep in hand increases by 1/2/3."
   },
   "P073": {
+   "nameId": "tesla_memory",
    "name": "Tesla Memory",
    "type": "SOFTWARE",
    "cost": 8,
@@ -805,6 +878,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, the number you keep in hand increases by 1."
   },
   "P074": {
+   "nameId": "zero_day_deploy",
    "name": "Zero-Day Deploy",
    "type": "SOFTWARE",
    "cost": 9,
@@ -816,6 +890,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, you may discard 1 Project card. If you do, choose 1 Project card, pay its deployment cost and deploy it to any of your satellites."
   },
   "P075": {
+   "nameId": "faraday",
    "name": "Faraday",
    "type": "SOFTWARE",
    "cost": 10,
@@ -827,6 +902,7 @@ export const CARD_INFO = {
    "text": "When you draw Project cards in the Proposal Phase, +1 [Maya] for each card drawn."
   },
   "P076": {
+   "nameId": "ground_link",
    "name": "Ground Link",
    "type": "SOFTWARE",
    "cost": 10,
@@ -838,6 +914,7 @@ export const CARD_INFO = {
    "text": "In the Proposal Phase, you may discard 2 Project cards. If you do, choose one of your satellites, pay the link cost, and establish a link with 1 of the [Land] areas adjacent to that satellite."
   },
   "P077": {
+   "nameId": "orion_reward",
    "name": "Orion Reward",
    "type": "SOFTWARE",
    "cost": 7,
@@ -849,6 +926,7 @@ export const CARD_INFO = {
    "text": "At any time, the [Maya] you receive when you discard a Project card is +2."
   },
   "P078": {
+   "nameId": "apollo_down",
    "name": "Apollo Down",
    "type": "SOFTWARE",
    "cost": 3,
@@ -860,6 +938,7 @@ export const CARD_INFO = {
    "text": "When any of your satellites lands or splashes down, draw 1 Project card."
   },
   "P079": {
+   "nameId": "zero_gravity_alpha",
    "name": "Zero Gravity Alpha",
    "type": "SOFTWARE",
    "cost": 4,
@@ -871,6 +950,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are all deployed to this satellite, this satellite does not spend [Fuel] while above region [A][H]."
   },
   "P080": {
+   "nameId": "zero_gravity_beta",
    "name": "Zero Gravity Beta",
    "type": "SOFTWARE",
    "cost": 4,
@@ -882,6 +962,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are all deployed to this satellite, this satellite does not spend [Fuel] while above region [B][E]."
   },
   "P081": {
+   "nameId": "hohmann_booster",
    "name": "Hohmann Booster",
    "type": "SOFTWARE",
    "cost": 4,
@@ -893,6 +974,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above an area you have linked, you may pay 2 [Maya]. If you do, move this satellite forward 1 area in its heading and spend 1 [Fuel]. However, no near-miss check is made, and the landing/splashdown check is made."
   },
   "P082": {
+   "nameId": "triad_booster",
    "name": "Triad Booster",
    "type": "SOFTWARE",
    "cost": 4,
@@ -904,6 +986,7 @@ export const CARD_INFO = {
    "text": "In the Orbit Phase, if [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, it may orbit 1 additional area. If you do, spend 1 [Fuel]; the near-miss check is made in the area moved to."
   },
   "P083": {
+   "nameId": "albedo_refill",
    "name": "Albedo Refill",
    "type": "SOFTWARE",
    "cost": 4,
@@ -915,6 +998,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above region [A][C][H] from a different region, recover 2 [Fuel]."
   },
   "P084": {
+   "nameId": "geothermal_refill",
    "name": "Geothermal Refill",
    "type": "SOFTWARE",
    "cost": 4,
@@ -926,6 +1010,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above region [D][F][H] from a different region, recover 2 [Fuel]."
   },
   "P085": {
+   "nameId": "kessler_avoidance_system",
    "name": "Kessler Avoidance System",
    "type": "SOFTWARE",
    "cost": 4,
@@ -937,6 +1022,7 @@ export const CARD_INFO = {
    "text": "The [Fuel] this satellite spends when it near-misses another satellite is 1 less. That is, recover 1 [Fuel] on a near miss."
   },
   "P086": {
+   "nameId": "data_downlink",
    "name": "Data Downlink",
    "type": "SOFTWARE",
    "cost": 4,
@@ -948,6 +1034,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above an area you have linked, you may pay 3 [Maya]. If you do, draw 1 Project card."
   },
   "P087": {
+   "nameId": "data_rolling",
    "name": "Data Rolling",
    "type": "SOFTWARE",
    "cost": 4,
@@ -959,6 +1046,7 @@ export const CARD_INFO = {
    "text": "At the start of the Orbit Phase, draw 1 Project card. Then discard 1 Project card from your hand."
   },
   "P088": {
+   "nameId": "huygens_down",
    "name": "Huygens Down",
    "type": "SOFTWARE",
    "cost": 5,
@@ -970,6 +1058,7 @@ export const CARD_INFO = {
    "text": "When any of your satellites lands or splashes down, +8 [Maya]."
   },
   "P089": {
+   "nameId": "landing_down",
    "name": "Landing Down",
    "type": "SOFTWARE",
    "cost": 5,
@@ -981,6 +1070,7 @@ export const CARD_INFO = {
    "text": "When any of your satellites lands on a [Land] area, +15 [Maya]."
   },
   "P090": {
+   "nameId": "gimbal_control",
    "name": "Gimbal Control",
    "type": "SOFTWARE",
    "cost": 5,
@@ -992,6 +1082,7 @@ export const CARD_INFO = {
    "text": "When this satellite moves between regions, it may turn."
   },
   "P091": {
+   "nameId": "cascade_boost",
    "name": "Cascade Boost",
    "type": "SOFTWARE",
    "cost": 5,
@@ -1003,6 +1094,7 @@ export const CARD_INFO = {
    "text": "When this satellite moves between regions, you may move it 1 additional area. If you do, spend 1 [Fuel]; the near-miss check is made in the area moved to."
   },
   "P092": {
+   "nameId": "splashdown",
    "name": "Splashdown",
    "type": "SOFTWARE",
    "cost": 6,
@@ -1014,6 +1106,7 @@ export const CARD_INFO = {
    "text": "When any of your satellites splashes down on a [Sea] area, +10 [Maya]."
   },
   "P093": {
+   "nameId": "orbital_72",
    "name": "Orbital 72",
    "type": "SOFTWARE",
    "cost": 6,
@@ -1025,6 +1118,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above an area you have linked, +3 [Maya]."
   },
   "P094": {
+   "nameId": "deconflict",
    "name": "Deconflict",
    "type": "SOFTWARE",
    "cost": 6,
@@ -1036,6 +1130,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, this satellite does not near-miss. If there is 1 or fewer other satellite in that area, that satellite is also not considered to have near-missed."
   },
   "P095": {
+   "nameId": "flip_maneuver",
    "name": "Flip Maneuver",
    "type": "SOFTWARE",
    "cost": 7,
@@ -1047,6 +1142,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above an area you have linked, it may turn."
   },
   "P096": {
+   "nameId": "alpha_link",
    "name": "Alpha Link",
    "type": "SOFTWARE",
    "cost": 7,
@@ -1058,6 +1154,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above region [A][C][F] from a different region, you may pay the special link cost. If you do, this satellite establishes a link."
   },
   "P097": {
+   "nameId": "beta_link",
    "name": "Beta Link",
    "type": "SOFTWARE",
    "cost": 7,
@@ -1069,6 +1166,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above region [B][D][G] from a different region, you may pay the special link cost. If you do, this satellite establishes a link."
   },
   "P098": {
+   "nameId": "back_link",
    "name": "Back Link",
    "type": "SOFTWARE",
    "cost": 9,
@@ -1080,6 +1178,7 @@ export const CARD_INFO = {
    "text": "When this satellite enters the airspace above an area you have linked, you may pay the special link cost. If you do, establish a link with the area behind this satellite's heading."
   },
   "P099": {
+   "nameId": "flyby_link",
    "name": "Flyby Link",
    "type": "SOFTWARE",
    "cost": 11,
@@ -1093,6 +1192,7 @@ export const CARD_INFO = {
  },
  "satellites": {
   "R001B": {
+   "nameId": "hammer_moon",
    "shape": "HAMMER",
    "plan": "MOON",
    "color": "BLUE",
@@ -1105,6 +1205,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 1 Project card."
   },
   "R001G": {
+   "nameId": "hammer_moon",
    "shape": "HAMMER",
    "plan": "MOON",
    "color": "GREEN",
@@ -1117,6 +1218,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 1 Project card."
   },
   "R001R": {
+   "nameId": "hammer_moon",
    "shape": "HAMMER",
    "plan": "MOON",
    "color": "RED",
@@ -1129,6 +1231,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 1 Project card."
   },
   "R001Y": {
+   "nameId": "hammer_moon",
    "shape": "HAMMER",
    "plan": "MOON",
    "color": "YELLOW",
@@ -1141,6 +1244,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 1 Project card."
   },
   "R002B": {
+   "nameId": "retro_moon",
    "shape": "RETRO",
    "plan": "MOON",
    "color": "BLUE",
@@ -1153,6 +1257,7 @@ export const CARD_INFO = {
    "text": "When launched, +2 [Budget]."
   },
   "R002G": {
+   "nameId": "retro_moon",
    "shape": "RETRO",
    "plan": "MOON",
    "color": "GREEN",
@@ -1165,6 +1270,7 @@ export const CARD_INFO = {
    "text": "When launched, +2 [Budget]."
   },
   "R002R": {
+   "nameId": "retro_moon",
    "shape": "RETRO",
    "plan": "MOON",
    "color": "RED",
@@ -1177,6 +1283,7 @@ export const CARD_INFO = {
    "text": "When launched, +2 [Budget]."
   },
   "R002Y": {
+   "nameId": "retro_moon",
    "shape": "RETRO",
    "plan": "MOON",
    "color": "YELLOW",
@@ -1189,6 +1296,7 @@ export const CARD_INFO = {
    "text": "When launched, +2 [Budget]."
   },
   "R003B": {
+   "nameId": "scallop_moon",
    "shape": "SCALLOP",
    "plan": "MOON",
    "color": "BLUE",
@@ -1201,6 +1309,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 2 Project cards."
   },
   "R003G": {
+   "nameId": "scallop_moon",
    "shape": "SCALLOP",
    "plan": "MOON",
    "color": "GREEN",
@@ -1213,6 +1322,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 2 Project cards."
   },
   "R003R": {
+   "nameId": "scallop_moon",
    "shape": "SCALLOP",
    "plan": "MOON",
    "color": "RED",
@@ -1225,6 +1335,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 2 Project cards."
   },
   "R003Y": {
+   "nameId": "scallop_moon",
    "shape": "SCALLOP",
    "plan": "MOON",
    "color": "YELLOW",
@@ -1237,6 +1348,7 @@ export const CARD_INFO = {
    "text": "When launched, draw 2 Project cards."
   },
   "R004B": {
+   "nameId": "concorde_moon",
    "shape": "CONCORDE",
    "plan": "MOON",
    "color": "BLUE",
@@ -1249,6 +1361,7 @@ export const CARD_INFO = {
    "text": "When launched, +4 [Budget]."
   },
   "R004G": {
+   "nameId": "concorde_moon",
    "shape": "CONCORDE",
    "plan": "MOON",
    "color": "GREEN",
@@ -1261,6 +1374,7 @@ export const CARD_INFO = {
    "text": "When launched, +4 [Budget]."
   },
   "R004R": {
+   "nameId": "concorde_moon",
    "shape": "CONCORDE",
    "plan": "MOON",
    "color": "RED",
@@ -1273,6 +1387,7 @@ export const CARD_INFO = {
    "text": "When launched, +4 [Budget]."
   },
   "R004Y": {
+   "nameId": "concorde_moon",
    "shape": "CONCORDE",
    "plan": "MOON",
    "color": "YELLOW",
@@ -1285,6 +1400,7 @@ export const CARD_INFO = {
    "text": "When launched, +4 [Budget]."
   },
   "R005B": {
+   "nameId": "stealth_moon",
    "shape": "STEALTH",
    "plan": "MOON",
    "color": "BLUE",
@@ -1297,6 +1413,7 @@ export const CARD_INFO = {
    "text": "When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The \"On Deploy\" and \"On Launch\" effects of the deployed cards are triggered."
   },
   "R005G": {
+   "nameId": "stealth_moon",
    "shape": "STEALTH",
    "plan": "MOON",
    "color": "GREEN",
@@ -1309,6 +1426,7 @@ export const CARD_INFO = {
    "text": "When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The \"On Deploy\" and \"On Launch\" effects of the deployed cards are triggered."
   },
   "R005R": {
+   "nameId": "stealth_moon",
    "shape": "STEALTH",
    "plan": "MOON",
    "color": "RED",
@@ -1321,6 +1439,7 @@ export const CARD_INFO = {
    "text": "When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The \"On Deploy\" and \"On Launch\" effects of the deployed cards are triggered."
   },
   "R005Y": {
+   "nameId": "stealth_moon",
    "shape": "STEALTH",
    "plan": "MOON",
    "color": "YELLOW",
@@ -1333,6 +1452,7 @@ export const CARD_INFO = {
    "text": "When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The \"On Deploy\" and \"On Launch\" effects of the deployed cards are triggered."
   },
   "R006": {
+   "nameId": "hammer_phobos",
    "shape": "HAMMER",
    "plan": "PHOBOS",
    "color": "BLUE",
@@ -1345,6 +1465,7 @@ export const CARD_INFO = {
    "text": "Launch cost of all your satellites -3."
   },
   "R007": {
+   "nameId": "retro_phobos",
    "shape": "RETRO",
    "plan": "PHOBOS",
    "color": "BLUE",
@@ -1357,6 +1478,7 @@ export const CARD_INFO = {
    "text": "Deployment cost for all your satellites -1."
   },
   "R008": {
+   "nameId": "scallop_phobos",
    "shape": "SCALLOP",
    "plan": "PHOBOS",
    "color": "BLUE",
@@ -1369,6 +1491,7 @@ export const CARD_INFO = {
    "text": "Link cost of all your satellites -1."
   },
   "R009": {
+   "nameId": "concorde_phobos",
    "shape": "CONCORDE",
    "plan": "PHOBOS",
    "color": "BLUE",
@@ -1381,6 +1504,7 @@ export const CARD_INFO = {
    "text": "The [Maya] you receive when you discard a Project card is +2."
   },
   "R010": {
+   "nameId": "stealth_phobos",
    "shape": "STEALTH",
    "plan": "PHOBOS",
    "color": "BLUE",
@@ -1393,6 +1517,7 @@ export const CARD_INFO = {
    "text": "At the start of the Budget Phase, +2 [Maya]."
   },
   "R011": {
+   "nameId": "hammer_deimos",
    "shape": "HAMMER",
    "plan": "DEIMOS",
    "color": "GREEN",
@@ -1405,6 +1530,7 @@ export const CARD_INFO = {
    "text": "The Proposal Action Selection Bonus becomes \"draw 6 cards and keep 3 in hand\"."
   },
   "R012": {
+   "nameId": "retro_deimos",
    "shape": "RETRO",
    "plan": "DEIMOS",
    "color": "GREEN",
@@ -1417,6 +1543,7 @@ export const CARD_INFO = {
    "text": "As the Launch Action Selection Bonus, +1 [Budget]."
   },
   "R013": {
+   "nameId": "scallop_deimos",
    "shape": "SCALLOP",
    "plan": "DEIMOS",
    "color": "GREEN",
@@ -1429,6 +1556,7 @@ export const CARD_INFO = {
    "text": "As the Deploy Action Selection Bonus, draw 1 additional Project card."
   },
   "R014": {
+   "nameId": "concorde_deimos",
    "shape": "CONCORDE",
    "plan": "DEIMOS",
    "color": "GREEN",
@@ -1441,6 +1569,7 @@ export const CARD_INFO = {
    "text": "For the Establish Link Action Selection Bonus, the areas you can choose include all adjacent areas, in addition to the areas ahead of and behind the heading."
   },
   "R015": {
+   "nameId": "stealth_deimos",
    "shape": "STEALTH",
    "plan": "DEIMOS",
    "color": "GREEN",
@@ -1453,6 +1582,7 @@ export const CARD_INFO = {
    "text": "The [Maya] gained from the Budget Action Selection Bonus is +3."
   },
   "R016": {
+   "nameId": "hammer_europa",
    "shape": "HAMMER",
    "plan": "EUROPA",
    "color": "RED",
@@ -1465,6 +1595,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Proposal action yourself."
   },
   "R017": {
+   "nameId": "retro_europa",
    "shape": "RETRO",
    "plan": "EUROPA",
    "color": "RED",
@@ -1477,6 +1608,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Deploy action yourself."
   },
   "R018": {
+   "nameId": "scallop_europa",
    "shape": "SCALLOP",
    "plan": "EUROPA",
    "color": "RED",
@@ -1489,6 +1621,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Establish Link action yourself."
   },
   "R019": {
+   "nameId": "concorde_europa",
    "shape": "CONCORDE",
    "plan": "EUROPA",
    "color": "RED",
@@ -1501,6 +1634,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Launch/Turn action yourself."
   },
   "R020": {
+   "nameId": "stealth_europa",
    "shape": "STEALTH",
    "plan": "EUROPA",
    "color": "RED",
@@ -1513,6 +1647,7 @@ export const CARD_INFO = {
    "text": "If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Budget action yourself."
   },
   "R021": {
+   "nameId": "hammer_ganymede",
    "shape": "HAMMER",
    "plan": "GANYMEDE",
    "color": "YELLOW",
@@ -1525,6 +1660,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [A][C][E][G], link cost -2."
   },
   "R022": {
+   "nameId": "retro_ganymede",
    "shape": "RETRO",
    "plan": "GANYMEDE",
    "color": "YELLOW",
@@ -1537,6 +1673,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link in region [B][D][F][H], link cost -2."
   },
   "R023": {
+   "nameId": "scallop_ganymede",
    "shape": "SCALLOP",
    "plan": "GANYMEDE",
    "color": "YELLOW",
@@ -1549,6 +1686,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link on a [Land] area, link cost -3."
   },
   "R024": {
+   "nameId": "concorde_ganymede",
    "shape": "CONCORDE",
    "plan": "GANYMEDE",
    "color": "YELLOW",
@@ -1561,6 +1699,7 @@ export const CARD_INFO = {
    "text": "When this satellite establishes a link on a [Sea] area, link cost -2."
   },
   "R025": {
+   "nameId": "stealth_ganymede",
    "shape": "STEALTH",
    "plan": "GANYMEDE",
    "color": "YELLOW",

@@ -1,0 +1,130 @@
+{
+ "sample": "three-players-advanced",
+ "state": "LinkMainChoose",
+ "active": true,
+ "maya": 7,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "_private": {
+   "myChoice": null,
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3,
+   "linkable": [
+    {
+     "cell": 22,
+     "selectable": true,
+     "sats": [
+      {
+       "satId": 11,
+       "cost": {
+        "area": 5,
+        "pioneer": 3,
+        "total": 8
+       },
+       "minSales": 0
+      },
+      {
+       "satId": 14,
+       "cost": {
+        "area": 5,
+        "pioneer": 3,
+        "total": 8
+       },
+       "minSales": 0
+      }
+     ]
+    },
+    {
+     "cell": 32,
+     "selectable": true,
+     "sats": [
+      {
+       "satId": 11,
+       "cost": {
+        "area": 9,
+        "pioneer": 0,
+        "total": 9
+       },
+       "minSales": 0,
+       "useMods": {
+        "options": [
+         {
+          "hostKey": "S:11",
+          "cardKey": "hammer_ganymede",
+          "reduction": 2,
+          "cost": 7
+         }
+        ],
+        "all": 7
+       }
+      }
+     ]
+    },
+    {
+     "cell": 34,
+     "selectable": true,
+     "sats": [
+      {
+       "satId": 14,
+       "cost": {
+        "area": 20,
+        "pioneer": 6,
+        "total": 26
+       },
+       "minSales": 0
+      }
+     ]
+    },
+    {
+     "cell": 9,
+     "selectable": true,
+     "sats": [
+      {
+       "satId": 12,
+       "cost": {
+        "area": 6,
+        "pioneer": 0,
+        "total": 6
+       },
+       "minSales": 0
+      }
+     ]
+    },
+    {
+     "cell": 47,
+     "selectable": false,
+     "sats": [
+      {
+       "satId": 14,
+       "cost": {
+        "area": 40,
+        "pioneer": 0,
+        "total": 40
+       },
+       "minSales": null
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "steps": [
+  {
+   "cellClick": 32
+  }
+ ]
+}

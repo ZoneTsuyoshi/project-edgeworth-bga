@@ -128,6 +128,43 @@ final class WindowFlow
     }
 
     /**
+     * 答えた後に送る、窓の進み具合の通知（N34・N35）。状態 31 の args は入場時のものなので、本人には残りの問いを、全員には待機表示を送る。
+     * 答えたプレイヤーが済んだ（問いが残っていない）ときは、本人の問いは空で送る。
+     *
+     * @return list<Notice>
+     */
+    public function progressNotices(int $playerId): array
+    {
+        $args = $this->resolveArgs();
+        /** @var array<int, array<string, mixed>> $private */
+        $private = $args['_private'] ?? [];
+        $mine = $private[$playerId] ?? [
+            'windowId' => $args['windowId'],
+            'pending' => [],
+            'questions' => [],
+            'hand' => [],
+            'sellValue' => 0,
+        ];
+        /** @var list<array{player_id: int, sources: list<string>}> $waiting */
+        $waiting = $args['waiting'];
+
+        return [$this->ctx->notices->effectQuestions($playerId, $mine), $this->ctx->notices->effectWaiting($waiting)];
+    }
+
+    /**
+     * 待機表示だけの通知（N35）。zombie が済んだときなど、本人に問いを送る相手がいないとき。
+     *
+     * @return list<Notice>
+     */
+    public function waitingNotices(): array
+    {
+        /** @var list<array{player_id: int, sources: list<string>}> $waiting */
+        $waiting = $this->resolveArgs()['waiting'];
+
+        return [$this->ctx->notices->effectWaiting($waiting)];
+    }
+
+    /**
      * `actUseEffect`: [Use]。取り消せない。
      *
      * @param array<string, mixed> $fields 問いのフィールドの key => 値

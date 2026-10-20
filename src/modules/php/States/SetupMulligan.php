@@ -34,13 +34,13 @@ class SetupMulligan extends ChooseState
     }
 
     /**
-     * 0 枚（[Keep all]）のときは空配列が送信で落ちて null になるので、null も空配列として扱う。
+     * 0 枚（[Keep all]）のときは空配列が送信で落ちて未指定になる（クライアントは discard を送らない）。未指定の null も空配列として扱う。
      *
      * @param list<int>|null $discard
      */
     #[PossibleAction]
     #[CheckAction(false)]
-    public function actConfirmMulligan(#[IntArrayParam] ?array $discard): void
+    public function actConfirmMulligan(#[IntArrayParam] ?array $discard = null): void
     {
         $this->peConfirm((int) $this->game->getCurrentPlayerId(), ['discard' => ChoiceData::ids($discard)]);
     }
