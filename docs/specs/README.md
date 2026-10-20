@@ -15,6 +15,7 @@
 | 003 | [盤面データ](003-board-data.md) | Approved | T-003 |
 | 004 | [BGA プロジェクト構成・技術方針](004-bga-architecture.md) | Approved | T-004 |
 | 005 | [CI（lint）](005-ci-lint.md) | Approved | T-005 |
+| 006 | [BGA Studio への自動同期](006-bga-sync.md) | Approved | T-006 |
 | 007 | [効果の処理順と同時処理](007-effect-order.md) | Approved | T-007 |
 | 008 | [アナログ特有の操作の BGA での表現](008-analog-operations.md) | Approved | T-008 |
 | 009 | [状態遷移の設計](009-state-machine.md) | Approved | T-009 |

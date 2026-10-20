@@ -14,8 +14,8 @@
 | 2 | BGA Studio でのプロジェクト作成（プロジェクト名: `projectedgeworth`） | T-004 まで | 済（2026-10-19） |
 | 3 | 作者への質問への回答（[development/rule-questions.md](development/rule-questions.md)。回答がない項目は暫定案で了承とみなす） | 各仕様書の作成時 | 第 1 弾（Q-01〜Q-18）回答済み（2026-10-19） |
 | 4 | BGA のライセンス確認（作者が権利者であることを BGA に示す。アルファ申請時に承認メールを添える。[Pre-release checklist](https://en.doc.boardgamearena.com/Pre-release_checklist)）。MINIMUM JOURNEY と同じ手続きなので、まとめて進めると楽 | アルファ申請まで | 未着手 |
-| 5 | GitHub の Secrets / Variables の登録（SSH 鍵は MINIMUM JOURNEY と使い回す。2026-10-19 作者回答。minimum-journey-bga と同じ名前・値をこのリポジトリにも登録する。手順は minimum-journey-bga の `specs/005-bga-sync.md` §7） | T-006 の導入時 | 未着手 |
-| 6 | BGA Studio 上の初期ファイルのダウンロードとファイル一覧の共有 | T-006 の導入時 | 未着手 |
+| 5 | GitHub の Secrets / Variables の登録（SSH 鍵は MINIMUM JOURNEY と使い回す。2026-10-19 作者回答。minimum-journey-bga と同じ名前・値をこのリポジトリにも登録する。手順は minimum-journey-bga の `specs/005-bga-sync.md` §7） | T-006 の導入時 | 済（2026-10-20） |
+| 6 | BGA Studio 上の初期ファイルのダウンロードとファイル一覧の共有 | T-006 の導入時 | 済（2026-10-20。エージェントが SFTP で取得） |
 | 7 | 英語のカード文（プロジェクト 99 枚・衛星 40 面・褒賞・ミッション・アクション）の確認 | アルファ申請まで | 未着手（T-002 で案を作成） |
 | 8 | メタ画像の素材: Icon（PNG 50×50）の図柄、Title（PNG 2000×2000 の透過ロゴ）、Banner（JPG 1386×400、文字なし、2MB 以下）、Display（JPG、高さ 400〜760px・幅は高さの 1.5 倍まで、最大 10 枚。BGA のスクリーンショット不可）、出版社ロゴ（PNG 280×280、任意）。Box（PNG 280×280）は `data/box/` からエージェントが作る（specs/012 §9） | ベータ〜正式リリースまで | 未着手 |
 
@@ -30,7 +30,7 @@ T-001〜T-004 は互いに独立しているため並列に進められます。
 | T-003 | 盤面データ仕様（地域ボード 8 枚 × 両面の区域配置、六角形の座標系、左右の接続と上下の反射、隣接・進行方向、ミッション形状の判定（回転可・反転不可）） | `specs/003-board-data.md` | — | 仕様承認済み |
 | T-004 | BGA プロジェクト構成・技術方針（minimum-journey-bga の 003 を土台に最新の公式ドキュメントで確認） | `specs/004-bga-architecture.md` | — | 仕様承認済み |
 | T-005 | CI（lint）の導入（minimum-journey-bga の構成を流用） | `specs/005-ci-lint.md`、`.github/workflows/` | T-004 | 実装中（第 1・2 段階を導入。第 2b・3 段階が残り） |
-| T-006 | BGA Studio 自動同期の導入（同上） | `specs/006-bga-sync.md`、`.github/workflows/` | T-004, T-005、作者の作業 5・6 | 未着手 |
+| T-006 | BGA Studio 自動同期の導入（同上） | `specs/006-bga-sync.md`、`.github/workflows/` | T-004, T-005、作者の作業 5・6 | 仕様承認済み |
 | T-007 | 効果の処理順と同時処理（効果発動タイミングごとの解決順、同じタイミングの複数効果、基準プレイヤーから時計回りの処理、同時通信確立・特殊通信確立） | `specs/007-effect-order.md` | T-001, T-002 | 仕様承認済み |
 | T-008 | アナログ特有の操作の BGA での表現（同時の伏せ選択と公開、いつでもできるカードの売却、起動済みの表示、横向きのアクションカード、ボード外へのキューブ＝放棄、ドラフト） | `specs/008-analog-operations.md` | T-001 | 仕様承認済み |
 
