@@ -49,15 +49,37 @@ final class PhaseDrivers
     }
 
     /**
-     * 60・70・80: II 配備・III 打ち上げ / 転回・IV 通信確立（共通の構成）。
+     * 60: II 配備。ステップ: 窓 XD（セットアップでは飛ばす）→ 選択（通常の配備とボーナスを同時に。61）→ コミット → 窓 AB → 窓 DE。
+     * 配備のアクション選択ボーナス（追加の配備 / 1 枚引く）は通常の配備と同時に選び、全員分を一斉に処理する（作者回答 2026-10-20）。
+     * R013 の追加ドロー（`ACTION_BONUS_STEP`）はコミットの後の窓 AB で引くので、同じボーナスの配備には使えない。
+     */
+    public function deploy(): DriverResult
+    {
+        $ops = array_merge(
+            $this->ctx->globals->roundNo() === 0 ? [] : ['win:XD'],
+            ['main', 'commit', 'win:AB', 'win:DE', 'next'],
+        );
+        $program = new StepProgram($this->ctx, StateId::DEPLOY_DRIVER);
+        return $program->run($ops, function (string $op, NoticeList $notes): ?string {
+            if ($op === 'main') {
+                return 'main';
+            }
+            $holders = $this->ctx->services->bonusHolders(2);
+            $notes->addAll($this->commit(2, StepMode::Main, StateId::DEPLOY_MAIN_CHOOSE));
+            $this->ctx->record(...ActionEvents::bonusStep(2, $holders));
+            return null;
+        });
+    }
+
+    /**
+     * 70・80: III 打ち上げ / 転回・IV 通信確立（共通の構成）。
      * ステップ: 窓 XD（セットアップでは飛ばす）→ メインの選択 → メインのコミット → 窓 → ボーナスの選択 → ボーナスのコミット → 窓。
      *
-     * @param int $actionNo 2・3・4
+     * @param int $actionNo 3・4
      */
     public function action(int $actionNo): DriverResult
     {
         [$driver, $mainState, $bonusState, $afterMain, $afterBonus] = match ($actionNo) {
-            2 => [StateId::DEPLOY_DRIVER, StateId::DEPLOY_MAIN_CHOOSE, StateId::DEPLOY_BONUS_CHOOSE, ['win:DE'], ['win:DE']],
             3 => [StateId::LAUNCH_DRIVER, StateId::LAUNCH_MAIN_CHOOSE, StateId::LAUNCH_BONUS_CHOOSE, ['win:LE', 'win:TE'], ['win:TE']],
             4 => [StateId::LINK_DRIVER, StateId::LINK_MAIN_CHOOSE, StateId::LINK_BONUS_CHOOSE, ['win:KE'], ['win:KE']],
             default => throw new \InvalidArgumentException("action $actionNo is not a main/bonus action"),
@@ -67,7 +89,7 @@ final class PhaseDrivers
             ['main', 'commit:main'],
             $afterMain,
             ['bonus', 'commit:bonus'],
-            in_array($actionNo, [2, 3], true) ? ['win:AB'] : [],
+            $actionNo === 3 ? ['win:AB'] : [],
             $afterBonus,
             ['next'],
         );
@@ -151,13 +173,22 @@ final class PhaseDrivers
 
         // 起動の修正（USE_MODS）: 確定済みの鍵を、コストの計算の間だけ効かせ、払えた選択の分を使用済みにする
         $effects = $this->ctx->effects;
+        // 配備（II）は 1 人が最大 2 枚を配備し、枚ごとに別の鍵を使えるので、鍵は配備の結果（outcome の mods）から集める
         $keysByPlayer = [];
-        foreach ($effects === null ? [] : $participants as $playerId) {
+        foreach ($effects === null || $actionNo === 2 ? [] : $participants as $playerId) {
             $own = $services->choices->ownChoice($playerId, $stateId);
             $keysByPlayer[$playerId] = array_values(array_map('strval', (array) ($own['useMods'] ?? [])));
         }
+        $deployKeys = [];
+        if ($effects !== null && $actionNo === 2) {
+            foreach ($participants as $playerId) {
+                $own = $services->choices->ownChoice($playerId, $stateId);
+                $extra = is_array($own['extra'] ?? null) ? $own['extra'] : [];
+                $deployKeys = array_merge($deployKeys, array_map('strval', (array) ($own['useMods'] ?? [])), array_map('strval', (array) ($extra['useMods'] ?? [])));
+            }
+        }
         $journalMark = $effects?->game->journalMark() ?? 0;
-        $effects?->hooks->useMods(array_values(array_unique(array_merge([], ...array_values($keysByPlayer)))));
+        $effects?->hooks->useMods(array_values(array_unique(array_merge($deployKeys, ...array_values($keysByPlayer)))));
         try {
             $result = $this->ctx->phases->runner()->resolve($step, $stateId, $mode);
         } finally {
@@ -170,7 +201,7 @@ final class PhaseDrivers
         if ($effects !== null) {
             $effectNotices = new EffectNotices($this->ctx);
             foreach ($result->outcomes as $outcome) {
-                $keys = $keysByPlayer[$outcome->playerId] ?? [];
+                $keys = $actionNo === 2 ? array_values(array_map('strval', (array) ($outcome->details['mods'] ?? []))) : ($keysByPlayer[$outcome->playerId] ?? []);
                 if ($keys === [] || $outcome->isPass()) {
                     continue;
                 }

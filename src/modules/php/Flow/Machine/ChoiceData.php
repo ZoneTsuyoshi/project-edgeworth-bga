@@ -21,16 +21,39 @@ final class ChoiceData
 
     /**
      * @param list<int>|null $sell
-     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵
+     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（通常の配備の分）
+     * @param array<mixed>|null $extra ボーナス保持者の追加の行動（配備か 1 枚引く）
      * @return array<string, mixed>
      */
-    public static function deploy(string $op, int $cardId, int $satId, ?array $sell, ?array $useMods = null): array
+    public static function deploy(string $op, int $cardId, int $satId, ?array $sell, ?array $useMods = null, ?array $extra = null): array
     {
-        return match ($op) {
+        $data = match ($op) {
             'deploy' => ['op' => 'deploy', 'card' => $cardId, 'sat' => $satId] + self::sell($sell) + self::mods($useMods),
-            'draw', 'pass' => ['op' => $op],
             default => ['op' => $op],
         };
+        $more = self::extra($extra);
+
+        return $more === null ? $data : $data + ['extra' => $more];
+    }
+
+    /**
+     * 配備の追加の行動（extra）。形が合わないものは検証で弾かれるよう、そのまま整える。
+     *
+     * @param array<mixed>|null $extra
+     * @return array<string, mixed>|null
+     */
+    private static function extra(?array $extra): ?array
+    {
+        if ($extra === null || $extra === []) {
+            return null;
+        }
+        $op = (string) ($extra['op'] ?? '');
+        if ($op === 'deploy') {
+            return ['op' => 'deploy', 'card' => (int) ($extra['card'] ?? 0), 'sat' => (int) ($extra['sat'] ?? 0)]
+                + self::mods(is_array($extra['useMods'] ?? null) ? $extra['useMods'] : null);
+        }
+
+        return ['op' => $op];
     }
 
     /**

@@ -38,8 +38,8 @@ sample('planning', {
   steps: [{ click: '.pe-action-card[data-no="2"]' }],
 });
 
-// ---- 61 / 62 配備 ----
-const deployTargets = () => {
+// ---- 61 配備（ボーナス保持者は同じ確定で追加の配備か 1 枚引くも選ぶ。62 は欠番）----
+const deployTargets = (bonus = false) => {
   const sats = [
     { satId: 11, tier: 4, active: true, blocked: null },
     { satId: 12, tier: 2, active: true, blocked: null },
@@ -52,6 +52,10 @@ const deployTargets = () => {
     targets[card] = sats.map((s) => {
       const cost = baseCost(card) + (s.active ? 5 : 0);
       const entry = { satId: s.satId, tier: s.tier, cost, blocked: s.blocked, minSales: 0, selectable: s.blocked === null };
+      if (bonus) {
+        // 先に同じ衛星へ 1 枚配備された後（段が 1 つ進む。4 枚目の次は配備できない）
+        entry.next = { tier: s.tier + 1, cost, blocked: s.blocked ?? (s.tier >= 4 ? 'full' : null) };
+      }
       if (card === 3 && s.active && s.blocked === null) {
         entry.useMods = { options: [{ hostKey: 'P:19', cardKey: 'fleet_commander', reduction: 2, cost: Math.max(0, cost - 2) }], all: Math.max(0, cost - 2) };
       }
@@ -63,32 +67,44 @@ const deployTargets = () => {
 sample('deploy-main', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets() }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
   steps: [{ click: '.pe-hand-card[data-id="3"]' }, { click: '.pe-sat[data-sat-id="11"]' }, { click: '.pe-mod input' }],
 });
 sample('deploy-main-sell', {
   state: 'DeployMainChoose',
   active: true,
   maya: 8,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets() }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
   steps: [{ click: '.pe-hand-card[data-id="51"]' }, { click: '.pe-sat[data-sat-id="12"]' }, { click: '.pe-picker-slot:nth-child(1) .pe-picker-card' }],
 });
 sample('deploy-main-sat-first', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets() }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
   steps: [{ click: '.pe-sat[data-sat-id="13"]' }],
 });
-sample('deploy-bonus', {
-  state: 'DeployBonusChoose',
+sample('deploy-bonus-draw', {
+  state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), canDraw: true }),
-  steps: [{ clickText: 'Draw 1 card' }],
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true }),
+  steps: [{ click: '.pe-hand-card[data-id="44"]' }, { click: '.pe-sat[data-sat-id="13"]' }, { clickText: 'Draw 1 card' }],
+});
+sample('deploy-bonus-extra', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true }),
+  steps: [
+    { click: '.pe-hand-card[data-id="44"]' },
+    { click: '.pe-sat[data-sat-id="13"]' },
+    { clickText: 'Deploy another card' },
+    { click: '.pe-hand-card[data-id="18"]' },
+    { click: '.pe-sat[data-sat-id="13"]' },
+  ],
 });
 sample('deploy-confirmed', {
   state: 'DeployMainChoose',
   active: false,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [] } }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [], extra: { op: 'draw' } }, bonus: true, canDraw: true }),
   steps: [],
 });
 

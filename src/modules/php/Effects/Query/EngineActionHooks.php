@@ -16,6 +16,7 @@ use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
 use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
 use Bga\Games\projectedgeworth\Effects\EffectViolation;
 use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\UseModsAware;
 use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Material\ActionKind;
@@ -28,7 +29,7 @@ use Bga\Games\projectedgeworth\Material\ProjectCards;
  * 選択を受け取れないので、配備・打ち上げ・通信確立のステップの検証の前に `useMods()` で使うカードの鍵を渡す（011 §6-3）。
  * 使用済みを付けるのは、そのコストを実際に払うコミットの側（`GameMutator::markUsed()`）。
  */
-final class EngineActionHooks implements ActionHooks
+final class EngineActionHooks implements ActionHooks, UseModsAware
 {
     /** @var list<string> */
     private array $useMods = [];

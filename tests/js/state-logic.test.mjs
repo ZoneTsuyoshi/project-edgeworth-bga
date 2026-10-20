@@ -5,7 +5,9 @@ import { keyOfNameId, nameOfNameId, parseHostKey } from '../../src/modules/js/ca
 import {
   compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, sellableHand, sellsWholeHand, sideAvailability, soleOption,
 } from '../../src/modules/js/states/logic/common.js';
-import { deployActionArgs, deployPairs, deployQuote, deploySelectionFrom, parseTargets, validateDeploy } from '../../src/modules/js/states/logic/deploy.js';
+import {
+  deployActionArgs, deployedCards, deployPairs, deployQuote, deploySelectionFrom, extraPairs, extraVariant, parseTargets, validateDeploy, withoutMods,
+} from '../../src/modules/js/states/logic/deploy.js';
 import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, validateLaunch } from '../../src/modules/js/states/logic/launch.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, parseLinkable, validateLink } from '../../src/modules/js/states/logic/link.js';
 import { mulliganActionArgs, mulliganButton, mulliganPicks } from '../../src/modules/js/states/logic/mulligan.js';
@@ -107,19 +109,94 @@ test('配備: args の解釈、選べる組、送信する引数', () => {
   assert.equal(quote.cost, 7);
   assert.equal(quote.pay.kind, 'sell');
   assert.equal(quote.pay.need, 1);
-  assert.deepEqual(validateDeploy({ op: 'deploy', cardId: 18, satId: 11, sell: [] }, { pay: quote.pay, canDraw: false }), { ok: false, reason: 'needMoreSales' });
-  assert.deepEqual(validateDeploy({ op: 'deploy', cardId: 18, satId: 11, sell: [44] }, { pay: quote.pay, canDraw: false }), { ok: true });
-  assert.equal(validateDeploy({ op: 'deploy', cardId: 18, satId: 11, sell: [18] }, { pay: quote.pay, canDraw: false }).reason, 'sellsDeployedCard');
-  assert.equal(validateDeploy({ op: 'deploy', cardId: null, satId: null, sell: [] }, { pay: null, canDraw: false }).reason, 'incomplete');
-  assert.equal(validateDeploy({ op: 'draw', cardId: null, satId: null, sell: [] }, { pay: null, canDraw: false }).ok, false);
-  assert.equal(validateDeploy({ op: 'draw', cardId: null, satId: null, sell: [] }, { pay: null, canDraw: true }).ok, true);
-  assert.equal(validateDeploy({ op: 'pass', cardId: null, satId: null, sell: [] }, { pay: null, canDraw: false }).ok, true);
-  assert.deepEqual(deployActionArgs({ op: 'pass' }), { op: 'pass' });
-  assert.deepEqual(deployActionArgs({ op: 'deploy', cardId: 18, satId: 11, sell: [44], useMods: ['P:19'] }), { op: 'deploy', cardId: 18, satId: 11, sell: [44], useMods: '["P:19"]' });
-  assert.deepEqual(deployActionArgs({ op: 'deploy', cardId: 3, satId: 11, sell: [], useMods: [] }), { op: 'deploy', cardId: 3, satId: 11 });
-  assert.deepEqual(deploySelectionFrom({ op: 'deploy', card: 18, sat: 11, sell: [44], useMods: ['P:19'] }), { op: 'deploy', cardId: 18, satId: 11, sell: [44], useMods: ['P:19'] });
-  assert.equal(deploySelectionFrom({ op: 'pass' }).op, null);
-  assert.equal(deploySelectionFrom(null).op, null);
+  const sel = (over = {}) => ({ cardId: 18, satId: 11, sell: [], useMods: [], extra: null, ...over });
+  assert.deepEqual(validateDeploy(sel(), { pay: quote.pay, canDraw: false }), { ok: false, reason: 'needMoreSales' });
+  assert.deepEqual(validateDeploy(sel({ sell: [44] }), { pay: quote.pay, canDraw: false }), { ok: true });
+  assert.equal(validateDeploy(sel({ sell: [18] }), { pay: quote.pay, canDraw: false }).reason, 'sellsDeployedCard');
+  assert.equal(validateDeploy(sel({ cardId: null, satId: null }), { pay: null, canDraw: false }).reason, 'incomplete');
+  assert.equal(validateDeploy(sel({ cardId: 18, satId: null }), { pay: null, canDraw: false }).reason, 'incomplete');
+  // 引くだけ（通常の配備なし）は、引けるときだけ
+  assert.equal(validateDeploy(sel({ cardId: null, satId: null, extra: { op: 'draw' } }), { pay: null, canDraw: false }).ok, false);
+  assert.equal(validateDeploy(sel({ cardId: null, satId: null, extra: { op: 'draw' } }), { pay: null, canDraw: true }).ok, true);
+  assert.deepEqual(deployActionArgs({}), { op: 'pass' });
+  assert.deepEqual(deployActionArgs({ cardId: 18, satId: 11, sell: [44], useMods: ['P:19'] }), { op: 'deploy', cardId: 18, satId: 11, sell: [44], useMods: '["P:19"]' });
+  assert.deepEqual(deployActionArgs({ cardId: 3, satId: 11, sell: [], useMods: [] }), { op: 'deploy', cardId: 3, satId: 11 });
+  assert.deepEqual(deploySelectionFrom({ op: 'deploy', card: 18, sat: 11, sell: [44], useMods: ['P:19'] }), sel({ sell: [44], useMods: ['P:19'] }));
+  assert.equal(deploySelectionFrom({ op: 'pass' }).cardId, null);
+  assert.equal(deploySelectionFrom(null).cardId, null);
+  assert.equal(deploySelectionFrom(null).extra, null);
+});
+
+// 配備のボーナス（追加の配備 / 1 枚引く）は通常の配備と同時に選ぶ（作者回答 2026-10-20）
+const bonusTargetsRaw = {
+  3: [
+    { satId: 11, tier: 2, cost: 8, blocked: null, minSales: 0, selectable: true, next: { tier: 3, cost: 8, blocked: null } },
+    { satId: 12, tier: 4, cost: 5, blocked: null, minSales: 0, selectable: true, next: { tier: 5, cost: 5, blocked: 'full' } },
+  ],
+  18: [
+    { satId: 11, tier: 2, cost: 9, blocked: null, minSales: 0, selectable: true, useMods: { options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }], all: 7 }, next: { tier: 3, cost: 9, blocked: null, useMods: { options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }], all: 7 } } },
+    { satId: 12, tier: 4, cost: 4, blocked: null, minSales: 0, selectable: true, next: { tier: 5, cost: 4, blocked: 'full' } },
+  ],
+  44: [{ satId: 11, tier: 2, cost: 30, blocked: null, minSales: 0, selectable: true, next: { tier: 3, cost: 30, blocked: null } }],
+};
+
+test('配備のボーナス: 追加の配備は同じ衛星なら next の値、合計コストで選べるかを見る', () => {
+  const targets = parseTargets(bonusTargetsRaw);
+  const t18 = targets.find((t) => t.cardId === 18 && t.satId === 12);
+  assert.equal(t18?.next?.blocked, 'full');
+  assert.equal(parseTargets(targetsRaw)[0].next, null, 'ボーナス保持者でなければ next は無い');
+  // 追加の配備が同じ衛星なら、段・コスト・選べない理由は next の値
+  assert.deepEqual(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 12), 12).blocked, 'full');
+  assert.equal(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 12), 11).blocked, null);
+  assert.equal(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 11), 11).tier, 3);
+
+  // 通常の配備: カード 3 を衛星 11（コスト 8）。所持 10、手札 [3, 18, 44, 51]、売却 3
+  const main = { cardId: 3, satId: 11, cost: 8, mods: [] };
+  const pairs = extraPairs(targets, [3, 18, 44, 51], main, 10, 3);
+  assert.equal(pairs.some((p) => p.a === 3), false, '通常の配備のカードは追加には選べない');
+  const same = pairs.find((p) => p.a === 18 && p.b === 11);
+  assert.equal(same?.data.tier, 3, '同じ衛星なので 3 段目');
+  assert.equal(same?.data.total, 17);
+  assert.equal(same?.data.pay.kind, 'short', '合計 17 は所持 10 では不足 7 で 3 枚の売却が要るが、売れるのは 4 - 2 = 2 枚');
+  assert.equal(same?.usable, true, '起動の修正を使えば 8 + 7 = 15。不足 5 → 2 枚で届く');
+  assert.equal(pairs.find((p) => p.a === 44 && p.b === 11)?.usable, false, '合計 38 は売っても届かない');
+  assert.equal(pairs.find((p) => p.a === 18 && p.b === 12)?.usable, true, '別の衛星は next ではない');
+  // 売れる手札は配備する 2 枚を除く（手札 3 枚 [3, 18, 51] なら売れるのは 1 枚）
+  assert.equal(extraPairs(targets, [3, 18, 51], main, 4, 3).find((p) => p.a === 18 && p.b === 12)?.usable, false, '8 + 4 = 12、不足 8 は 3 枚要るが売れるのは 1 枚');
+  assert.equal(extraPairs(targets, [3, 18, 51, 52, 53], main, 4, 3).find((p) => p.a === 18 && p.b === 12)?.usable, true, '売れる手札が 3 枚なら届く');
+});
+
+test('配備のボーナス: 同じ起動の修正は 2 枚に使えない、合計での売却、送信する引数と復元', () => {
+  const mods = parseMods({ options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }, { hostKey: 'P:20', cardKey: 'y', reduction: 1, cost: 8 }], all: 6 });
+  assert.equal(withoutMods(mods, [], 9), mods);
+  assert.deepEqual(withoutMods(mods, ['P:19'], 9), { options: [{ hostKey: 'P:20', cardKey: 'y', reduction: 1, cost: 8 }], all: 8 });
+  assert.equal(withoutMods(mods, ['P:19', 'P:20'], 9), null);
+
+  const sel = {
+    cardId: 3, satId: 11, sell: [51], useMods: ['P:19'], extra: { op: 'deploy', cardId: 18, satId: 12, useMods: [] },
+  };
+  assert.deepEqual(deployedCards(sel), [3, 18]);
+  const pay = { kind: 'sell', need: 1, short: 3, left: -3 };
+  assert.deepEqual(validateDeploy(sel, { pay, canDraw: false }), { ok: true });
+  assert.equal(validateDeploy({ ...sel, sell: [] }, { pay, canDraw: false }).reason, 'needMoreSales');
+  assert.equal(validateDeploy({ ...sel, sell: [18] }, { pay, canDraw: false }).reason, 'sellsDeployedCard', '追加の配備のカードも売れない');
+  assert.equal(validateDeploy({ ...sel, extra: { op: 'deploy', cardId: null, satId: null, useMods: [] } }, { pay, canDraw: false }).reason, 'incomplete');
+  assert.deepEqual(
+    deployActionArgs(sel),
+    { op: 'deploy', cardId: 3, satId: 11, sell: [51], useMods: '["P:19"]', extra: '{"op":"deploy","card":18,"sat":12}' },
+  );
+  assert.deepEqual(
+    deployActionArgs({ ...sel, extra: { op: 'deploy', cardId: 18, satId: 12, useMods: ['P:20'] } }).extra,
+    '{"op":"deploy","card":18,"sat":12,"useMods":["P:20"]}',
+  );
+  assert.deepEqual(deployActionArgs({ cardId: 3, satId: 11, extra: { op: 'draw' } }), { op: 'deploy', cardId: 3, satId: 11, extra: '{"op":"draw"}' });
+  assert.deepEqual(deployActionArgs({ extra: { op: 'draw' } }), { op: 'pass', extra: '{"op":"draw"}' });
+  // 確定済みの内容から選択を復元する
+  assert.deepEqual(
+    deploySelectionFrom({ op: 'deploy', card: 3, sat: 11, sell: [51], useMods: ['P:19'], extra: { op: 'deploy', card: 18, sat: 12, useMods: ['P:20'] } }),
+    { ...sel, extra: { op: 'deploy', cardId: 18, satId: 12, useMods: ['P:20'] } },
+  );
+  assert.deepEqual(deploySelectionFrom({ op: 'pass', extra: { op: 'draw' } }).extra, { op: 'draw' });
 });
 
 test('打ち上げ / 転回: 候補、向き、送信する引数', () => {

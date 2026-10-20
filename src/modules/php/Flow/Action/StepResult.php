@@ -33,4 +33,14 @@ final class StepResult
         }
         return null;
     }
+
+    /**
+     * 1 人分の結果すべて（配備は 1 人が最大 3 件: 通常の配備、追加の配備、ドロー）。
+     *
+     * @return list<StepOutcome>
+     */
+    public function outcomesOf(int $playerId): array
+    {
+        return array_values(array_filter($this->outcomes, static fn(StepOutcome $o): bool => $o->playerId === $playerId));
+    }
 }

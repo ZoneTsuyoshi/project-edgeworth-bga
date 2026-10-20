@@ -121,7 +121,6 @@ final class Machine
             StateId::SETUP_MULLIGAN,
             StateId::PLANNING_PLOT,
             StateId::DEPLOY_MAIN_CHOOSE,
-            StateId::DEPLOY_BONUS_CHOOSE,
             StateId::LAUNCH_MAIN_CHOOSE,
             StateId::LAUNCH_BONUS_CHOOSE,
             StateId::LINK_MAIN_CHOOSE,

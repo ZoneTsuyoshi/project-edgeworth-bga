@@ -18,7 +18,7 @@ use Bga\Games\projectedgeworth\Material\Hook;
 use Bga\Games\projectedgeworth\Material\ProjectCards;
 
 /**
- * 起動の修正（`USE_MODS`。P019〜P021・P036・R021〜R025。011 §6-3）を、状態 61・62・71・81・82 の選択に同梱するための入口。
+ * 起動の修正（`USE_MODS`。P019〜P021・P036・R021〜R025。011 §6-3）を、状態 61・71・81・82 の選択に同梱するための入口。
  *
  * - `options()`: その選択（配備のカードと配備先、打ち上げる衛星、通信確立の区域と衛星）で使える起動の修正の候補。args に載せる。
  * - `validate()`: 確定時に、選択の `useMods`（宿主の鍵の配列）を検証する。候補にない鍵・重複は `RuleViolation`。
@@ -32,7 +32,7 @@ final class StepMods
 
     /**
      * @param int $actionNo 2 = 配備、3 = 打ち上げ、4 = 通信確立
-     * @param array<mixed> $subject 配備: card・sat、打ち上げ: sat、通信確立: cell・sat
+     * @param array<mixed> $subject 配備: card・sat・pending（同じ選択で先に同じ衛星へ配備する枚数）、打ち上げ: sat、通信確立: cell・sat
      * @return list<array{hostKey: string, cardKey: string, reduction: int}>
      */
     public function options(int $actionNo, int $playerId, array $subject): array
@@ -47,7 +47,7 @@ final class StepMods
             return [];
         }
         $mods = $this->runtime->useMods;
-        $attached = $services->cards->countIn(CardLocation::Satellite, $sat->id);
+        $attached = $services->cards->countIn(CardLocation::Satellite, $sat->id) + ($actionNo === 2 ? (int) ($subject['pending'] ?? 0) : 0);
         if ($actionNo === 2) {
             $card = (int) ($subject['card'] ?? 0);
             if ($card < 1 || $card > 99) {
@@ -91,6 +91,30 @@ final class StepMods
         } catch (EffectViolation $violation) {
             throw new RuleViolation($violation->getMessage());
         }
+    }
+
+    /**
+     * 配備の確定内容（通常の配備と、ボーナス保持者の追加の配備）の `useMods` を、枚ごとに検証して全部の鍵を返す。
+     * 同じ鍵を 2 枚に使うことはできない（起動は各ラウンド 1 回）。追加の配備が同じ衛星のときは、先の 1 枚を付いている枚数に数える。
+     *
+     * @param array<mixed> $data
+     * @return list<string>
+     * @throws RuleViolation
+     */
+    public function validateDeploy(int $playerId, array $data): array
+    {
+        $keys = $this->validate(2, $playerId, $data);
+        $extra = $data['extra'] ?? null;
+        if (is_array($extra) && ($extra['useMods'] ?? []) !== []) {
+            $same = ($data['op'] ?? null) === 'deploy' && ($data['sat'] ?? null) === ($extra['sat'] ?? false);
+            $more = $this->validate(2, $playerId, $extra + ['pending' => $same ? 1 : 0]);
+            if (array_intersect($keys, $more) !== []) {
+                throw new RuleViolation('invalid modifier to use');
+            }
+            $keys = array_merge($keys, $more);
+        }
+
+        return $keys;
     }
 
     /**

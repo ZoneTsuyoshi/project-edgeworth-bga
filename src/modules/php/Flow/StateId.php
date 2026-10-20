@@ -40,8 +40,7 @@ final class StateId
     public const ACTION_PHASE_ROUTER = 40;
     public const BUDGET_DRIVER = 50;
     public const DEPLOY_DRIVER = 60;
-    public const DEPLOY_MAIN_CHOOSE = 61;
-    public const DEPLOY_BONUS_CHOOSE = 62;
+    public const DEPLOY_MAIN_CHOOSE = 61; // 62 は欠番（配備のボーナスは通常の配備と同時に選ぶ。作者回答 2026-10-20）
     public const LAUNCH_DRIVER = 70;
     public const LAUNCH_MAIN_CHOOSE = 71;
     public const LAUNCH_BONUS_CHOOSE = 72;

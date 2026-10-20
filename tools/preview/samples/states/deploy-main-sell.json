@@ -309,7 +309,8 @@
       "selectable": false
      }
     ]
-   }
+   },
+   "bonus": false
   }
  },
  "steps": [

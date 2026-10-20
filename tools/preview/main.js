@@ -165,7 +165,6 @@ if (stateName !== null) {
         PlanningPlot: () => new PlanningPlot(game, bga),
         EffectWindowResolve: () => new EffectWindowState(game, bga),
         DeployMainChoose: () => new DeployState(game, bga),
-        DeployBonusChoose: () => new DeployState(game, bga),
         LaunchMainChoose: () => new LaunchState(game, bga),
         LaunchBonusChoose: () => new LaunchState(game, bga),
         LinkMainChoose: () => new LinkState(game, bga),

@@ -35,9 +35,8 @@ final class StateGraphTest extends TestCase
             'budget' => 50, 'deploy' => 60, 'launch' => 70, 'link' => 80, 'proposal' => 90, 'orbit' => 100, 'round' => 20,
         ]],
         50 => ['BudgetDriver', 'GAME', ['window' => 30, 'next' => 40]],
-        60 => ['DeployDriver', 'GAME', ['main' => 61, 'bonus' => 62, 'window' => 30, 'next' => 40]],
+        60 => ['DeployDriver', 'GAME', ['main' => 61, 'window' => 30, 'next' => 40]],
         61 => ['DeployMainChoose', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 60]],
-        62 => ['DeployBonusChoose', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 60]],
         70 => ['LaunchDriver', 'GAME', ['main' => 71, 'bonus' => 72, 'window' => 30, 'next' => 40]],
         71 => ['LaunchMainChoose', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 70]],
         72 => ['LaunchBonusChoose', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 70]],
@@ -52,10 +51,10 @@ final class StateGraphTest extends TestCase
         121 => ['FinalScoring', 'GAME', []],
     ];
 
-    public function testThirtyStatesMatchTheSpec(): void
+    public function testTwentyNineStatesMatchTheSpec(): void
     {
         $graph = StateGraph::load();
-        self::assertCount(30, $graph);
+        self::assertCount(29, $graph);
         foreach (self::EXPECTED as $id => [$class, $type, $transitions]) {
             self::assertArrayHasKey($id, $graph, "state $id ($class)");
             self::assertSame($class, $graph[$id]['class']);

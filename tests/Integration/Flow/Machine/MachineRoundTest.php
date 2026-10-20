@@ -39,7 +39,7 @@ final class MachineRoundTest extends MachineTestCase
         self::assertCount(2, $this->playerValues->padCells());
         self::assertCount(2, array_unique($this->playerValues->padCells()));
         self::assertContains(StateId::DEPLOY_MAIN_CHOOSE, $this->walker->visited);
-        self::assertContains(StateId::DEPLOY_BONUS_CHOOSE, $this->walker->visited);
+        self::assertNotContains(62, $this->walker->visited, '62 は欠番（配備のボーナスは 61 で同時に選ぶ）');
         self::assertNotContains(StateId::SETUP_MULLIGAN, $this->walker->visited);
         self::assertSame(['launchBasePlaced', 'launchBasePlaced'], array_slice($this->walker->noticeNames(), 0, 2));
         self::assertSame([], $this->globals->bonusHolders());
@@ -88,7 +88,7 @@ final class MachineRoundTest extends MachineTestCase
 
     /**
      * Studio で全員が「Waiting for other players」で止まった不具合の再現。BGA は getArgs を onEnteringState の前に呼ぶので、
-     * 入場前の args（参加者・確定済み・_private）が、入場後と同じでなければならない。セットアップの配備（61・62）を含む通しで確かめる。
+     * 入場前の args（参加者・確定済み・_private）が、入場後と同じでなければならない。セットアップの配備（61）を含む通しで確かめる。
      */
     public function testArgsBeforeEnteringMatchArgsAfterEntering(): void
     {
@@ -109,7 +109,7 @@ final class MachineRoundTest extends MachineTestCase
         $this->walker->autoPlay(StateId::SETUP_LAUNCH_PAD_NEXT, [], [StateId::PLANNING_PLOT]);
         self::assertSame([], $this->walker->staleArgsStates);
         self::assertContains(StateId::DEPLOY_MAIN_CHOOSE, $this->walker->visited);
-        self::assertContains(StateId::DEPLOY_BONUS_CHOOSE, $this->walker->visited);
+        self::assertNotContains(62, $this->walker->visited, '62 は欠番（配備のボーナスは 61 で同時に選ぶ）');
     }
 
     public function testMulliganDiscardsAndRedraws(): void
@@ -162,8 +162,9 @@ final class MachineRoundTest extends MachineTestCase
         $this->playerValues->setMaya(101, 60);
         $this->playerValues->setMaya(102, 60);
         $choices = [
-            StateId::DEPLOY_MAIN_CHOOSE => fn(int $id): ?array => $id === 101 ? ['op' => 'deploy', 'card' => $cheapest, 'sat' => $sat->id] : null,
-            StateId::DEPLOY_BONUS_CHOOSE => static fn(int $id): ?array => $id === 101 ? ['op' => 'draw'] : null,
+            StateId::DEPLOY_MAIN_CHOOSE => fn(int $id): ?array => $id === 101
+                ? ['op' => 'deploy', 'card' => $cheapest, 'sat' => $sat->id, 'extra' => ['op' => 'draw']]
+                : null,
         ];
         $waiting = $this->walker->autoPlay(StateId::SETUP_LAUNCH_PAD_NEXT, $choices, [StateId::PLANNING_PLOT]);
         self::assertSame(StateId::PLANNING_PLOT, $waiting);

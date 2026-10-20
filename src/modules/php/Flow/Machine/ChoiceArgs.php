@@ -78,7 +78,7 @@ final class ChoiceArgs
         return match ($flow->stateId) {
             StateId::SETUP_MULLIGAN => ['hand' => $hand],
             StateId::PLANNING_PLOT => ['selectable' => $phases->planning()->selectable($playerId)],
-            StateId::DEPLOY_MAIN_CHOOSE, StateId::DEPLOY_BONUS_CHOOSE => $sell + $this->deploy($playerId, $flow->mode),
+            StateId::DEPLOY_MAIN_CHOOSE => $sell + $this->deploy($playerId),
             StateId::LAUNCH_MAIN_CHOOSE, StateId::LAUNCH_BONUS_CHOOSE => $sell + $this->launch($playerId, $flow->mode),
             StateId::LINK_MAIN_CHOOSE, StateId::LINK_BONUS_CHOOSE => $sell + $this->link($playerId, $flow->mode),
             StateId::PROPOSAL_KEEP_CHOOSE => [
@@ -98,14 +98,20 @@ final class ChoiceArgs
     }
 
     /**
+     * 配備の候補。ボーナス保持者（`bonus` = true）は、通常の配備と同時に追加の配備か 1 枚引くも選ぶ（作者回答 2026-10-20）。
+     * 追加の配備の候補は `targets` と同じ（引いたカードは使えない）。通常の配備と同じ衛星へ追加で配備するときは、
+     * 各候補の `next`（その衛星に先に 1 枚配備された後の段・コスト・選べない理由・起動の修正）を使う。
+     *
      * @return array<string, mixed>
      */
-    private function deploy(int $playerId, StepMode $mode): array
+    private function deploy(int $playerId): array
     {
         $deploy = $this->ctx->phases->deploy();
+        $bonus = $deploy->isBonusHolder($playerId);
         $targets = [];
         foreach ($deploy->hand($playerId) as $cardNumber) {
-            foreach ($deploy->targets($playerId, $cardNumber) as $target) {
+            $after = $bonus ? $deploy->targets($playerId, $cardNumber, 1) : [];
+            foreach ($deploy->targets($playerId, $cardNumber) as $index => $target) {
                 $entry = [
                     'satId' => $target->satellite->id,
                     'tier' => $target->deployedCount + 1,
@@ -114,11 +120,20 @@ final class ChoiceArgs
                     'minSales' => $target->payability->minSales(),
                     'selectable' => $target->isSelectable(),
                 ];
-                $targets[$cardNumber][] = $entry + $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $target->satellite->id], $target->cost->total());
+                $entry += $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $target->satellite->id], $target->cost->total());
+                if ($bonus) {
+                    $next = $after[$index];
+                    $entry['next'] = [
+                        'tier' => $next->deployedCount + 1,
+                        'cost' => $next->cost->total(),
+                        'blocked' => $next->blocked,
+                    ] + $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $next->satellite->id, 'pending' => 1], $next->cost->total());
+                }
+                $targets[$cardNumber][] = $entry;
             }
         }
-        $args = ['targets' => $targets];
-        if ($mode === StepMode::Bonus) {
+        $args = ['targets' => $targets, 'bonus' => $bonus];
+        if ($bonus) {
             $args['canDraw'] = $this->ctx->deckCount() + $this->ctx->discardCount() > 0;
         }
         return $args;

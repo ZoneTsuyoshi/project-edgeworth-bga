@@ -21,7 +21,7 @@ use Bga\Games\projectedgeworth\Data\GlobalValues;
  *   22 PlanningPlot     → runner()->enter / confirm / zombie（step = planning()）
  *   23 PlanningReveal   → runner()->resolve(planning(), 22) → planning()->nextPhase(null)
  *   50 BudgetDriver     → budget()->applyMain() / applyBonus()
- *   60/61/62 配備       → runner() と deploy()（メイン 61、ボーナス 62。StepMode::Main / Bonus）
+ *   60/61 配備          → runner() と deploy()（61 が通常の配備とボーナスを同時に選ぶ。62 は欠番）
  *   70/71/72 打ち上げ   → runner() と launch()
  *   80/81/82 通信確立   → runner() と link()
  *   90/91 企画          → proposal()->drawAll()、runner() と proposal()

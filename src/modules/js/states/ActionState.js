@@ -228,6 +228,7 @@ export class ActionState extends ChoiceState {
      * @param {string[]} p.lines 内訳の行
      * @param {{ cost: number, pay: ReturnType<typeof import('./logic/common.js').payState> }} p.quote
      * @param {import('./logic/common.js').ModsInfo | null} p.mods 使える起動の修正
+     * @param {{ mods: import('./logic/common.js').ModsInfo, sel: { useMods: string[] } }[]} [p.moreMods] もう 1 枚の配備が使える起動の修正（追加の配備）
      * @param {{ sell: number[], useMods: string[] }} p.sel 選択（売却と起動の修正を書き換える）
      * @param {number[]} p.reserved 売れないカード（配備するカード）
      * @param {HTMLElement[]} [p.subject] 選択パネルの見出し部品
@@ -241,7 +242,7 @@ export class ActionState extends ChoiceState {
             title: p.title,
             lines: [...p.lines, format(_('You will have ${left} Maya left'), { left })],
             pad: p.pad,
-            extra: p.mods === null ? [] : [this.modsBox(p.mods, sel)],
+            extra: [...(p.mods === null ? [] : [this.modsBox(p.mods, sel)]), ...(p.moreMods ?? []).map((m) => this.modsBox(m.mods, m.sel))],
         });
         view.panel.hide();
         if (p.quote.pay.kind === 'sell') {

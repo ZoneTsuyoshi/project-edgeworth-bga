@@ -18,7 +18,7 @@ use Bga\Games\projectedgeworth\Flow\StateId;
 use Bga\Games\projectedgeworth\Setup\MulliganStep;
 
 /**
- * 同時選択の状態 1 つ分（13・22・61・62・71・72・81・82・91）の共通パターン（009 §5.2）を、Table に依存せずに行う。
+ * 同時選択の状態 1 つ分（13・22・61・71・72・81・82・91）の共通パターン（009 §5.2）を、Table に依存せずに行う。
  * 状態クラスは enter / confirm / zombie / args を呼び、フレームワークの操作（setPlayersMultiactive など）と通知の送信だけを行う。
  */
 final class ChoiceFlow
@@ -45,7 +45,6 @@ final class ChoiceFlow
             StateId::SETUP_MULLIGAN => new self($ctx, $stateId, new MulliganStep($ctx->services), StepMode::Main, null),
             StateId::PLANNING_PLOT => new self($ctx, $stateId, $phases->planning(), StepMode::Main, null),
             StateId::DEPLOY_MAIN_CHOOSE => new self($ctx, $stateId, $phases->deploy(), StepMode::Main, 2),
-            StateId::DEPLOY_BONUS_CHOOSE => new self($ctx, $stateId, $phases->deploy(), StepMode::Bonus, 2),
             StateId::LAUNCH_MAIN_CHOOSE => new self($ctx, $stateId, $phases->launch(), StepMode::Main, 3),
             StateId::LAUNCH_BONUS_CHOOSE => new self($ctx, $stateId, $phases->launch(), StepMode::Bonus, 3),
             StateId::LINK_MAIN_CHOOSE => new self($ctx, $stateId, $phases->link(), StepMode::Main, 4),
@@ -86,7 +85,12 @@ final class ChoiceFlow
         $first = !$this->ctx->services->choices->isConfirmed($playerId, $this->stateId);
         // 起動の修正（USE_MODS）は、使う鍵を検証してから、この確定の検証の間だけコストの問い合わせに効かせる（011 §6-3）
         $effects = $this->ctx->effects;
-        $keys = $effects !== null && $this->actionNo !== null ? $effects->stepMods->validate($this->actionNo, $playerId, $data) : [];
+        $keys = [];
+        if ($effects !== null && $this->actionNo === 2) {
+            $keys = $effects->stepMods->validateDeploy($playerId, $data);
+        } elseif ($effects !== null && $this->actionNo !== null) {
+            $keys = $effects->stepMods->validate($this->actionNo, $playerId, $data);
+        }
         $effects?->hooks->useMods($keys);
         try {
             $all = $this->runner()->confirm($this->step, $this->stateId, $playerId, $data, $this->mode);

@@ -16,7 +16,7 @@ use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Game;
 
 /**
- * 同時選択の状態（13・22・61・62・71・72・81・82・91）の共通部分（009 §5）。全員が同時に選び、確定は何度でも上書きでき、
+ * 同時選択の状態（13・22・61・71・72・81・82・91）の共通部分（009 §5）。全員が同時に選び、確定は何度でも上書きでき、
  * 全員が確定したら 'allConfirmed' で遷移する。具体的な状態クラスは States/ に置き、コンストラクタと act* だけを書く。
  * BGA は States/ の中の全クラスを状態として読むので、この基底クラスは States/ に置かない。
  *

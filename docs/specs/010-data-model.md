@@ -538,8 +538,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | --- | --- | --- |
 | 13 `SetupMulligan` | `{"discard": [カード ID, …]}`（0〜5 枚） | 0 枚 = [Keep all]。ID は本人の手札 |
 | 22 `PlanningPlot` | `{"action": 1〜5}` | 手札のアクションカードのみ |
-| 61 `DeployMainChoose` | `{"op": "deploy", "card": ID, "sat": sat_id, "sell": […]}` または `{"op": "pass"}` | |
-| 62 `DeployBonusChoose` | 上に加え `{"op": "draw"}` | |
+| 61 `DeployMainChoose` | `{"op": "deploy", "card": ID, "sat": sat_id, "sell": […], "useMods": […], "extra": {…}}` または `{"op": "pass", "extra": {…}}` | **配備のボーナスは通常の配備と同時に選ぶ**（作者回答 2026-10-20）。`extra` は**ボーナス保持者（セットアップは全員）だけ**で、追加の配備 `{"op": "deploy", "card": ID, "sat": sat_id, "useMods": […]}` または `{"op": "draw"}`（1 枚引く）。`extra` が追加の配備のときは、`op` が `pass` でもよい（通常の配備をしない）。`sell` は 2 枚分の合計コストに対する売却（配備する 2 枚は売れない）。`useMods`（外側）は通常の配備のカード、`extra.useMods` は追加の配備のカードに使う起動の修正で、同じ鍵を 2 枚には使えない。2 枚は同じ衛星でもよい（1 機 4 枚の上限は 2 枚を合わせて数え、稼働中の衛星への +5 は 1 枚ごと）。引いたカードは同時処理なので、同じ選択の配備には使えない。62 は欠番 |
 | 71 `LaunchMainChoose` | `{"op": "launch", "sat": sat_id, "dir": "NE", "sell": […]}`、`{"op": "turn", "sat": sat_id, "dir": "SW"}`、`{"op": "pass"}` | 転回は稼働中の衛星、打ち上げは非稼働。向きを変えない転回も `turn`（FAQ 行 17） |
 | 72 `LaunchBonusChoose` | `{"op": "turn", …}`、`{"op": "budget"}`、`{"op": "pass"}` | `budget` = 予算 +1（008 §3-3） |
 | 81 `LinkMainChoose` | `{"op": "link", "cell": 区域, "sat": sat_id, "sell": […]}` または `{"op": "pass"}` | `pass` = キューブの放棄（Q-10） |
@@ -610,7 +609,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N12 | `mayaChanged` | 全員 | `player_id`、`player_name`、`delta`、`maya`（変更後）、`reason`（`budget` / `bonus` / `sell` / `landing` / `areaBonus` / `cost` / `effect` / `cashOut` ほか）、`reason_label`（i18n） | 正: `${player_name} gains ${amount} Maya (${reason_label})`、負: `${player_name} pays ${amount} Maya (${reason_label})` | マヤの増減。メッセージは `delta` の符号でサーバーが選ぶ |
 | N13 | `mayaTransferred` | 全員 | `from_player_id`、`from_name`、`to_player_id`、`to_name`、`amount`、`maya_from`、`maya_to` | `${from_name} pays ${amount} Maya of pioneer cost to ${to_name}` | 先駆コスト。コミット時に全員分を席順で |
 | N14 | `budgetChanged` | 全員 | `player_id`、`player_name`、`delta`、`budget`、`reason_label` | `${player_name} raises Budget by ${delta} (${reason_label})` | 予算トラックの円盤を動かす |
-| N15 | `cardDeployed` | 全員 | `player_id`、`player_name`、`card`（ID）、`card_name`、`sat_id`、`sat_name`、`level`（段）、`fuel_capacity`、`cost`、`from_hand`（bool） | `${player_name} deploys ${card_name} to ${sat_name}` | 配備。カードが衛星に重なる。**配備するカードの ID を公開** |
+| N15 | `cardDeployed` | 全員 | `player_id`、`player_name`、`card`（ID）、`card_name`、`sat_id`、`sat_name`、`level`（段）、`fuel_capacity`、`cost`、`from_hand`（bool） | `${player_name} deploys ${card_name} to ${sat_name}` | 配備。カードが衛星に重なる。**配備するカードの ID を公開**。II 配備ではボーナス保持者が 1 回のコミットで最大 2 件（通常の配備、追加の配備の順）。売却（N10・N12 `sell`）は 2 枚分の合計コストに対して 1 回で最初の N15 の前、コストの N12（`cost`）は 1 枚ごと。ボーナスで引いた分は N8（`reason`: `bonus`）が続く（作者回答 2026-10-20） |
 | N16 | `satelliteLaunched` | 全員 | `player_id`、`player_name`、`sat_id`、`sat_name`、`cell`、`dir`、`cost` | `${player_name} launches ${sat_name}` | 打ち上げ。衛星コマが発射拠点の区域に向きつきで現れる。`fuel_used = 0` |
 | N17 | `satelliteTurned` | 全員 | `player_id`、`player_name`、`sat_id`、`sat_name`、`dir`、`same`（向きが変わらない転回か） | `${player_name} turns ${sat_name}` | 転回。向きを変える |
 | N18 | `satellitesMoved` | 全員 | `moves`（`[{ "sat_id", "from_cell", "cell", "dir", "reflected" }]`） | `Satellites move one area` | 循環フェイズの移動（全員分を 1 件にまとめる）。反射のときは向きを反転 |
@@ -619,7 +618,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N21 | `satelliteLanded` | 全員 | `player_id`、`player_name`、`sat_id`、`sat_name`、`cell`、`sea`（bool）、`maya`（獲得 0 または 10） | 海: `${sat_name} splashes down`、陸: `${sat_name} lands` | 着陸 / 着水。衛星コマを衛星カードに戻し、燃料コマを初期燃料庫へ。海のとき N12 が続く |
 | N22 | `linkStaged` | 本人 | `stage_id`、`cell`、`sat_id`、`special`、`reserved`、`maya_available`、`cubes_left` | `''` | 窓の中のカード効果による通信確立をステージに積んだとき。本人にだけ予約額と残り |
 | N23 | `linkEstablished` | 全員 | `player_id`、`player_name`、`cell`、`area_label`（i18n）、`slot`、`level`、`sat_id`、`special`、`commit`、`cubes_left` | `${player_name} establishes a link at ${area_label}` | 通信確立のコミット。キューブが Z 順の場所に現れる。区域ボーナスは続く N12・N19・N8 |
-| N24 | `actionPassed` | 全員 | `player_id`、`player_name`、`kind`（`deploy` / `launch` / `link` / `bonus` / `keep`）、`auto`（bool） | `auto` でない: `${player_name} passes`（IV は `${player_name} abandons the link action`）。`auto`: `${player_name} has no available action` | [Pass]・キューブの放棄・自動パス |
+| N24 | `actionPassed` | 全員 | `player_id`、`player_name`、`kind`（`deploy` / `launch` / `link` / `bonus` / `keep`）、`auto`（bool） | `auto` でない: `${player_name} passes`（IV は `${player_name} abandons the link action`）。`auto`: `${player_name} has no available action` | [Pass]・キューブの放棄・自動パス。`kind = bonus` は打ち上げ / 転回のボーナスの [Pass]（配備のボーナスは 61 で通常の配備と同時に選ぶので、`deploy` に含める） |
 | N25 | `drawnCardsKept` | 本人 | `kept`（ID 配列） | `''` | 企画の確定後。引いた直後の置き場から手札へ移す。捨てたカードは N10 |
 | N26 | `windowClosed` | 全員 | `window_id`、`events`（このバリアで流した `ev_id` 配列） | `''` | 32 の最後（保留通知を流した後）。クライアントは適用済みの `ev_id` の記録を整理する（§10.5） |
 | N27 | `effectUsed` | 全員（保留） | `player_id`、`player_name`、`ev_id`、`source_name`（カード名）、`sat_id`、`mark_used`（bool） | `${player_name} uses ${source_name}` | [Use]・自動の強制効果。使用済みマークを付ける。結果は N8・N12・N15・N19 などが続く |
@@ -777,7 +776,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | 11 `SetupLaunchPadPlace` | `vacantCells`（空いている陸系の区域 ID。公開情報） | なし | |
 | 13 `SetupMulligan` | `participants`、`confirmed`（確定済みの ID。内容なし） | `myChoice`（`{"discard": […]}`／null）、`hand`（手札 ID） | |
 | 22 `PlanningPlot` | `participants`、`confirmed` | `myChoice`（`{"action": n}`／null）、`selectable`（手札のアクション番号の配列） | |
-| 61・62 配備 | `participants`、`confirmed` | `myChoice`、`hand`、`satellites`（配備先の候補: 空きの段、コスト〔稼働中 +5、効果による修正後〕、グレーの理由）、`sellValue`（1 枚あたりの売却額）、`options`（62: ボーナスの選択肢） | コストはサーバーが計算（008 §3-6） |
+| 61 配備 | `participants`、`confirmed` | `myChoice`、`hand`、`targets`（カード番号 → 配備先の候補 `[{ satId, tier〔配備後の段〕, cost〔稼働中 +5、効果による修正後〕, blocked〔満杯 / 禁止の理由〕, minSales, selectable, useMods?, next? }]`）、`sellValue`（1 枚あたりの売却額）、`bonus`（配備のボーナス保持者か）、`canDraw`（保持者のみ。引けるか） | コストはサーバーが計算（008 §3-6）。保持者の各候補の `next` は、通常の配備で先に同じ衛星へ 1 枚配備した後の `{ tier, cost, blocked, useMods? }`（追加の配備を同じ衛星にするときに使う。クライアントは 2 枚のコストを足すだけ） |
 | 71・72 打ち上げ / 転回 | 同上 | `myChoice`、`launchable`（打ち上げ可能な衛星とコスト）、`turnable`（転回可能な衛星と現在の向き）、`sellValue` | |
 | 81・82 通信確立 | 同上 | `myChoice`、`linkable`（`[{ "cell", "sats": [{"sat_id", "cost": {"area", "pioneer": [{"to","amount"}], "total"}}] }]`。売却すれば払える区域のフラグ）、`sellValue` | 先駆コストは「すでに置かれているキューブ」に対する最悪値（008 未確定 10） |
 | 91 `ProposalKeepChoose` | `participants`、`confirmed`、`keepCount`（各人の残す枚数。公開してよい: 引いた枚数だけが公開情報） | `myChoice`、`drawn`（引いたカード ID。引いた順）、`keep`（残す枚数）、`extra`（`PA` の選択効果の候補。→ 011） | |
@@ -832,7 +831,7 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 | `maya_spent` | 45 | Maya spent | int | N12（負）。先駆コストを含む |
 | `budget_final` | 46 | Final Budget | int | 121 |
 | `actions_chosen_1`〜`actions_chosen_5` | 47〜51 | Times chose Budget / Deploy / Launch-Turn / Link / Proposal | int | N6（`action_no` ごと） |
-| `bonus_gained` | 52 | Action selection bonuses gained | int | 62・72・82 などの参加（ボーナス保持者） |
+| `bonus_gained` | 52 | Action selection bonuses gained | int | 61（ボーナス保持者）・72・82 などの参加（ボーナス保持者） |
 | `effects_used` | 53 | Effects used | int | N27 |
 | `effects_skipped` | 54 | Effects skipped | int | N28 |
 | `active_satellites_final` | 55 | Active satellites at the end | int | 121 |

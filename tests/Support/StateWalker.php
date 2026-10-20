@@ -225,7 +225,7 @@ final class StateWalker
             case StateId::BUDGET_DRIVER:
                 return $this->driver($m->drivers()->budget());
             case StateId::DEPLOY_DRIVER:
-                return $this->driver($m->drivers()->action(2));
+                return $this->driver($m->drivers()->deploy());
             case StateId::LAUNCH_DRIVER:
                 return $this->driver($m->drivers()->action(3));
             case StateId::LINK_DRIVER:
