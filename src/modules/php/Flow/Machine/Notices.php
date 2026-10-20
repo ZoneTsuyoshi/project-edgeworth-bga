@@ -305,12 +305,14 @@ final class Notices
      * N20
      *
      * @param list<int> $satIds
+     * @param list<int> $playerIds ニアミスした衛星の持ち主（統計用。重複なし）
      */
-    public function nearMiss(int $cell, array $satIds): Notice
+    public function nearMiss(int $cell, array $satIds, array $playerIds = []): Notice
     {
         return new Notice('nearMiss', clienttranslate('Near miss! The satellites in the same area use 2 extra fuel'), [
             'cell' => $cell,
             'sats' => $satIds,
+            'players' => $playerIds,
         ]);
     }
 

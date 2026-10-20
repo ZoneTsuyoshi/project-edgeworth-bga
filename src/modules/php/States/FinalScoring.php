@@ -37,6 +37,7 @@ class FinalScoring extends GameState
         foreach ($outcome->scores as $playerId => $fame) {
             $this->bga->playerScore->set($playerId, $fame, null);
         }
+        $this->game->peStats->recordFinal($outcome);
         $this->game->peSend($outcome->notices);
 
         return GameResult::individualRanking();

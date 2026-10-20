@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\Games\projectedgeworth\Data\CardLocation;
 use Bga\Games\projectedgeworth\Data\FlowPhase;
+use Bga\Games\projectedgeworth\Data\LinkRepository;
 use Bga\Games\projectedgeworth\Data\MissionRepository;
 use Bga\Games\projectedgeworth\Flow\EndCondition;
 use Bga\Games\projectedgeworth\Flow\FinalScoring;
@@ -106,6 +107,8 @@ final class EndFlow
         $missions = new MissionRepository($this->ctx->db);
         $notices = [];
         $scores = [];
+        $details = [];
+        $cubesLeft = [];
         foreach ($this->ctx->services->players->playerIds() as $playerId) {
             $result = $results[$playerId];
             $achieved = [];
@@ -120,7 +123,9 @@ final class EndFlow
             );
             $notices[] = $this->ctx->notices->finalScore($playerId, $result->total, $result->detail, $list);
             $scores[$playerId] = $result->total;
+            $details[$playerId] = $result->detail;
+            $cubesLeft[$playerId] = LinkRepository::CUBES_PER_PLAYER - $this->ctx->services->links->countFor($playerId);
         }
-        return new FinalScoreOutcome($notices, $scores);
+        return new FinalScoreOutcome($notices, $scores, $details, $cubesLeft);
     }
 }

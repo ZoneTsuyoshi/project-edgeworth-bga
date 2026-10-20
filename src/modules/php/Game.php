@@ -42,6 +42,8 @@ use Bga\Games\projectedgeworth\Setup\GameOptions;
 use Bga\Games\projectedgeworth\Setup\PublicFame;
 use Bga\Games\projectedgeworth\Setup\GameSetup;
 use Bga\Games\projectedgeworth\Setup\SetupPlayer;
+use Bga\Games\projectedgeworth\Stats\BgaStatStore;
+use Bga\Games\projectedgeworth\Stats\StatsRecorder;
 use Bga\Games\projectedgeworth\States\SetupLaunchPadNext;
 
 class Game extends \Bga\GameFramework\Table
@@ -49,6 +51,7 @@ class Game extends \Bga\GameFramework\Table
     public Database $peDatabase;
     public GlobalValues $peGlobals;
     public PlayerValues $pePlayers;
+    public StatsRecorder $peStats;
     private ?Machine $peMachine = null;
 
     public function __construct()
@@ -58,6 +61,7 @@ class Game extends \Bga\GameFramework\Table
         $this->peDatabase = new BgaDatabase();
         $this->peGlobals = new GlobalValues($this->bga->globals);
         $this->pePlayers = new PlayerValues($this->peDatabase);
+        $this->peStats = new StatsRecorder(new BgaStatStore($this->bga->tableStats, $this->bga->playerStats));
     }
 
     /**
@@ -93,6 +97,8 @@ class Game extends \Bga\GameFramework\Table
      */
     public function peSend(array $notices): void
     {
+        // 統計は通知の内容から導く（送信と同じ場所で数えるので、ログとずれない。010 §14）
+        $this->peStats->recordNotices($notices);
         foreach ($notices as $notice) {
             if ($notice->to === null) {
                 $this->bga->notify->all($notice->name, $notice->message, $notice->args);
@@ -197,6 +203,9 @@ class Game extends \Bga\GameFramework\Table
             fn(int $optionId): ?int => $this->bga->tableOptions->get($optionId),
         );
         (new GameSetup($this->peDatabase, $this->peGlobals, new BgaRandom()))->run($setupPlayers, $gameOptions);
+
+        // 統計の初期化（010 §14。定義は stats.jsonc）
+        $this->peStats->init();
 
         $this->activeNextPlayer();
 

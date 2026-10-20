@@ -791,16 +791,16 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 - 売却（`actSell`）の候補と額は、参加者の `_private.sellValue` と `hand` から出す（009 §8）。
 - GAME 状態（10、12、14、16、17、20、21、23、30、32、40、50、60、70、80、90、100、110、120、121）は args を持たない。
 
-### 14. 統計（`stats.jsonc`）の候補【提案】
+### 14. 統計（`stats.jsonc`）
 
-D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更も再利用もしない。テーブル統計 10〜19、プレイヤー統計 20〜59 を割り当てる。名称（`name`）は英語の原文（BGA が自動で翻訳する）。`setupNewGame` で全統計を `init` する。
+D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更も再利用もしない。テーブル統計 10〜19、プレイヤー統計 20〜59 を割り当てる（実装は `src/stats.jsonc`）。名称（`name`）は英語の原文（BGA が自動で翻訳する）。`setupNewGame` で全統計を `init` する。
 
 テーブル統計:
 
 | キー | ID | 名称 | 型 | 記録タイミング |
 | --- | --- | --- | --- | --- |
-| `rounds_played` | 10 | Number of rounds | int | 110 の終了時 |
-| `end_reason` | 11 | Game end condition | int | 110。`0` = 該当なし、`1` = 衛星 5 機が稼働中、`2` = キューブ 16 個、`3` = 両方（`value_labels` で表示） |
+| `rounds_played` | 10 | Number of rounds | int | N4（ラウンド開始）のたびにそのラウンド番号を書く（終了時に最終ラウンド数） |
+| `end_reason` | 11 | Game end condition | int | 110（N31 の `reasons`）。`0` = 該当なし、`1` = 衛星 5 機が稼働中、`2` = キューブ 16 個、`3` = 両方（`value_labels` で表示） |
 | `links_total` | 12 | Number of established links | int | 通信確立のコミット（全体の合計） |
 | `near_misses` | 13 | Number of near misses | int | ニアミス判定 |
 
@@ -808,15 +808,15 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 
 | キー | ID | 名称 | 型 | 記録タイミング |
 | --- | --- | --- | --- | --- |
-| `fame_budget` | 20 | Fame: Budget | int | 121（I） |
-| `fame_maya` | 21 | Fame: Maya | int | 121（II） |
-| `fame_links` | 22 | Fame: Linked areas | int | 121（III） |
-| `fame_regions` | 23 | Fame: Linked regions | int | 121（IV） |
-| `fame_missions` | 24 | Fame: Missions | int | 121（V） |
-| `fame_satellites` | 25 | Fame: Active satellites | int | 121（VI） |
-| `fame_projects` | 26 | Fame: Project cards | int | 121（VII） |
-| `fame_rewards` | 27 | Fame: Awards | int | 121（VIII） |
-| `fame_end` | 28 | Fame: End condition | int | 121（IX） |
+| `fame_budget` | 20 | Fame: I Budget | int | 121（I） |
+| `fame_maya` | 21 | Fame: II Maya | int | 121（II） |
+| `fame_links` | 22 | Fame: III Linked areas | int | 121（III） |
+| `fame_regions` | 23 | Fame: IV Linked regions | int | 121（IV） |
+| `fame_missions` | 24 | Fame: V Missions | int | 121（V） |
+| `fame_satellites` | 25 | Fame: VI Active satellites | int | 121（VI） |
+| `fame_projects` | 26 | Fame: VII Project cards | int | 121（VII） |
+| `fame_rewards` | 27 | Fame: VIII Rewards | int | 121（VIII） |
+| `fame_end` | 28 | Fame: IX End condition | int | 121（IX） |
 | `links_count` | 29 | Established links | int | N23 のたび |
 | `links_abandoned` | 30 | Abandoned link actions | int | IV の [Pass]（キューブの放棄） |
 | `special_links` | 31 | Special links | int | 特殊通信確立 |
@@ -841,10 +841,13 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 | `effects_skipped` | 54 | Effects skipped | int | N28 |
 | `active_satellites_final` | 55 | Active satellites at the end | int | 121 |
 | `cubes_left_final` | 56 | Cubes left at the end | int | 121 |
+| `fame_total` | 57 | Fame: Total | int | 121（名声の合計。`player_score` と同じ値。結果画面で内訳と並べる） |
 
-- テーブル統計 4 + プレイヤー統計 37 = 41 個（D11 の上限 930 に対して 4 + 37 × 4 = 152）。
-- 記録は `Stats/StatsRecorder`（`StatStore` インターフェースで BGA の統計 API を隠す。004 §6.1）を通す。通知の送信と同じ場所で記録して、数がずれないようにする。
-- どの統計を残すかは未確定 4。
+- テーブル統計 4 + プレイヤー統計 38 = 42 個（D11 の上限 930 に対して 4 + 38 × 4 = 156）。
+- 名声の統計（20〜28、57）の名称と順序は、クライアントの「Final situation」（`ScoreSheet.js` の `sectionLabels`）の区分 I〜IX と合計に合わせる。値は 121 の `FinalScoreOutcome`（`fame_detail` と同じ計算結果）から書くので、画面の内訳と一致する。
+- 記録は `Stats/StatsRecorder`（`StatStore` インターフェースで BGA の統計 API を隠す。004 §6.1）を通す。通知の送信と同じ場所（`Game::peSend`）で、全員宛て（`to` が null）の通知だけを数えて、数がずれないようにする（保留通知の本人宛ての先送りは二重になるので数えない）。名声・最終値は状態 121 で `recordFinal` する。`setupNewGame` で `init` する。
+- 記録の補足: `maya_earned` / `maya_spent` は N12 に加えて先駆コストの受け取り・支払い（N13）を含む（手札の自動換金 N30 は含まない）。`near_miss_count` のため N20 の args に `players`（ニアミスした衛星の持ち主）を足した。`bonus_gained` は N7 の `holders` で数える。`links_abandoned` は自動の見送りを除く N24（`link`）。`cards_deployed`・`satellites_turned`・`fuel_*` は効果による配備・転回・燃料の増減も含む。
+- どの統計を残すかは未確定 4（本実装で上記 42 個を採用。公開前に作者が増減してよい）。
 
 ### 15. ゲーム開始時の初期化（`setupNewGame`）
 

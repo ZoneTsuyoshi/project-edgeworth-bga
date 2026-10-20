@@ -1,6 +1,57 @@
 {
-  // 統計（仕様書 010 の統計は I-17 で定義する。今は空）。
+  // PROJECT EDGEWORTH の統計（docs/specs/010-data-model.md §14）。ID は公開後に変更・再利用しない。
+  // テーブル統計 10〜19、プレイヤー統計 20〜59。名声（20〜28、57）は「Final situation」の区分 I〜IX と合計に対応する。
   // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
-  "table": {},
-  "player": {}
+  "table": {
+    "rounds_played": { "id": 10, "name": "Number of rounds", "type": "int" },
+    "end_reason": { "id": 11, "name": "Game end condition", "type": "int" },
+    "links_total": { "id": 12, "name": "Number of established links", "type": "int" },
+    "near_misses": { "id": 13, "name": "Number of near misses", "type": "int" }
+  },
+
+  "player": {
+    "fame_budget": { "id": 20, "name": "Fame: I Budget", "type": "int" },
+    "fame_maya": { "id": 21, "name": "Fame: II Maya", "type": "int" },
+    "fame_links": { "id": 22, "name": "Fame: III Linked areas", "type": "int" },
+    "fame_regions": { "id": 23, "name": "Fame: IV Linked regions", "type": "int" },
+    "fame_missions": { "id": 24, "name": "Fame: V Missions", "type": "int" },
+    "fame_satellites": { "id": 25, "name": "Fame: VI Active satellites", "type": "int" },
+    "fame_projects": { "id": 26, "name": "Fame: VII Project cards", "type": "int" },
+    "fame_rewards": { "id": 27, "name": "Fame: VIII Rewards", "type": "int" },
+    "fame_end": { "id": 28, "name": "Fame: IX End condition", "type": "int" },
+    "links_count": { "id": 29, "name": "Established links", "type": "int" },
+    "links_abandoned": { "id": 30, "name": "Abandoned link actions", "type": "int" },
+    "special_links": { "id": 31, "name": "Special links", "type": "int" },
+    "pioneer_paid": { "id": 32, "name": "Pioneer cost paid", "type": "int" },
+    "pioneer_received": { "id": 33, "name": "Pioneer cost received", "type": "int" },
+    "cards_deployed": { "id": 34, "name": "Project cards deployed", "type": "int" },
+    "cards_sold": { "id": 35, "name": "Project cards sold", "type": "int" },
+    "cards_discarded": { "id": 36, "name": "Project cards discarded (Proposal)", "type": "int" },
+    "satellites_launched": { "id": 37, "name": "Satellites launched", "type": "int" },
+    "satellites_turned": { "id": 38, "name": "Satellite turns", "type": "int" },
+    "landings": { "id": 39, "name": "Landings", "type": "int" },
+    "splashdowns": { "id": 40, "name": "Splashdowns", "type": "int" },
+    "fuel_used": { "id": 41, "name": "Fuel used", "type": "int" },
+    "fuel_recovered": { "id": 42, "name": "Fuel recovered", "type": "int" },
+    "near_miss_count": { "id": 43, "name": "Near misses involved in", "type": "int" },
+    "maya_earned": { "id": 44, "name": "Maya earned", "type": "int" },
+    "maya_spent": { "id": 45, "name": "Maya spent", "type": "int" },
+    "budget_final": { "id": 46, "name": "Final Budget", "type": "int" },
+    "actions_chosen_1": { "id": 47, "name": "Times chose Budget", "type": "int" },
+    "actions_chosen_2": { "id": 48, "name": "Times chose Deploy", "type": "int" },
+    "actions_chosen_3": { "id": 49, "name": "Times chose Launch / Turn", "type": "int" },
+    "actions_chosen_4": { "id": 50, "name": "Times chose Establish Link", "type": "int" },
+    "actions_chosen_5": { "id": 51, "name": "Times chose Proposal", "type": "int" },
+    "bonus_gained": { "id": 52, "name": "Action selection bonuses gained", "type": "int" },
+    "effects_used": { "id": 53, "name": "Effects used", "type": "int" },
+    "effects_skipped": { "id": 54, "name": "Effects skipped", "type": "int" },
+    "active_satellites_final": { "id": 55, "name": "Active satellites at the end", "type": "int" },
+    "cubes_left_final": { "id": 56, "name": "Cubes left at the end", "type": "int" },
+    "fame_total": { "id": 57, "name": "Fame: Total", "type": "int" }
+  },
+
+  // end_reason の表示名（0 は終了条件が成立しなかった場合）
+  "value_labels": {
+    "11": ["-", "Active satellites", "Established links", "Active satellites and established links"]
+  }
 }
