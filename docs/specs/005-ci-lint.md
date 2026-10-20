@@ -221,6 +221,8 @@
 
 #### 2.11 `data/` の変更禁止（R1。新規）
 
+> **2026-10-20 リポジトリ公開に伴い R1 は廃止した。** `data/` を Git の履歴から除いて作者の手元だけに置く（`.gitignore` 対象）ため、変更禁止の検査は不要になり、`check-data-unchanged.mjs` と `lint:data`・lint.yml の手順を削除した。代わりに `check-repo.mjs` が `data/` 配下の追跡を失敗にする（原本の混入防止）。以下は当時の設計の記録。
+
 CLAUDE.md の絶対ルール 6（`data/` は原本。編集・移動・削除しない）を機械で守らせる。
 
 - **実装**: `scripts/lint/check-data-unchanged.mjs`（外部依存なし。`npm run lint:data`）。比較の基準を環境変数または引数で受け取る。

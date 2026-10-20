@@ -1,5 +1,6 @@
 // board/geometry.js・ui/layout-math.js・PieceLayer の純粋関数の単体テスト（仕様書 012 §3.2、003 §1・§4）。実行: npm run test:js
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
@@ -92,7 +93,9 @@ test('衛星コマの回転は最短で回る', () => {
   assert.equal(nearestAngle(120, 120), 120);
 });
 
-test('キューブのマスの中心が、区域タイル原本の 4 つの正方形の上にある（Z 順: 左上・右上・左下・右下）', async () => {
+// data/（原本）は作者の手元だけにある。無いとき（CI）は skip する
+const hasData = existsSync(new URL('../../data/boards/area/', import.meta.url));
+test('キューブのマスの中心が、区域タイル原本の 4 つの正方形の上にある（Z 順: 左上・右上・左下・右下）', { skip: hasData ? false : 'data/ が無い（原本は手元だけ）' }, async () => {
   const { default: sharp } = await import('sharp');
   const dir = new URL('../../data/boards/area/', import.meta.url);
   for (const name of ['陸', '海', '山岳']) {

@@ -32,6 +32,11 @@ for (const file of files) {
   if (stubFiles.includes(base)) fail(file, 'BGA 配布のスタブはコミットできません（再配布不可）');
 }
 
+// 3. data/（原本画像）は作者の手元だけに置き、リポジトリに入れない（2026-10-20 リポジトリ公開に伴う。仕様書 005）
+for (const file of files) {
+  if (file === 'data' || file.startsWith('data/')) fail(file, 'data/（原本）はコミットできません（作者の手元だけに置く）');
+}
+
 // 2. src/ 配下に置いてはいけない開発用ファイル
 const devFile = [
   { test: (b) => b === 'package.json' || b === 'package-lock.json', label: 'package.json 系' },
@@ -77,10 +82,6 @@ for (const file of files) {
     if (parts.slice(0, -1).includes(dir)) fail(file, `src/ に非推奨のディレクトリは置けません（${dir}/）`);
   }
   if (file.startsWith('src/ts/')) fail(file, 'src/ に非推奨のディレクトリは置けません（ts/）');
-  // 3. コミット禁止のスプライト生成物
-  if (/^src\/img\/(zoom\/)?pe_[^/]*\.webp$/.test(file) || file === 'src/modules/js/cards/sprites.js') {
-    fail(file, 'スプライト生成物はコミットできません（.gitignore 対象）');
-  }
   if (!safeName.test(file)) {
     fail(file, 'ファイル名に空白・括弧・非 ASCII 文字などは使えません（使える文字: A-Z a-z 0-9 _ . -）');
   }

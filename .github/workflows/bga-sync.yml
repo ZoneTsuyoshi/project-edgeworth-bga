@@ -11,8 +11,6 @@ on:
     branches: [main]
     paths:
       - 'src/**'
-      - 'data/**'
-      - 'scripts/build-sprites.mjs'
       - 'scripts/check-sprites.mjs'
       - 'scripts/lib/**'
       - 'scripts/bga-sync/**'
@@ -102,7 +100,7 @@ jobs:
           sudo apt-get install -y -qq lftp
           lftp --version | head -n1
 
-      # スプライト生成（lint の後・転送の前。仕様書 006 §4.1）。test モードでは不要
+      # 画像はコミット済みのものをそのまま転送する（生成しない。2026-10-20 リポジトリ公開に伴う）。検査だけ行う。test モードでは不要
       - name: Setup Node
         if: steps.config.outputs.ready == 'true' && env.MODE != 'test'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -110,11 +108,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Build sprites
+      - name: Check sprites
         if: steps.config.outputs.ready == 'true' && env.MODE != 'test'
         run: |
           npm ci
-          npm run build:sprites
           npm run check:sprites
 
       # 秘密鍵は printf でファイルに書く（echo しない・set -x しない）。権限 600

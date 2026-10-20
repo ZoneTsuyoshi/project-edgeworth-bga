@@ -1,6 +1,6 @@
 // data/ の原本から BGA 用の webp スプライトと配置情報を生成する（仕様書 012 第 7 節）。
 // 使い方: npm run build:sprites [-- --out <dir>] [--manifest <path>] [--js <path>] [--quality <n>] [--flat-zoom] [--verify-determinism]
-// 出力: src/img/pe_*.webp、src/img/zoom/pe_zoom_*.webp、build/sprites/manifest.json、src/modules/js/cards/sprites.js（いずれも .gitignore 対象）。
+// 出力: src/img/pe_*.webp、src/img/zoom/pe_zoom_*.webp、build/sprites/manifest.json、src/modules/js/cards/sprites.js（src/ 配下はコミットする。build/ だけ .gitignore 対象）。
 // data/ は読み取りのみ。
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -202,7 +202,7 @@ export async function buildAll({ out, manifest, js, quality, zoomDir }) {
   if (js) {
     await mkdir(path.dirname(js), { recursive: true });
     await writeFile(js, [
-      '// 自動生成: scripts/build-sprites.mjs（npm run build:sprites）。編集しない。.gitignore 対象で、CI とローカルで生成する。',
+      '// 自動生成: scripts/build-sprites.mjs（npm run build:sprites）。編集しない。原本を変えたら手元で生成してコミットする。',
       '// 位置の読み方: カード = SPRITES.cards[key].base / .zoom / .effects の { sheet, col, row } と SPRITES.sheets[sheet] の cols・rows・cell・file。',
       `export const SPRITES = ${JSON.stringify(doc, null, 2)};`,
       '',

@@ -32,11 +32,9 @@ id_ed25519*
 /tools/bga/_ide_helper.php
 /tools/bga/bga-framework.d.ts
 
-# スプライト生成物（CI とローカルで scripts/build-sprites.mjs が生成する。仕様書 012 §7.1）
-/src/img/pe_*.webp
-/src/img/zoom/
-/src/modules/js/cards/sprites.js
-/build/
+# 原本画像（作者の手元だけ。コミットしない。ディレクトリでもシンボリックリンクでも無視するため末尾の / は付けない）
+/data
 
 # PHPUnit のキャッシュ
 .phpunit.result.cache
+/build/

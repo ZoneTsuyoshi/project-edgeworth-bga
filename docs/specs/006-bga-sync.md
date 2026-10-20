@@ -99,7 +99,7 @@ PR（Lint gate 通過）──squash merge──▶ main
 | 対象 | 内容 |
 | --- | --- |
 | `src/` のコミット済みファイル | `src/` と Studio の `/projectedgeworth` は 1 対 1（004 §3） |
-| スプライト | 同期の直前に `npm run build:sprites` で `data/` から生成し、`src/img/`（と `src/img/zoom/`）に出力する。**コミットしない**（`.gitignore` 済み。012 §7.1）。生成後に `npm run check:sprites`（1 枚 2,000,000 B 以下、総量 15,000,000 B 以下、1 辺 4096 px 以下など。012 §7.5）を実行し、失敗したら転送しない |
+| スプライト | **（2026-10-20 リポジトリ公開に伴い、同期前の生成をやめた。コミット済みの画像をそのまま転送し、`check:sprites` だけ実行する。以下は当時の設計）** 同期の直前に `npm run build:sprites` で `data/` から生成し、`src/img/`（と `src/img/zoom/`）に出力する。**コミットしない**（`.gitignore` 済み。012 §7.1）。生成後に `npm run check:sprites`（1 枚 2,000,000 B 以下、総量 15,000,000 B 以下、1 辺 4096 px 以下など。012 §7.5）を実行し、失敗したら転送しない |
 
 - `docs/`、`data/`、`scripts/`、`tests/`、`tools/`、設定ファイル類は転送しない（`src/` 以外は転送の対象に入らない）。
 - `build/sprites/manifest.json` など `src/` の外の生成物は転送しない。
