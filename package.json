@@ -6,7 +6,7 @@
     "node": "^22.13.0 || >=24"
   },
   "scripts": {
-    "lint": "npm run lint:md && npm run lint:repo && npm run lint:data && npm run lint:cards && npm run lint:js && npm run lint:strict && npm run lint:prefix && npm run lint:css",
+    "lint": "npm run lint:md && npm run lint:repo && npm run lint:data && npm run lint:cards && npm run check:card-info && npm run lint:js && npm run lint:strict && npm run lint:prefix && npm run lint:css",
     "lint:md": "markdownlint-cli2",
     "lint:repo": "node scripts/lint/check-repo.mjs",
     "lint:data": "node scripts/lint/check-data-unchanged.mjs",
@@ -17,10 +17,13 @@
     "lint:links": "lychee --config lychee.toml \"./**/*.md\"",
     "lint:cards": "node scripts/check-card-definitions.mjs",
     "test:lint": "node --test \"scripts/lint/*.test.mjs\"",
+    "test:js": "node --test \"tests/js/*.test.mjs\"",
     "test:unit": "bash tests/run-unit.sh",
     "test:integration": "bash tests/run-integration.sh",
     "build:sprites": "node scripts/build-sprites.mjs",
-    "check:sprites": "node scripts/check-sprites.mjs"
+    "check:sprites": "node scripts/check-sprites.mjs",
+    "build:card-info": "node scripts/build-card-info.mjs",
+    "check:card-info": "node scripts/build-card-info.mjs --check"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -179,6 +179,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run test:lint
 
+      - name: Unit tests of client pure functions
+        if: ${{ !cancelled() }}
+        run: npm run test:js
+
       - name: Stylelint
         if: ${{ !cancelled() }}
         run: npm run lint:css

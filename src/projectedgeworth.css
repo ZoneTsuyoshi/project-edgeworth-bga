@@ -1,12 +1,1527 @@
 /*
- * PROJECT EDGEWORTH のスタイル。素の CSS（SCSS は使わない）。@import は使えない。
- * 盤面・カードのスタイルは I-10（仕様書 012）で追加する。
+ * PROJECT EDGEWORTH のスタイル（仕様書 012）。素の CSS 1 ファイル（SCSS・@import は使わない。004 §4）。
+ * 寸法の基準は JS（ui/Layout.js）が ResizeObserver で測って `#pe-root` に入れる px の CSS 変数
+ *   --pe-root-w（ゲーム領域の幅）、--pe-hex-w（盤面の区域の幅）、--pe-<kind>-w / -h（カードの大きさ）
+ * と、`data-layout`（wide / medium / narrow）。`cqw`・`vw`・`@media` の幅には依存しない（012 §2.2、§10 教訓 1）。
+ * 背景画像の size / position は JS が % で入れる（Safari の小数ピクセルのずれ防止。教訓 10）。
+ * ダークモードは `html[data-theme="dark"]`（BGA の切り替え。`prefers-color-scheme` は使わない。012 §11）。
+ * 構成: 1 トークン / 2 土台 / 3 ボタン・バッジ / 4 フェイズ帯・場 / 5 盤面 / 6 コマ / 7 ハイライト / 8 カード / 9 衛星 / 10 領域・手札 / 11 パネル / 12 拡大表示・ボトムシート
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 
-.pe-placeholder {
-    margin: 8px;
+/* ---- 1 トークン ---- */
+
+.pe-root {
+    --pe-bg: #f3f0e8;
+    --pe-surface: #fff;
+    --pe-surface-2: #e9e5da;
+    --pe-text: #1d2430;
+    --pe-text-dim: #5b6575;
+    --pe-line: #c9c3b4;
+    --pe-accent: #c4410c;
+    --pe-ok: #1f7a3d;
+    --pe-warn: #b42318;
+    --pe-board-bg: #0d1830;
+    --pe-border-line: #fff;
+    --pe-hex-h: calc(var(--pe-hex-w, 52px) * 503 / 435);
+    --pe-hand-w: 120px;
+    --pe-hand-h: 168px;
+    --pe-satellite-w: 240px;
+    --pe-action-w: 84px;
+    --pe-actionother-w: 48px;
+    --pe-mission-w: 84px;
+    --pe-reward-w: 108px;
+    --pe-c-b: #0b528d;
+    --pe-c-b-dark: #073a65;
+    --pe-c-g: #007633;
+    --pe-c-g-dark: #004f21;
+    --pe-c-r: #ad0003;
+    --pe-c-r-dark: #750002;
+    --pe-c-y: #b9881c;
+    --pe-c-y-dark: #82600f;
+
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 0;
+    color: var(--pe-text);
+}
+
+html[data-theme="dark"] .pe-root {
+    --pe-bg: #1c2029;
+    --pe-surface: #262b36;
+    --pe-surface-2: #313847;
+    --pe-text: #e7eaf0;
+    --pe-text-dim: #a2abbb;
+    --pe-line: #46506a;
+    --pe-accent: #ff8a4c;
+    --pe-ok: #52c97c;
+    --pe-warn: #ff7b6e;
+}
+
+.pe-root > * {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.pe-root *,
+.pe-root *::before,
+.pe-root *::after {
+    box-sizing: border-box;
+}
+
+.pe-root button {
+    font: inherit;
+}
+
+/* 色の対応（原本のコマの色。パネルの丸もこの色で描く。012 未確定事項 No.2） */
+[data-color="b"] {
+    --pe-pc: var(--pe-c-b);
+    --pe-pc-dark: var(--pe-c-b-dark);
+}
+
+[data-color="g"] {
+    --pe-pc: var(--pe-c-g);
+    --pe-pc-dark: var(--pe-c-g-dark);
+}
+
+[data-color="r"] {
+    --pe-pc: var(--pe-c-r);
+    --pe-pc-dark: var(--pe-c-r-dark);
+}
+
+[data-color="y"] {
+    --pe-pc: var(--pe-c-y);
+    --pe-pc-dark: var(--pe-c-y-dark);
+}
+
+/* ---- 2 土台 ---- */
+
+.pe-field-label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    color: var(--pe-text-dim);
+    text-transform: uppercase;
+}
+
+.pe-color-dot {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--pe-pc-dark, #555);
+    border-radius: 50%;
+    background: var(--pe-pc, #888);
+}
+
+.pe-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--pe-ok);
+    font-size: 12px;
+    line-height: 1;
+    color: #fff;
+}
+
+.pe-waiting {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--pe-text-dim);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: pe-spin 1s linear infinite;
+}
+
+.pe-base-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: var(--pe-accent);
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.pe-fame {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+@keyframes pe-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pe-pulse {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pe-waiting {
+        animation: none;
+    }
+
+    .pe-hl-selectable {
+        animation: none !important;
+    }
+
+    .pe-pbox,
+    .pe-sat-piece {
+        transition: none !important;
+    }
+}
+
+/* ---- 3 ボタン・バッジ ---- */
+
+.pe-btn {
+    min-height: 32px;
+    padding: 4px 12px;
+    border: 1px solid var(--pe-line);
+    border-radius: 6px;
+    background: var(--pe-surface);
+    color: var(--pe-text);
+    cursor: pointer;
+}
+
+.pe-btn[aria-pressed="true"] {
+    border-color: var(--pe-accent);
+    background: var(--pe-accent);
+    color: #fff;
+}
+
+.pe-btn-small {
+    min-width: 32px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.pe-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: var(--pe-text);
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 20px;
+    text-align: center;
+    color: var(--pe-surface);
+}
+
+/* ---- 4 フェイズ帯・場の情報 ---- */
+
+.pe-phase-band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid var(--pe-line);
+    border-radius: 8px;
+    background: var(--pe-surface);
+}
+
+.pe-phase-label {
+    font-weight: bold;
+}
+
+.pe-phases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pe-phase {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    padding: 2px 10px;
+    border: 1px solid var(--pe-line);
+    border-radius: 6px;
+    background: var(--pe-surface-2);
+}
+
+.pe-phase-numeral {
+    font-weight: bold;
+}
+
+.pe-phase-chosen {
+    border-color: var(--pe-accent);
+    background: var(--pe-surface);
+    box-shadow: inset 0 -3px 0 var(--pe-accent);
+}
+
+.pe-phase-dim {
+    opacity: 0.4;
+}
+
+.pe-phase-current {
+    outline: 2px solid var(--pe-accent);
+    outline-offset: 1px;
+}
+
+.pe-end-note {
+    margin-left: auto;
+    font-weight: bold;
+    color: var(--pe-warn);
+}
+
+.pe-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    align-items: flex-end;
+    padding: 6px 10px;
+    border: 1px solid var(--pe-line);
+    border-radius: 8px;
+    background: var(--pe-surface);
+}
+
+.pe-field-group {
+    flex: 0 0 auto;
+}
+
+.pe-rewards {
+    display: flex;
+    gap: 8px;
+}
+
+.pe-deck,
+.pe-discard {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    width: var(--pe-reward-w);
+    min-height: calc(var(--pe-reward-w) * 999 / 715);
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.pe-discard {
+    cursor: pointer;
+}
+
+.pe-discard-empty {
+    display: block;
+    width: 100%;
+    padding-top: 40%;
+    border: 2px dashed var(--pe-line);
+    border-radius: 6px;
+    text-align: center;
+    color: var(--pe-text-dim);
+}
+
+.pe-deck-card,
+.pe-discard-card,
+.pe-reward-card {
+    width: var(--pe-reward-w);
+}
+
+.pe-round {
+    margin-left: auto;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* 捨て札の一覧（モーダル。document.body 直下） */
+
+.pe-modal {
+    position: fixed;
+    z-index: 9000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 55%);
+}
+
+.pe-modal-body {
+    width: min(92vw, 760px);
+    max-height: 80vh;
+    overflow: auto;
+    padding: 12px;
+    border-radius: 10px;
+    background: #fff;
+    color: #1d2430;
+}
+
+html[data-theme="dark"] .pe-modal-body {
+    background: #262b36;
+    color: #e7eaf0;
+}
+
+.pe-modal-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.pe-modal-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ---- 5 盤面 ---- */
+
+.pe-board-wrap {
+    overflow: clip;
+    border: 1px solid var(--pe-line);
+    border-radius: 8px;
+    background: var(--pe-surface);
+}
+
+.pe-board-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px;
+}
+
+.pe-board-title {
+    font-weight: bold;
+}
+
+.pe-board-tools {
+    display: flex;
+    gap: 4px;
+}
+
+.pe-board-viewport {
+    position: relative;
+    overflow: auto hidden;
+    background: var(--pe-board-bg);
+    touch-action: pan-x pan-y;
+}
+
+.pe-board-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: max-content;
+    min-width: 100%;
+    padding: 0;
+}
+
+.pe-board {
+    position: relative;
+    flex: 0 0 auto;
+    width: calc((var(--pe-cols, 12) + 0.5) * var(--pe-hex-w, 52px));
+    height: calc((0.75 * (var(--pe-rows, 6) - 1) + 1) * var(--pe-hex-h));
+    overflow: hidden;
+    background: var(--pe-board-bg);
+}
+
+/* 上下は接続せず反射する。薄い帯のシェブロン（012 §3.7） */
+.pe-reflect {
+    flex: 0 0 auto;
+    width: calc((var(--pe-cols, 12) + 0.5) * var(--pe-hex-w, 52px));
+    height: 6px;
+    background-color: #1b2c4d;
+    background-repeat: repeat-x;
+    background-size: 12px 6px;
+}
+
+.pe-reflect-top {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M2 5l4-4 4 4' fill='none' stroke='%238fa6d6' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+
+.pe-reflect-bottom {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M2 1l4 4 4-4' fill='none' stroke='%238fa6d6' stroke-width='1.2'/%3E%3C/svg%3E");
+}
+
+.pe-tiles {
+    position: absolute;
+    inset: 0;
+}
+
+/* 区域: 位置は `--px`（W を 1 とした左端）と `--r`（行）から calc（012 §3.2）。六角形の中だけが反応する */
+.pe-cell {
+    position: absolute;
+    left: calc(var(--px) * var(--pe-hex-w, 52px));
+    top: calc(var(--r) * 0.75 * var(--pe-hex-h));
+    width: var(--pe-hex-w, 52px);
+    height: var(--pe-hex-h);
+    background-repeat: no-repeat;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+.pe-ghost {
+    opacity: 0.5;
+}
+
+.pe-region-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30%;
+    aspect-ratio: 128 / 140;
+    transform: translate(-50%, -50%);
+    background-repeat: no-repeat;
+    pointer-events: none;
+}
+
+.pe-borders {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.pe-border-line {
+    stroke: var(--pe-border-line);
+    stroke-width: 0.03;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ---- 6 コマ ---- */
+
+.pe-pieces,
+.pe-highlights,
+.pe-arrows {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* コマの箱は区域と同じ大きさ。位置の変更は transition で動かす（012 §3.6） */
+.pe-pbox {
+    position: absolute;
+    left: calc(var(--px) * var(--pe-hex-w, 52px));
+    top: calc(var(--r) * 0.75 * var(--pe-hex-h));
+    width: var(--pe-hex-w, 52px);
+    height: var(--pe-hex-h);
+    transition: left 0.25s linear, top 0.25s linear;
+}
+
+.pe-no-anim {
+    transition: none;
+}
+
+.pe-preview {
+    opacity: 0.5;
+}
+
+/* キューブ: CSS の角丸の正方形（プレイヤー色の塗り、暗い縁、白い内側のハイライト。012 §3.4、作者回答） */
+.pe-cube {
+    position: absolute;
+    min-width: 6px;
+    min-height: 6px;
+    border: max(1px, calc(var(--pe-hex-w, 52px) * 0.018)) solid var(--pe-pc-dark);
+    border-radius: 22%;
+    background: var(--pe-pc);
+    box-shadow: inset 0 0 0 max(1px, calc(var(--pe-hex-w, 52px) * 0.012)) rgb(255 255 255 / 45%);
+    transform: translate(-50%, -50%);
+}
+
+.pe-stack-badge {
+    position: absolute;
+    padding: 0 3px;
+    border-radius: 6px;
+    background: #fff;
+    font-size: max(9px, calc(var(--pe-hex-w, 52px) * 0.11));
+    font-weight: bold;
+    line-height: 1.3;
+    color: #111;
+    transform: translate(-30%, -30%);
+}
+
+/* 衛星コマ: 原画は機首が左向き。--rot で回す（012 §3.6）。区域の幅 52 px 以下では燃料バー・シェブロンは出さない */
+.pe-sat-piece {
+    position: absolute;
+    top: calc(50% + var(--oy, 0) * var(--pe-hex-w, 52px));
+    left: calc(50% + var(--ox, 0) * var(--pe-hex-w, 52px));
+    aspect-ratio: 232 / 132;
+    background-repeat: no-repeat;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    transition: transform 0.25s;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 55%));
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.pe-pbox-sat.pe-bounce {
+    animation: pe-bounce 0.2s ease-out;
+}
+
+@keyframes pe-bounce {
+    50% {
+        transform: scaleY(0.82);
+    }
+}
+
+[data-hex-size="large"] .pe-pbox-sat::after {
+    content: "";
+    position: absolute;
+    top: calc(50% + 0.2 * var(--pe-hex-w));
+    left: 30%;
+    width: 40%;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #7fe08a calc(var(--pe-fuel-ratio, 1) * 100%), rgb(255 255 255 / 25%) 0);
+}
+
+/* 発射拠点: 区域の下部中央。持ち主の色を足元の輪に出す。キューブのマスを占めない（012 §3.6） */
+.pe-base-piece {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    aspect-ratio: 164 / 228;
+    background-repeat: no-repeat;
+    transform: translateX(-50%);
+}
+
+.pe-base-piece::before {
+    content: "";
+    position: absolute;
+    right: -15%;
+    bottom: -4%;
+    left: -15%;
+    height: 14%;
+    border: 2px solid var(--pe-pc);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 35%);
+}
+
+/* ---- 7 ハイライトと方向の矢印（012 §3.9） ---- */
+
+.pe-hl-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.pe-hl polygon {
+    fill: none;
+    stroke-linejoin: round;
+}
+
+.pe-hl-selectable {
+    animation: pe-pulse 0.8s ease-in-out infinite;
+}
+
+.pe-hl-selectable .pe-hl-outer,
+.pe-hl-sellable .pe-hl-outer {
+    stroke: #fff;
+    stroke-width: 0.075;
+}
+
+.pe-hl-selectable .pe-hl-inner,
+.pe-hl-sellable .pe-hl-inner {
+    stroke: #0a1224;
+    stroke-width: 0.03;
+}
+
+.pe-hl-sellable .pe-hl-outer {
+    stroke-dasharray: 0.12 0.08;
+}
+
+.pe-hl-selected .pe-hl-outer {
+    stroke: #fff;
+    stroke-width: 0.14;
+}
+
+.pe-hl-selected .pe-hl-inner {
+    stroke: #ffc933;
+    stroke-width: 0.07;
+}
+
+.pe-hl-path .pe-hl-outer {
+    stroke: #fff;
+    stroke-dasharray: 0.04 0.07;
+    stroke-width: 0.06;
+}
+
+.pe-hl-path .pe-hl-inner {
+    stroke: #6ad1ff;
+    stroke-width: 0.025;
+}
+
+.pe-hl-badge circle {
+    fill: #ffc933;
+    stroke: #0a1224;
+    stroke-width: 0.02;
+}
+
+.pe-hl-badge text {
+    fill: #0a1224;
+    font-weight: bold;
+}
+
+/* 方向の矢印ボタン（区域の幅 90 px 以上のときだけ盤面に出す。それ未満はボトムシートの方向パッド） */
+.pe-arrow {
+    position: absolute;
+    top: calc(var(--ay) * var(--pe-hex-w, 52px) - 18px);
+    left: calc(var(--ax) * var(--pe-hex-w, 52px) - 18px);
+    display: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 2px solid #0a1224;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 18px;
+    line-height: 1;
+    color: #0a1224;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+[data-hex-size="large"] .pe-arrow {
+    display: block;
+}
+
+.pe-arrow.pe-selected {
+    background: #ffc933;
+}
+
+.pe-arrow:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ---- 8 カード ---- */
+
+.pe-card {
+    position: relative;
+    flex: 0 0 auto;
+    background: #1c2230;
+    font-size: 10px;
+    line-height: 1.2;
+    color: #aab;
+}
+
+.pe-card::before {
+    content: attr(data-name);
+    position: absolute;
+    inset: 4px;
+    overflow: hidden;
+}
+
+.pe-card-portrait {
+    aspect-ratio: 715 / 999;
+}
+
+.pe-card-landscape {
+    aspect-ratio: 999 / 715;
+}
+
+.pe-card-face {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+}
+
+/* 角は画像の透過で丸い。選択の輪郭だけ border-radius（幅の約 4.2 %）で描き、outline・box-shadow でカードの大きさをずらさない */
+.pe-selectable {
+    cursor: pointer;
+}
+
+.pe-selectable::after,
+.pe-selected::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4.2% / 3%;
+    box-shadow: inset 0 0 0 2px var(--pe-accent);
+    pointer-events: none;
+}
+
+.pe-selected::after {
+    box-shadow: inset 0 0 0 4px #ffc933, 0 0 8px 2px #ffc933;
+}
+
+.pe-unselectable {
+    filter: grayscale(0.7) brightness(0.75);
+}
+
+.pe-used {
+    filter: brightness(0.7);
+}
+
+.pe-hand {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    min-height: var(--pe-hand-h);
+    padding-top: 6px;
+    padding-right: 20px;
+    overflow-x: auto;
+}
+
+.pe-hand-card {
+    width: var(--pe-hand-w);
+    margin-left: calc(var(--pe-hand-w) * -0.42);
+}
+
+.pe-hand-card:first-child {
+    margin-left: 0;
+}
+
+.pe-hand-card.pe-selected {
+    transform: translateY(-6px);
+}
+
+.pe-hand-count {
+    top: 0;
+    right: 0;
+}
+
+/* アクションカード: 横向きは 90° 回転 + グレー（回転とグレーアウトの両方。012 §4.4）。行の高さは回転後の縦横が収まるように取る */
+.pe-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.pe-action-slot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: var(--pe-action-w);
+    height: calc(var(--pe-action-w) * 999 / 715 + 6px);
+}
+
+.pe-action-card {
+    width: var(--pe-action-w);
+}
+
+.pe-actions-other .pe-action-slot {
+    min-width: var(--pe-actionother-w);
+    height: calc(var(--pe-actionother-w) * 999 / 715 + 4px);
+}
+
+.pe-actions-other .pe-action-card {
+    width: var(--pe-actionother-w);
+}
+
+.pe-sideways {
+    margin-bottom: calc((var(--pe-action-w) * 999 / 715 - var(--pe-action-w)) / -2);
+    transform: rotate(90deg);
+    filter: grayscale(1) brightness(0.65);
+}
+
+.pe-actions-other .pe-sideways {
+    margin-bottom: calc((var(--pe-actionother-w) * 999 / 715 - var(--pe-actionother-w)) / -2);
+}
+
+.pe-action-state-1 {
+    box-shadow: 0 0 0 2px var(--pe-accent);
+}
+
+.pe-action-plot .pe-check {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+}
+
+.pe-missions {
+    display: flex;
+    gap: 6px;
+}
+
+.pe-mission-card {
+    width: var(--pe-mission-w);
+}
+
+.pe-player-other .pe-mission-card {
+    width: var(--pe-actionother-w);
+}
+
+/* ---- 9 衛星（カード・配備カード・燃料ゲージ。012 §4.2〜§4.5） ---- */
+
+.pe-sats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.pe-sat {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 4px;
+    width: var(--pe-satellite-w);
+    min-width: 0;
+}
+
+.pe-sat-card {
+    width: var(--pe-satellite-w);
+}
+
+.pe-sat-simple {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* 衛星カードの上に重ねる配備カードの効果アイコンの帯（2 × 2） */
+.pe-strip {
+    position: absolute;
+    overflow: hidden;
+    border-radius: 2px;
+    background-color: #000;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.pe-strip.pe-used::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 35%);
+}
+
+/* チップ（種類・名前・名声・燃料庫の数・歯車）。最大 4 行 */
+.pe-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pe-chip {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    min-height: 22px;
+    padding: 1px 6px;
+    border: 1px solid var(--pe-line);
+    border-left: 4px solid var(--pe-chip-type, var(--pe-line));
+    border-radius: 4px;
+    background: var(--pe-surface);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.pe-chip[data-type="crew"] {
+    --pe-chip-type: #2a8ab8;
+}
+
+.pe-chip[data-type="device"] {
+    --pe-chip-type: #c08a1a;
+}
+
+.pe-chip[data-type="software"] {
+    --pe-chip-type: #6a4fb3;
+}
+
+.pe-chip-empty {
+    border-style: dashed;
+    color: var(--pe-text-dim);
+    cursor: default;
+}
+
+.pe-chip-level {
+    flex: 0 0 auto;
+    min-width: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--pe-text-dim);
+}
+
+.pe-chip-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pe-chip-meta {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 4px;
+}
+
+.pe-chip-fame {
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #6a2c8f;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.pe-chip-fuel {
+    padding: 0 4px;
+    border-radius: 3px;
+    background: var(--pe-c-b);
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.pe-chip.pe-used {
+    filter: brightness(0.75);
+}
+
+/* 起動効果の歯車と使用済みの ×（CSS / SVG。画像に焼かない。012 §4.5） */
+.pe-gear {
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    color: #c08a1a;
+}
+
+.pe-gear svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentcolor;
+}
+
+.pe-gear .pe-gear-x {
+    position: absolute;
+    inset: 0;
+    display: none;
+    fill: none;
+    stroke: #d32f2f;
+}
+
+.pe-gear-used {
+    color: #888;
+}
+
+.pe-gear-used .pe-gear-x {
+    display: block;
+}
+
+.pe-gear-dim {
+    opacity: 0.4;
+}
+
+.pe-strip .pe-gear {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 14px;
+    height: 14px;
+}
+
+.pe-chip-active-only {
+    font-size: 12px;
+    color: var(--pe-text-dim);
+}
+
+/* 燃料ゲージ: 横一列のスロット（左が初期燃料庫）+ Fuel R / C。燃料切れは枠の外に Out of fuel（012 §4.3） */
+.pe-fuel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+}
+
+.pe-fuel-row {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.pe-fuel-cell {
+    position: relative;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--pe-line);
+    border-radius: 2px;
+    background: var(--pe-surface-2);
+}
+
+.pe-fuel-initial {
+    border-color: var(--pe-text-dim);
+}
+
+.pe-fuel-out {
+    position: relative;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin-left: 6px;
+    border: 1px dashed var(--pe-warn);
+    border-radius: 2px;
+    opacity: 0.45;
+}
+
+.pe-fuel-out.pe-on {
+    opacity: 1;
+}
+
+.pe-fuel-piece {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 16px;
+    background-repeat: no-repeat;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.pe-fuel-empty {
+    opacity: 0.55;
+}
+
+.pe-fuel-label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.pe-fuel-low {
+    color: #b57b00;
+}
+
+.pe-out-of-fuel {
+    color: var(--pe-warn);
+}
+
+.pe-sat-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+    font-size: 12px;
+}
+
+.pe-sat-status {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    color: var(--pe-text-dim);
+}
+
+.pe-sat-active .pe-sat-status {
+    font-weight: bold;
+    color: var(--pe-text);
+}
+
+.pe-dir-arrow {
+    display: inline-block;
+    color: var(--pe-pc);
+}
+
+.pe-sat-used {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.pe-sat-detail-btn {
+    margin-left: auto;
+}
+
+/* 詳細表示（紙どおり）: 衛星カードの上に配備カードを下側約 55 % が見える向きで重ねる。1 枚の高さ = 衛星カードの幅 */
+.pe-sat-paper {
+    --pe-sw: var(--pe-satellite-w);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pe-paper-stack {
+    position: relative;
+    width: var(--pe-sw);
+    height: calc(var(--pe-sw) * (1 + (var(--pe-paper-n, 1) - 1) * 0.55));
+}
+
+.pe-paper-card {
+    position: absolute;
+    bottom: calc(var(--pe-sw) * 0.55 * var(--pe-paper-level, 0));
+    left: 50%;
+    width: calc(var(--pe-sw) * 715 / 999);
+    transform: translateX(-50%);
+}
+
+.pe-paper-card .pe-gear {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 2;
+}
+
+.pe-fuel-slot {
+    position: absolute;
+    border: 1px dashed rgb(255 255 255 / 55%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.pe-fuel-on-paper {
+    z-index: 3;
+    width: 12%;
+    height: auto;
+    aspect-ratio: 80 / 96;
+}
+
+.pe-sat-card .pe-fuel-on-paper {
+    width: 7%;
+}
+
+/* 簡略表示で他プレイヤーの衛星は要約（小さな衛星カードと燃料ゲージだけ） */
+.pe-player-other .pe-sat {
+    --pe-satellite-w: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
+
+    width: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
+}
+
+.pe-player-other .pe-sat-card {
+    width: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
+}
+
+.pe-player-other .pe-chip-name,
+.pe-player-other .pe-chip-meta {
+    display: none;
+}
+
+.pe-player-other .pe-chip {
+    min-height: 16px;
+}
+
+/* ---- 10 プレイヤーの領域 ---- */
+
+.pe-player {
+    --pe-satellite-w-parent: var(--pe-satellite-w);
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--pe-line);
+    border-top: 4px solid var(--pe-pc, var(--pe-line));
+    border-radius: 8px;
+    background: var(--pe-surface);
+}
+
+.pe-player-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: bold;
+}
+
+.pe-player-marks {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.pe-player-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    align-items: flex-end;
+}
+
+#pe-others {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ブロックの最小幅（約 340 px）を決めて折り返す。012 §10 教訓 8 */
+#pe-others > .pe-player {
+    flex: 1 1 340px;
+    min-width: 0;
+}
+
+.pe-spectator #pe-others > .pe-player {
+    flex-basis: 420px;
+}
+
+/* ---- 11 プレイヤーパネル（BGA 標準のパネルの下に足す。012 §5） ---- */
+
+.pe-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.pe-panel-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    align-items: center;
+}
+
+.pe-counter {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.pe-counter-value {
+    min-width: 12px;
+    font-weight: bold;
+}
+
+.pe-icon {
+    display: inline-block;
+    flex: 0 0 auto;
+    height: 22px;
+    background-repeat: no-repeat;
+}
+
+.pe-icon-maya {
+    width: 22px;
+}
+
+.pe-icon-disk {
+    width: 26px;
+    height: 22px;
+}
+
+.pe-icon-sat {
+    width: 34px;
+    height: 20px;
+}
+
+.pe-icon-reward {
+    width: 16px;
+    height: 22px;
+}
+
+.pe-icon-cardback {
+    width: 14px;
+    height: 20px;
+    border: 1px solid #555;
+    border-radius: 2px;
+    background: linear-gradient(135deg, #3b4a6b, #1c2230);
+}
+
+.pe-icon-cube {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--pe-pc-dark);
+    border-radius: 22%;
+    background: var(--pe-pc);
+}
+
+.pe-panel-marks {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* ---- 12 拡大表示・ボトムシート ---- */
+
+/* document.body 直下（BGA の zoom / transform の外）。高さの上限は JS が window.innerHeight から出した --pe-zoom-avail（教訓 3・4） */
+.pe-zoom {
+    --pe-zoom-w: 360px;
+
+    position: fixed;
+    z-index: 9100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: var(--pe-zoom-w);
+    max-height: var(--pe-zoom-avail, 80vh);
+    overflow: auto;
+    padding: 8px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 6px 24px rgb(0 0 0 / 45%);
+    color: #1d2430;
+}
+
+html[data-theme="dark"] .pe-zoom {
+    background: #262b36;
+    color: #e7eaf0;
+}
+
+.pe-zoom[hidden] {
+    display: none;
+}
+
+.pe-zoom-img {
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: 715 / 999;
+    background-repeat: no-repeat;
+}
+
+.pe-zoom-img.pe-zoom-landscape {
+    aspect-ratio: 999 / 715;
+}
+
+.pe-zoom-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.pe-zoom-chip {
+    padding: 2px 8px;
+    border: 1px solid #888;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.pe-zoom-text {
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.pe-tip-name {
+    margin-bottom: 4px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.pe-tip-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 10px;
+    margin: 0 0 6px;
+}
+
+.pe-tip-facts dt {
+    color: #777;
+}
+
+.pe-tip-facts dd {
+    margin: 0;
+}
+
+.pe-tip-effect {
+    margin: 0;
+}
+
+/* ボトムシート: コストの内訳・方向パッド。盤面コンテナの下に貼り付く（012 §2.5） */
+.pe-sheet {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-items: center;
     padding: 8px 12px;
-    border: 1px dashed #888;
-    background: rgb(255 255 255 / 60%);
+    border-top: 2px solid var(--pe-accent);
+    background: var(--pe-surface);
+}
+
+.pe-sheet[hidden] {
+    display: none;
+}
+
+.pe-sheet-title {
+    width: 100%;
+    font-weight: bold;
+}
+
+.pe-dpad {
+    display: grid;
+    grid-template-columns: repeat(2, 56px);
+    grid-template-rows: repeat(2, 56px);
+    gap: 6px;
+}
+
+.pe-dpad-btn {
+    border: 2px solid var(--pe-text);
+    border-radius: 8px;
+    background: var(--pe-surface-2);
+    font-size: 24px;
+    color: var(--pe-text);
+    cursor: pointer;
+}
+
+.pe-dpad-btn.pe-selected {
+    background: #ffc933;
+    color: #0a1224;
+}
+
+.pe-dpad-btn:disabled {
+    opacity: 0.35;
+}
+
+/* ホバー専用のスタイルは .notouch-device を前置する（必須の情報はホバーだけに置かない。012 §10 教訓 9） */
+.notouch-device .pe-chip:hover,
+.notouch-device .pe-strip:hover {
+    outline: 2px solid var(--pe-accent);
+}
+
+.notouch-device .pe-selectable:hover {
+    transform: translateY(-4px);
+}
+
+/* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 700 px 未満） ---- */
+
+.pe-root[data-layout="narrow"] {
+    gap: 6px;
+}
+
+.pe-root[data-layout="narrow"] .pe-phase-name {
+    display: none;
+}
+
+.pe-root[data-layout="narrow"] .pe-phase {
+    padding: 2px 8px;
+}
+
+.pe-root[data-layout="narrow"] .pe-sat {
+    width: 100%;
+    max-width: 360px;
+}
+
+.pe-root[data-layout="narrow"] .pe-sat-card {
+    width: var(--pe-satellite-w);
+}
+
+.pe-root[data-layout="narrow"] .pe-chip {
+    min-height: 32px;
+}
+
+.pe-root[data-layout="narrow"] .pe-btn,
+.pe-root[data-layout="narrow"] .pe-btn-small {
+    min-height: 32px;
+}
+
+.pe-root[data-layout="narrow"] .pe-field {
+    gap: 6px 14px;
 }

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROJECT EDGEWORTH client preview</title>
+<link rel="stylesheet" href="../../src/projectedgeworth.css">
+<style>
+  /* BGA の外で動く簡易版。BGA のゲーム領域・プレイヤーパネル・ステータスバーを雑に真似るだけ */
+  body { margin: 0; font-family: system-ui, sans-serif; background: #ebd5bd; color: #1d2430; }
+  html[data-theme="dark"] body { background: #14171d; color: #e7eaf0; }
+  #pv-layout { display: flex; align-items: flex-start; gap: 10px; padding: 8px; }
+  #game_play_area { flex: 1 1 auto; min-width: 0; }
+  #pv-side { flex: 0 0 240px; }
+  .pv-panel { margin-bottom: 8px; padding: 6px 8px; border-radius: 6px; background: #fff; }
+  html[data-theme="dark"] .pv-panel { background: #262b36; }
+  #page-title { padding: 6px 10px; background: #2b4a6f; color: #fff; }
+  #pv-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px; background: #0003; }
+  body.pv-narrow #pv-layout { flex-direction: column-reverse; align-items: stretch; }
+  body.pv-narrow #pv-side { flex-basis: auto; width: 100%; }
+</style>
+</head>
+<body>
+<div id="page-title">Preview status bar (BGA outside)</div>
+<div id="pv-tools"></div>
+<div id="pv-layout">
+  <div id="game_play_area"></div>
+  <aside id="pv-side"></aside>
+</div>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

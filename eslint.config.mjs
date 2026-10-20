@@ -50,9 +50,15 @@ export default defineConfig([
     },
   },
 
+  // BGA の外で画面を描くプレビュー（ブラウザ上の ES モジュール）
+  {
+    files: ['tools/preview/main.js'],
+    languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: { ...globals.browser, _: 'writable' } },
+  },
+
   // Node スクリプトと設定ファイル
   {
-    files: ['scripts/**/*.mjs', '*.config.mjs'],
+    files: ['scripts/**/*.mjs', 'tools/preview/*.mjs', 'tests/js/*.mjs', '*.config.mjs'],
     languageOptions: { globals: globals.node },
   },
 

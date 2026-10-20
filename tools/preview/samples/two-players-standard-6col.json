@@ -1,0 +1,510 @@
+{
+ "_me": 2320002,
+ "round": 1,
+ "phase": "DEPLOY",
+ "basePlayer": 2320001,
+ "players": {
+  "2320001": {
+   "id": 2320001,
+   "name": "Dai",
+   "color": "0000ff",
+   "score": 0,
+   "maya": 0,
+   "budget": 15
+  },
+  "2320002": {
+   "id": 2320002,
+   "name": "Emi",
+   "color": "008000",
+   "score": 0,
+   "maya": 0,
+   "budget": 15
+  }
+ },
+ "playerOrder": [
+  2320001,
+  2320002
+ ],
+ "board": {
+  "cols": 6,
+  "rows": 6,
+  "rowShift": 0,
+  "face": "STANDARD",
+  "regions": [
+   {
+    "br": 0,
+    "bc": 0,
+    "board": "A",
+    "flip": false
+   },
+   {
+    "br": 0,
+    "bc": 1,
+    "board": "B",
+    "flip": false
+   },
+   {
+    "br": 1,
+    "bc": 0,
+    "board": "E",
+    "flip": false
+   },
+   {
+    "br": 1,
+    "bc": 1,
+    "board": "F",
+    "flip": false
+   }
+  ],
+  "cells": [
+   {
+    "cell": 0,
+    "x": 0,
+    "y": 0,
+    "type": "SEA",
+    "region": "A"
+   },
+   {
+    "cell": 1,
+    "x": 2,
+    "y": 0,
+    "type": "SEA",
+    "region": "A"
+   },
+   {
+    "cell": 2,
+    "x": 4,
+    "y": 0,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 3,
+    "x": 6,
+    "y": 0,
+    "type": "LAND",
+    "region": "B"
+   },
+   {
+    "cell": 4,
+    "x": 8,
+    "y": 0,
+    "type": "SEA",
+    "region": "B"
+   },
+   {
+    "cell": 5,
+    "x": 10,
+    "y": 0,
+    "type": "SEA",
+    "region": "B"
+   },
+   {
+    "cell": 6,
+    "x": 1,
+    "y": 1,
+    "type": "SEA",
+    "region": "A"
+   },
+   {
+    "cell": 7,
+    "x": 3,
+    "y": 1,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 8,
+    "x": 5,
+    "y": 1,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 9,
+    "x": 7,
+    "y": 1,
+    "type": "LAND",
+    "region": "B"
+   },
+   {
+    "cell": 10,
+    "x": 9,
+    "y": 1,
+    "type": "LAND",
+    "region": "B"
+   },
+   {
+    "cell": 11,
+    "x": 11,
+    "y": 1,
+    "type": "SEA",
+    "region": "B"
+   },
+   {
+    "cell": 12,
+    "x": 0,
+    "y": 2,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 13,
+    "x": 2,
+    "y": 2,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 14,
+    "x": 4,
+    "y": 2,
+    "type": "LAND",
+    "region": "A"
+   },
+   {
+    "cell": 15,
+    "x": 6,
+    "y": 2,
+    "type": "LAND",
+    "region": "B"
+   },
+   {
+    "cell": 16,
+    "x": 8,
+    "y": 2,
+    "type": "LAND",
+    "region": "B"
+   },
+   {
+    "cell": 17,
+    "x": 10,
+    "y": 2,
+    "type": "SEA",
+    "region": "B"
+   },
+   {
+    "cell": 18,
+    "x": 1,
+    "y": 3,
+    "type": "LAND",
+    "region": "E"
+   },
+   {
+    "cell": 19,
+    "x": 3,
+    "y": 3,
+    "type": "LAND",
+    "region": "E"
+   },
+   {
+    "cell": 20,
+    "x": 5,
+    "y": 3,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 21,
+    "x": 7,
+    "y": 3,
+    "type": "LAND",
+    "region": "F"
+   },
+   {
+    "cell": 22,
+    "x": 9,
+    "y": 3,
+    "type": "LAND",
+    "region": "F"
+   },
+   {
+    "cell": 23,
+    "x": 11,
+    "y": 3,
+    "type": "SEA",
+    "region": "F"
+   },
+   {
+    "cell": 24,
+    "x": 0,
+    "y": 4,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 25,
+    "x": 2,
+    "y": 4,
+    "type": "LAND",
+    "region": "E"
+   },
+   {
+    "cell": 26,
+    "x": 4,
+    "y": 4,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 27,
+    "x": 6,
+    "y": 4,
+    "type": "SEA",
+    "region": "F"
+   },
+   {
+    "cell": 28,
+    "x": 8,
+    "y": 4,
+    "type": "SEA",
+    "region": "F"
+   },
+   {
+    "cell": 29,
+    "x": 10,
+    "y": 4,
+    "type": "LAND",
+    "region": "F"
+   },
+   {
+    "cell": 30,
+    "x": 1,
+    "y": 5,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 31,
+    "x": 3,
+    "y": 5,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 32,
+    "x": 5,
+    "y": 5,
+    "type": "SEA",
+    "region": "E"
+   },
+   {
+    "cell": 33,
+    "x": 7,
+    "y": 5,
+    "type": "SEA",
+    "region": "F"
+   },
+   {
+    "cell": 34,
+    "x": 9,
+    "y": 5,
+    "type": "SEA",
+    "region": "F"
+   },
+   {
+    "cell": 35,
+    "x": 11,
+    "y": 5,
+    "type": "SEA",
+    "region": "F"
+   }
+  ]
+ },
+ "rewards": [
+  "T002",
+  "T005"
+ ],
+ "deckCount": 70,
+ "discard": [],
+ "myHand": [
+  14,
+  22
+ ],
+ "myDrawn": [],
+ "myMissions": [
+  4,
+  5
+ ],
+ "playerData": {
+  "2320001": {
+   "maya": 20,
+   "budget": 15,
+   "padCell": 7,
+   "handCount": 5,
+   "drawnCount": 0,
+   "missionCount": 2,
+   "cubesLeft": 16,
+   "actionCards": {
+    "1": 0,
+    "2": 1,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   },
+   "rewardValues": {
+    "T002": 0,
+    "T005": 0
+   },
+   "satellites": [
+    {
+     "satId": 11,
+     "shape": "HAMMER",
+     "plan": "MOON",
+     "card": "R001B",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 12,
+     "shape": "RETRO",
+     "plan": "MOON",
+     "card": "R002B",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 13,
+     "shape": "SCALLOP",
+     "plan": "MOON",
+     "card": "R003B",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 14,
+     "shape": "CONCORDE",
+     "plan": "MOON",
+     "card": "R004B",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 15,
+     "shape": "STEALTH",
+     "plan": "MOON",
+     "card": "R005B",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    }
+   ],
+   "links": []
+  },
+  "2320002": {
+   "maya": 26,
+   "budget": 15,
+   "padCell": 10,
+   "handCount": 2,
+   "drawnCount": 0,
+   "missionCount": 2,
+   "cubesLeft": 16,
+   "actionCards": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   },
+   "rewardValues": {
+    "T002": 0,
+    "T005": 0
+   },
+   "satellites": [
+    {
+     "satId": 31,
+     "shape": "HAMMER",
+     "plan": "MOON",
+     "card": "R001G",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 32,
+     "shape": "RETRO",
+     "plan": "MOON",
+     "card": "R002G",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 33,
+     "shape": "SCALLOP",
+     "plan": "MOON",
+     "card": "R003G",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 34,
+     "shape": "CONCORDE",
+     "plan": "MOON",
+     "card": "R004G",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    },
+    {
+     "satId": 35,
+     "shape": "STEALTH",
+     "plan": "MOON",
+     "card": "R005G",
+     "cell": null,
+     "dir": null,
+     "fuelUsed": 0,
+     "fuelCapacity": 2,
+     "grace": false,
+     "activation": 0,
+     "cards": []
+    }
+   ],
+   "links": []
+  }
+ },
+ "bonusHolders": {},
+ "window": null,
+ "finalScores": null
+}
