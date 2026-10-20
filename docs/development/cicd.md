@@ -1,13 +1,13 @@
 # CI/CD の方針
 
-> ステータス: **lint は第 1〜2 段階、アセット（スプライト）の検査は第 3 段階を導入済み、BGA Studio への同期は未着手**。lint は [../specs/005-ci-lint.md](../specs/005-ci-lint.md) に基づく段階導入で、このドキュメントは方針を示し、具体的な設計は仕様書を正とします。同期（T-006）の仕様書はまだありません。
+> ステータス: **lint は第 1〜2 段階、アセット（スプライト）の検査は第 3 段階を導入済み、BGA Studio への同期は段階 1（接続テストと dry-run）を導入済み**。lint は [../specs/005-ci-lint.md](../specs/005-ci-lint.md) に基づく段階導入で、このドキュメントは方針を示し、具体的な設計は仕様書を正とします。同期（T-006）の設計は [../specs/006-bga-sync.md](../specs/006-bga-sync.md) を正とします。
 
 ## 全体像
 
 ```text
 PR 作成・更新 ──▶ CI: lint ──▶（通過 + ユーザー承認）──▶ squash merge
                                                               │
-main への push ──▶ CD: src/ を BGA Studio へ SFTP 同期 ◀──────┘（T-006。未導入）
+main への push ──▶ CD: src/ を BGA Studio へ SFTP 同期 ◀──────┘（T-006。段階 2 で有効化。今は手動のみ）
 ```
 
 ## CI: lint チェック
@@ -69,13 +69,21 @@ GitHub Actions のワークフロー `Lint`（[../../.github/workflows/lint.yml]
 - **`main` の保護は設定しません。** 代わりに、**`Lint gate` が通らない PR はメインエージェントがマージしません。** マージ前に `gh pr checks <PR 番号>` で `Lint gate`・`PHPUnit`・`PHPUnit (MariaDB)` が成功であることを確かめます。サブエージェントはマージしません。Dependabot の PR も同じです。
 - `main` への push でも lint は実行されます。直接 push や運用ミスを事後に検知するためです。
 
-## CD: BGA Studio への自動同期（未導入）
+## CD: BGA Studio への自動同期（段階 1 導入済み）
 
-T-006 で導入します。`main` へのマージをトリガーに `src/` 配下を BGA Studio のプロジェクトフォルダへ SFTP で転送する予定です。
+ワークフロー `BGA sync`（[../../.github/workflows/bga-sync.yml](../../.github/workflows/bga-sync.yml)）と [../../scripts/bga-sync/sync.sh](../../scripts/bga-sync/sync.sh) で、`src/` を BGA Studio のプロジェクトフォルダ `/projectedgeworth` へ SFTP（lftp）で転送する仕組みです。設計は [../specs/006-bga-sync.md](../specs/006-bga-sync.md) を正とし、姉妹プロジェクト minimum-journey-bga の実装を流用しています。
 
-- 同期対象は **`src/` のみ**。`docs/`、`data/`、CI 設定などは転送しない。
-- 認証情報（秘密鍵・ユーザー名）は GitHub Secrets、ホスト・ポート・パス・known_hosts は Variables で管理し、リポジトリには置かない。
-- 手動実行（`workflow_dispatch`）もできるようにする。
+| 段階 | 内容 | 状態 |
+| --- | --- | --- |
+| 1 | `workflow_dispatch` の `mode: test`（接続して `ls` のみ）と `mode: dry-run`（転送せず予定を表示）。Studio へは書き込まない | 導入済み |
+| 2 | `mode: sync`、`push` トリガー、`remote-delete.txt`。雛形の取り込み PR のマージ後 | 未着手 |
+
+- **手動実行:** GitHub の Actions タブで `BGA sync` を選び、`Run workflow`（`main` ブランチ）で `mode` を選ぶ。結果は Job Summary に出る。`main` 以外のブランチでは `sync` ジョブが動かない。
+- **流れ:** `Lint`（`lint.yml` を `workflow_call`。`Lint gate` が失敗したら以降は動かない）→ `sync` ジョブ（設定の確認 → lftp 導入 → `dry-run` のみ `npm ci`・`build:sprites`・`check:sprites` → 一時鍵の作成 → `sync.sh` → 鍵の削除）。
+- **設定が未登録のとき:** 警告を出してスキップし、成功終了する。
+- 認証情報（秘密鍵 `BGA_SSH_PRIVATE_KEY`、ユーザー `BGA_SFTP_USER`）は GitHub Secrets、ホスト・ポート・パス・known_hosts（`BGA_SFTP_HOST`、`BGA_SFTP_PORT`、`BGA_REMOTE_DIR`、`BGA_SSH_KNOWN_HOSTS`）は Variables で管理し、リポジトリには置かない。
+- 同期対象は **`src/` のみ**（スプライトは同期の直前に `data/` から生成し、コミットしない）。`--delete` は使わない。
+- ローカルでも `scripts/bga-sync/sync.sh <test|dry-run>` を、環境変数（`BGA_KEY_FILE`、`BGA_KNOWN_HOSTS_FILE`、`BGA_SFTP_USER`、`BGA_SFTP_HOST`、`BGA_SFTP_PORT`、`BGA_REMOTE_DIR`）を渡して実行できる（要 lftp）。手元の確認は `dry-run` までに限る。
 
 ## ユーザー側で必要な準備
 
