@@ -61,6 +61,24 @@ final class OutcomeNotices
     }
 
     /**
+     * 状態 32 のバリアで、窓のステージを一斉にコミットした結果の通知（支払い、先駆コスト、キューブ、区域ボーナス）。
+     * コストを払えず取りやめた依頼は N24（申し送り N-10）。
+     *
+     * @param array<int, int> $mayaBefore コミット前の所持マヤ
+     * @return list<Notice>
+     */
+    public function barrierCommit(LinkCommit $commit, array $mayaBefore): array
+    {
+        $tracker = new MayaTracker($this->ctx->notices, $mayaBefore);
+        $notices = [];
+        foreach ($commit->failed as $request) {
+            $notices[] = $this->ctx->notices->actionPassed($request->playerId, 'link', false);
+        }
+        $notices = array_merge($notices, $this->linkNotices(new StepResult([]), $commit, [], $tracker));
+        return array_values(array_filter($notices));
+    }
+
+    /**
      * 入場時に自動で [Pass] 相当にしたプレイヤーの N24。
      *
      * @param list<int> $autoPlayers

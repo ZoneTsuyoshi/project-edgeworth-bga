@@ -53,8 +53,9 @@ final class ActionPhases
         GlobalValues $globals,
         RandomSource $random,
         ?ActionHooks $hooks = null,
+        ?\Bga\Games\projectedgeworth\Board\BoardLayout $layout = null,
     ): self {
-        return new self(ActionServices::load($db, $globals, $random, $hooks));
+        return new self(ActionServices::load($db, $globals, $random, $hooks, $layout));
     }
 
     public function services(): ActionServices

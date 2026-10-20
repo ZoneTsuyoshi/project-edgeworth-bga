@@ -21,8 +21,7 @@ use Bga\Games\projectedgeworth\Data\Satellite;
  * （010 §8.2 末尾、§9.1）。非公開情報は本人の手札・引いた直後のカード・ミッションだけ。山札は枚数のみ、他人の手札は枚数のみ。
  * 一時的な情報（同時選択の確定内容、窓の問い）は含めず、現在の状態の getArgs の `_private` が復元する。
  *
- * 窓の最中は、他プレイヤーの分を window_snapshot（010 §9.4）から返す必要がある。窓の状態（30〜32）は今回は素通りで
- * 何も書かないので未実装（効果エンジンの結線、申し送り N-4 で追加する）。
+ * 窓の最中は、他プレイヤーの分と山の枚数を window_snapshot（010 §9.4）から返す。
  */
 final class PublicView
 {
@@ -49,22 +48,53 @@ final class PublicView
             }
         }
 
+        $deckCount = $this->ctx->deckCount();
+        $discard = $services->cards->idsIn(CardLocation::Discard);
+        $playerData = $this->playerData($order);
+        $snapshot = $globals->windowSnapshot();
+        if ($snapshot !== null) {
+            // 窓の最中は、他人の変化を窓を開いた時点の値で返す（010 §9.4）。本人の分は DB の現在値
+            $deckCount = (int) ($snapshot['deckCount'] ?? $deckCount);
+            $discard = array_values(array_map('intval', (array) ($snapshot['discard'] ?? $discard)));
+            foreach ((array) ($snapshot['playerData'] ?? []) as $playerId => $data) {
+                if ((int) $playerId !== $viewerId) {
+                    $playerData[(int) $playerId] = $data;
+                }
+            }
+        }
+
         return [
             'round' => $globals->roundNo(),
             'phase' => $globals->flowPhase()->value,
             'basePlayer' => $globals->basePlayer(),
             'board' => $this->board(),
             'rewards' => $globals->rewardCards(),
-            'deckCount' => $this->ctx->deckCount(),
-            'discard' => $services->cards->idsIn(CardLocation::Discard),
+            'deckCount' => $deckCount,
+            'discard' => $discard,
             'playerOrder' => $order,
             'myHand' => $isPlayer ? $services->cards->idsIn(CardLocation::Hand, $viewerId) : [],
             'myDrawn' => $isPlayer ? $services->cards->idsIn(CardLocation::Drawn, $viewerId) : [],
             'myMissions' => $isPlayer ? $missions->forPlayer($viewerId) : [],
-            'playerData' => $this->playerData($order),
+            'playerData' => $playerData,
             'bonusHolders' => $this->bonusHolders(),
             'window' => $globals->windowId() === null ? null : ['id' => $globals->windowId()],
             'finalScores' => $finalScores,
+        ];
+    }
+
+    /**
+     * 窓を開いた時点の公開情報（`window_snapshot`。010 §9.4）。山札の枚数・捨て札・全員の公開データ。
+     *
+     * @return array<string, mixed>
+     */
+    public function snapshotData(): array
+    {
+        $services = $this->ctx->services;
+
+        return [
+            'deckCount' => $this->ctx->deckCount(),
+            'discard' => $services->cards->idsIn(CardLocation::Discard),
+            'playerData' => $this->playerData($services->players->playerIds()),
         ];
     }
 

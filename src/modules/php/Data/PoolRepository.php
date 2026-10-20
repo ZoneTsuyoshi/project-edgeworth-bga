@@ -49,6 +49,21 @@ final class PoolRepository
         return $this->db->lastInsertId();
     }
 
+    /**
+     * 行 ID を指定して入れる（窓の状態を保存し直すとき。効果エンジンが振った ID を保つ）。
+     */
+    public function insert(PoolEntry $entry): void
+    {
+        $this->db->execute(
+            'INSERT INTO `pool` (' . self::COLUMNS . ') VALUES ('
+            . "{$entry->id}, {$entry->playerId}, " . Sql::str($this->db, $entry->window) . ", '{$entry->kind}', {$entry->src}, "
+            . Sql::str($this->db, $entry->effect) . ', ' . Sql::str($this->db, $entry->event) . ', '
+            . Sql::nullableJson($this->db, $entry->context) . ", {$entry->defaultOrder}, "
+            . ($entry->chosenOrder === null ? 'NULL' : (string) $entry->chosenOrder)
+            . ", '{$entry->status->value}', " . Sql::nullableJson($this->db, $entry->state) . ')',
+        );
+    }
+
     public function get(int $poolId): PoolEntry
     {
         $rows = $this->db->rows('SELECT ' . self::COLUMNS . " FROM `pool` WHERE `pool_id` = $poolId");

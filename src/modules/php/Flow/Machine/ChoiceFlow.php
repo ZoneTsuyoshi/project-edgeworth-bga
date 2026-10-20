@@ -84,7 +84,15 @@ final class ChoiceFlow
     public function confirm(int $playerId, array $data): ConfirmResult
     {
         $first = !$this->ctx->services->choices->isConfirmed($playerId, $this->stateId);
-        $all = $this->runner()->confirm($this->step, $this->stateId, $playerId, $data, $this->mode);
+        // 起動の修正（USE_MODS）は、使う鍵を検証してから、この確定の検証の間だけコストの問い合わせに効かせる（011 §6-3）
+        $effects = $this->ctx->effects;
+        $keys = $effects !== null && $this->actionNo !== null ? $effects->stepMods->validate($this->actionNo, $playerId, $data) : [];
+        $effects?->hooks->useMods($keys);
+        try {
+            $all = $this->runner()->confirm($this->step, $this->stateId, $playerId, $data, $this->mode);
+        } finally {
+            $effects?->hooks->useMods([]);
+        }
         $notices = [$this->ctx->notices->choiceRecorded($playerId, $this->stateId, $data)];
         if ($first) {
             $notices[] = $this->ctx->notices->choiceMarked($playerId, $this->stateId);

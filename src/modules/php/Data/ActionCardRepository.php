@@ -100,6 +100,14 @@ final class ActionCardRepository
         $this->db->execute("UPDATE `action_card` SET `action_state` = $sideways WHERE `action_state` = $upright");
     }
 
+    /**
+     * アクションカードを手札に戻す（R15。P001・P002 が回収の後に、横向きになったカードを手札に戻す）。
+     */
+    public function returnToHand(int $playerId, int $actionNo): void
+    {
+        $this->setState($playerId, $actionNo, ActionCardState::Hand);
+    }
+
     private function setState(int $playerId, int $actionNo, ActionCardState $state): void
     {
         $this->db->execute(

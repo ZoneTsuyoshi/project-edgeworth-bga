@@ -105,10 +105,8 @@ final class ProposalPhase implements ActionStep
                 throw new RuleViolation("Card $id was not drawn");
             }
         }
-        $need = $this->keepCount($playerId);
-        if (count($keep) !== $need) {
-            throw new RuleViolation("Keep exactly $need card(s)");
-        }
+        $bonus = $this->isBonusHolder($playerId);
+        $this->services->hooks->validateProposal($playerId, $bonus, $this->counts($playerId, $bonus), $drawn, $keep, $data);
     }
 
     /** zombie: 引いた順の先頭から必要な枚数を残す（008 §3-8） */
@@ -132,6 +130,7 @@ final class ProposalPhase implements ActionStep
             $discard = array_values(array_diff($drawn, $keep));
             $this->services->cards->keepDrawn($playerId, $keep);
             $this->services->cards->discard($discard);
+            $this->services->hooks->applyProposal($playerId, $this->isBonusHolder($playerId), $data);
             $outcomes[] = new StepOutcome($playerId, 'keep', false, [
                 'drawn' => count($drawn),
                 'kept' => $keep,

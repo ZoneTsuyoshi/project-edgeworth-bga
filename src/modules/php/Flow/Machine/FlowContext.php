@@ -16,7 +16,10 @@ use Bga\Games\projectedgeworth\Data\GlobalValues;
 use Bga\Games\projectedgeworth\Data\LinkRepository;
 use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
 use Bga\Games\projectedgeworth\Flow\Action\ActionPhases;
+use Bga\Games\projectedgeworth\Effects\Runtime\EffectRuntime;
 use Bga\Games\projectedgeworth\Flow\Action\ActionServices;
+use Bga\Games\projectedgeworth\Flow\NoOrbitModifiers;
+use Bga\Games\projectedgeworth\Flow\OrbitModifiers;
 
 /**
  * 状態機械のドライバが共有する部品（DB・グローバル値・ルール層・通知の組み立て・窓の問い合わせ）。BGA の Table に依存しない。
@@ -27,22 +30,37 @@ final class FlowContext
     public readonly ActionPhases $phases;
     public readonly ActionServices $services;
     public readonly Notices $notices;
+    public readonly WindowGate $gate;
+    public readonly OrbitModifiers $orbitMods;
 
     /**
      * @param \Closure(int): string $nameOf プレイヤー ID => プレイヤー名
-     * @param ActionHooks|null $hooks カード効果の問い合わせ口。効果エンジンの結線（N-4・N-7）までは null（効果なし）
+     * @param ActionHooks|null $hooks カード効果の問い合わせ口。null は効果なし（`$effects` があればそちらの `hooks` を使う）
+     * @param EffectRuntime|null $effects 本番の効果エンジンの組み立て（ゲート・フック・循環の修正を渡す）。null は効果なし
      */
     public function __construct(
         public readonly Database $db,
         public readonly GlobalValues $globals,
         public readonly RandomSource $random,
         \Closure $nameOf,
-        public readonly WindowGate $gate = new NoEffectWindowGate(),
+        WindowGate $gate = new NoEffectWindowGate(),
         ?ActionHooks $hooks = null,
+        public readonly ?EffectRuntime $effects = null,
     ) {
-        $this->phases = ActionPhases::load($db, $globals, $random, $hooks);
+        $this->gate = $effects === null ? $gate : $effects->gate;
+        $this->orbitMods = $effects === null ? new NoOrbitModifiers() : $effects->orbitMods;
+        $this->phases = ActionPhases::load($db, $globals, $random, $effects === null ? $hooks : $effects->hooks, $effects?->layout);
         $this->services = $this->phases->services();
+        $effects?->attach($this->services);
         $this->notices = new Notices($nameOf);
+    }
+
+    /**
+     * ドライバが起こした窓フックのイベントを台帳に記録する（効果エンジンがなければ何もしない）。
+     */
+    public function record(\Bga\Games\projectedgeworth\Effects\Context\GameEvent ...$events): void
+    {
+        $this->effects?->ledger->record(...$events);
     }
 
     /**

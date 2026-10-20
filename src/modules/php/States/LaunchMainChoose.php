@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\States;
 
 use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\Actions\Types\IntArrayParam;
+use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\projectedgeworth\Flow\Machine\ChoiceData;
 use Bga\Games\projectedgeworth\Flow\Machine\ChooseState;
@@ -37,6 +38,7 @@ class LaunchMainChoose extends ChooseState
      * @param string $op launch（メインのみ）/ turn / budget（ボーナスのみ）/ pass
      * @param string $dir NE / SE / NW / SW
      * @param list<int>|null $sell 打ち上げコストが足りないときに同梱する売却
+     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（args の useMods の候補から。011 §6-3）
      */
     #[PossibleAction]
     #[CheckAction(false)]
@@ -45,8 +47,9 @@ class LaunchMainChoose extends ChooseState
         int $satId = 0,
         string $dir = '',
         #[IntArrayParam] ?array $sell = null,
+        #[JsonParam(alphanum: false)] ?array $useMods = null,
     ): void {
-        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ChoiceData::launch($op, $satId, $dir, $sell));
+        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ChoiceData::launch($op, $satId, $dir, $sell, $useMods));
     }
 
     /**

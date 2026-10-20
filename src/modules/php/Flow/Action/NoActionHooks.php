@@ -16,6 +16,8 @@ use Bga\Games\projectedgeworth\Data\Satellite;
  */
 final class NoActionHooks implements ActionHooks
 {
+    use StandardProposalHooks;
+
     public function deployCostReduction(int $playerId, Satellite $target, int $cardNumber, int $attachedCount): int
     {
         return 0;

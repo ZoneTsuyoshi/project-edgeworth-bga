@@ -116,6 +116,29 @@ final class WindowState
         return $this->logs;
     }
 
+    /**
+     * 溜めたログを取り出して空にする（通知にした分を二重に出さないため）。
+     *
+     * @return list<LogEntry>
+     */
+    public function takeLogs(): array
+    {
+        $logs = $this->logs;
+        $this->logs = [];
+
+        return $logs;
+    }
+
+    /**
+     * 取り出し済みのステージを戻す（30 の報告で取り出した分を、32 のコミットまで持ち越すため）。
+     *
+     * @param list<StagedLinkRequest> $requests
+     */
+    public function restage(array $requests): void
+    {
+        array_push($this->staged, ...$requests);
+    }
+
     public function stage(StagedLinkRequest $request): void
     {
         $this->staged[] = $request;

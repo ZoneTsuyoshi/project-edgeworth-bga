@@ -55,6 +55,7 @@ final class ActionServices
         GlobalValues $globals,
         RandomSource $random,
         ?ActionHooks $hooks = null,
+        ?BoardLayout $layout = null,
     ): self {
         return new self(
             $globals,
@@ -64,7 +65,7 @@ final class ActionServices
             new LinkRepository($db),
             new ActionCardRepository($db),
             new ChoiceRepository($db),
-            LaunchPadPlacement::loadLayout(new RegionRepository($db), $globals),
+            $layout ?? LaunchPadPlacement::loadLayout(new RegionRepository($db), $globals),
             $hooks ?? new NoActionHooks(),
         );
     }

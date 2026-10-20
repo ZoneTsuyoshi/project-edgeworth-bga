@@ -67,4 +67,30 @@ interface ActionHooks
      * `SELL_PRICE`: 手札 1 枚の売却額。$base は 3。企画・効果で捨てるカードには適用しない（FAQ 行 31・60・70）。
      */
     public function sellPrice(int $playerId, int $base): int;
+
+    /**
+     * `PROPOSAL_OPTIONS`（P068・P070・P072）: 企画の残すカードの選択の検証。基本の検査（残す枚数）もここで行う。
+     * $data は choice_data（`keep`、`handDiscard`、`optionUses`、`sell`）。
+     *
+     * @param list<int> $drawn 引いたカード
+     * @param list<int> $keep 残すカード
+     * @param array<mixed> $data
+     * @throws RuleViolation
+     */
+    public function validateProposal(int $playerId, bool $bonus, ProposalCounts $counts, array $drawn, array $keep, array $data): void;
+
+    /**
+     * 残すカードを手札に入れた後に呼ぶ: 売却 → 支払い → 手札からの捨て → 報酬 → 使用済み。
+     *
+     * @param array<mixed> $data
+     */
+    public function applyProposal(int $playerId, bool $bonus, array $data): void;
+
+    /**
+     * 91 の args に載せる、使えるオプション（なければ空）。
+     *
+     * @param list<int> $drawn
+     * @return array<string, mixed>
+     */
+    public function proposalExtras(int $playerId, bool $bonus, array $drawn): array;
 }

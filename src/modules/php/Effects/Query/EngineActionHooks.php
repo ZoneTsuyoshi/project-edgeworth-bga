@@ -14,7 +14,9 @@ use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
 use Bga\Games\projectedgeworth\Effects\Context\GameView;
 use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
 use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
+use Bga\Games\projectedgeworth\Effects\EffectViolation;
 use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Material\ActionKind;
 use Bga\Games\projectedgeworth\Material\ProjectCards;
@@ -32,11 +34,15 @@ final class EngineActionHooks implements ActionHooks
     private array $useMods = [];
 
     /**
+     * @param ProposalOptions|null $proposal 渡すと、企画の残すカードの選択のオプション（P068・P070・P072）を結ぶ。省略時はオプションなし
      * @param GameView|null $view 渡すと、P036 の「打ち上げる衛星に配備されているカードの枚数」と、R011 の「自分で選んだボーナスか」
      *                            （EUROPA の宣言で得たボーナスなら偽。K12、FAQ 行 71）を結ぶ。省略時は 0 枚・自分で選んだ扱い
      */
-    public function __construct(private readonly EffectQueries $queries, private readonly ?GameView $view = null)
-    {
+    public function __construct(
+        private readonly EffectQueries $queries,
+        private readonly ?GameView $view = null,
+        private readonly ?ProposalOptions $proposal = null,
+    ) {
     }
 
     /**
@@ -103,5 +109,68 @@ final class EngineActionHooks implements ActionHooks
     public function sellPrice(int $playerId, int $base): int
     {
         return $this->queries->sellPrice(new QueryContext($playerId), $base);
+    }
+
+    public function validateProposal(int $playerId, bool $bonus, ProposalCounts $counts, array $drawn, array $keep, array $data): void
+    {
+        if ($this->proposal === null) {
+            $need = min(count($drawn), $counts->keep);
+            if (count($keep) !== $need) {
+                throw new RuleViolation("Keep exactly $need card(s)");
+            }
+
+            return;
+        }
+        $plan = $this->proposal->plan($playerId, $bonus ? StepMode::Bonus : StepMode::Main);
+        try {
+            $this->proposal->validate(
+                $playerId,
+                $plan,
+                $counts->keep,
+                $drawn,
+                $keep,
+                self::ids($data['handDiscard'] ?? []),
+                (array) ($data['optionUses'] ?? []),
+                self::ids($data['sell'] ?? []),
+            );
+        } catch (EffectViolation $violation) {
+            throw new RuleViolation($violation->getMessage());
+        }
+    }
+
+    public function applyProposal(int $playerId, bool $bonus, array $data): void
+    {
+        if ($this->proposal === null) {
+            return;
+        }
+        $plan = $this->proposal->plan($playerId, $bonus ? StepMode::Bonus : StepMode::Main);
+        $this->proposal->apply(
+            $playerId,
+            $plan,
+            self::ids($data['handDiscard'] ?? []),
+            (array) ($data['optionUses'] ?? []),
+            self::ids($data['sell'] ?? []),
+        );
+    }
+
+    public function proposalExtras(int $playerId, bool $bonus, array $drawn): array
+    {
+        if ($this->proposal === null) {
+            return [];
+        }
+        $plan = $this->proposal->plan($playerId, $bonus ? StepMode::Bonus : StepMode::Main);
+        if (!$plan->handDiscard && $plan->options === []) {
+            return [];
+        }
+
+        return $this->proposal->describe($playerId, $plan, $drawn);
+    }
+
+    /**
+     * @return list<int>
+     */
+    private static function ids(mixed $value): array
+    {
+        return array_values(array_map('intval', (array) $value));
     }
 }

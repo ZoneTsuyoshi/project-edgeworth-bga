@@ -109,6 +109,11 @@ final class StateWalker
                 return $waiting;
             }
             $first = false;
+            if ($waiting === StateId::EFFECT_WINDOW_RESOLVE) {
+                $this->answerWindow($choices[StateId::EFFECT_WINDOW_RESOLVE] ?? null);
+                $waiting = $this->resume($waiting, 'allDone');
+                continue;
+            }
             if ($this->isLaunchPadPlace($waiting)) {
                 $placer = $this->machine->setup()->nextPlacer();
                 $this->notices = array_merge($this->notices, $this->machine->setup()->zombiePlace((int) $placer));
@@ -127,6 +132,33 @@ final class StateWalker
             $waiting = $this->resume($waiting, 'allConfirmed');
         }
         return 0;
+    }
+
+    /**
+     * 31 の入力待ち: アクティブな各プレイヤーが、プールが空になるまで答える。
+     * `$decide(playerId, privateArgs)` は ['use' => [entryId, fields, sell]] / ['skip' => entryId] / ['order' => [entryId, …]] を返す。null は zombie。
+     *
+     * @param (callable(int, array<string, mixed>): (array<string, mixed>|null))|null $decide
+     */
+    private function answerWindow(?callable $decide): void
+    {
+        $windows = $this->machine->windows();
+        foreach ($this->active as $playerId) {
+            for ($guard = 0; $guard < 100 && in_array($playerId, $windows->playersNeedingInput(), true); $guard++) {
+                $private = $windows->resolveArgs()['_private'][$playerId];
+                $decision = $decide === null ? null : $decide($playerId, $private);
+                if ($decision === null) {
+                    $notices = $windows->zombie($playerId);
+                } elseif (isset($decision['use'])) {
+                    $notices = $windows->use($playerId, $decision['use'][0], $decision['use'][1] ?? [], $decision['use'][2] ?? []);
+                } elseif (isset($decision['skip'])) {
+                    $notices = $windows->skip($playerId, $decision['skip']);
+                } else {
+                    $notices = $windows->order($playerId, $decision['order']);
+                }
+                $this->notices = array_merge($this->notices, $notices);
+            }
+        }
     }
 
     /**
@@ -180,11 +212,12 @@ final class StateWalker
             case StateId::EFFECT_WINDOW_OPEN:
                 return $this->driver($m->windows()->open());
             case StateId::EFFECT_WINDOW_RESOLVE:
-                return $m->windows()->playersNeedingInput() === [] ? 'allDone' : null;
+                $this->active = $m->windows()->playersNeedingInput();
+                return $this->active === [] ? 'allDone' : null;
             case StateId::EFFECT_WINDOW_BARRIER:
-                $exit = $m->windows()->close();
+                $exit = $m->windows()->barrier();
                 $this->notices = array_merge($this->notices, $exit->notices);
-                return $exit->resume;
+                return $exit->resume ?? 'again';
             case StateId::ACTION_PHASE_ROUTER:
                 return $this->driver($m->rounds()->route());
             case StateId::BUDGET_DRIVER:

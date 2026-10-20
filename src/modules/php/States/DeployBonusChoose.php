@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\States;
 
 use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\Actions\Types\IntArrayParam;
+use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\projectedgeworth\Flow\Machine\ChoiceData;
 use Bga\Games\projectedgeworth\Flow\Machine\ChooseState;
@@ -36,6 +37,7 @@ class DeployBonusChoose extends ChooseState
     /**
      * @param string $op deploy / draw（ボーナスのみ）/ pass
      * @param list<int>|null $sell 支払い不足のときに同梱する売却
+     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（args の useMods の候補から。011 §6-3）
      */
     #[PossibleAction]
     #[CheckAction(false)]
@@ -44,8 +46,9 @@ class DeployBonusChoose extends ChooseState
         int $cardId = 0,
         int $satId = 0,
         #[IntArrayParam] ?array $sell = null,
+        #[JsonParam(alphanum: false)] ?array $useMods = null,
     ): void {
-        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ChoiceData::deploy($op, $cardId, $satId, $sell));
+        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ChoiceData::deploy($op, $cardId, $satId, $sell, $useMods));
     }
 
     /**

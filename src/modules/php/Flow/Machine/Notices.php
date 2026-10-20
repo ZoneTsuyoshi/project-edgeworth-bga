@@ -17,7 +17,6 @@ use Bga\Games\projectedgeworth\Material\ProjectCards;
  * 通知の組み立て（010 §10.2 の N1〜N33）。通知名・args・ログ文言（英語原文）はここの 1 か所に集める
  * （clienttranslate のリテラルを翻訳の抽出に見つけさせるため。010 §10.1）。BGA に依存しない。
  *
- * 窓の中の保留通知（N27〜N29、010 §10.5）と本人宛ての N22 は、効果エンジンの結線（申し送り N-4）で追加する。
  */
 final class Notices
 {
@@ -442,6 +441,110 @@ final class Notices
             'discard_count' => $discardCount,
             'players' => $players,
         ]);
+    }
+
+    /**
+     * N22: 窓の中のカード効果による通信確立をステージに積んだ（本人にだけ。予約額と残り）。
+     */
+    public function linkStaged(int $playerId, int $stageId, int $cell, int $satId, bool $special, int $reserved, int $mayaAvailable, int $cubesLeft): Notice
+    {
+        return new Notice('linkStaged', '', [
+            'stage_id' => $stageId,
+            'cell' => $cell,
+            'sat_id' => $satId,
+            'special' => $special,
+            'reserved' => $reserved,
+            'maya_available' => $mayaAvailable,
+            'cubes_left' => $cubesLeft,
+        ], $playerId);
+    }
+
+    /**
+     * N27（保留）: [Use]・自動の強制効果。使用済みマークを付ける。
+     */
+    public function effectUsed(int $playerId, string $sourceName, ?int $satId, bool $markUsed): Notice
+    {
+        return new Notice('effectUsed', self::heldMessage('effectUsed', ''), $this->player($playerId) + [
+            'source_name' => $sourceName,
+            'sat_id' => $satId,
+            'mark_used' => $markUsed,
+            'i18n' => ['source_name'],
+        ]);
+    }
+
+    /**
+     * N28（保留）: [Skip]（使用済みにしない）。
+     */
+    public function effectSkipped(int $playerId, string $sourceName): Notice
+    {
+        return new Notice('effectSkipped', self::heldMessage('effectSkipped', ''), $this->player($playerId) + [
+            'source_name' => $sourceName,
+            'i18n' => ['source_name'],
+        ]);
+    }
+
+    /**
+     * N29（保留）: 付け替え・入れ替え・移動など、個別の通知にしにくい衛星の変化。衛星 1 機の変化後の状態（絶対値）を載せる。
+     *
+     * @param list<int> $cardIds 配備されているカード（下の段から）
+     */
+    public function satelliteChanged(Satellite $sat, array $cardIds): Notice
+    {
+        return new Notice('satelliteChanged', self::heldMessage('satelliteChanged', ''), $this->player($sat->playerId) + [
+            'sat_id' => $sat->id,
+            'sat_name' => self::satName($sat),
+            'sats' => [[
+                'sat_id' => $sat->id,
+                'cell' => $sat->cell,
+                'dir' => $sat->direction?->value,
+                'fuel_used' => $sat->fuelUsed,
+                'cards' => $cardIds,
+            ]],
+            'i18n' => ['sat_name'],
+        ]);
+    }
+
+    /**
+     * 保留通知（010 §10.5）の種類（held_variant）。メッセージが符号や理由で変わるものだけ値を持つ。
+     */
+    public static function heldVariant(Notice $notice): string
+    {
+        return match ($notice->name) {
+            'mayaChanged' => ((int) ($notice->args['delta'] ?? 0)) > 0 ? 'gain' : 'pay',
+            'fuelChanged' => ((int) ($notice->args['delta'] ?? 0)) > 0 ? 'use' : 'recover',
+            'cardsDiscarded' => (string) ($notice->args['reason'] ?? ''),
+            default => '',
+        };
+    }
+
+    /**
+     * 保留通知のメッセージ（英語原文。held_notif には文字列を保存せず、種類から引く）。
+     */
+    public static function heldMessage(string $name, string $variant): string
+    {
+        return match ($name) {
+            'effectUsed' => clienttranslate('${player_name} uses ${source_name}'),
+            'effectSkipped' => clienttranslate('${player_name} skips ${source_name}'),
+            'satelliteChanged' => clienttranslate('${player_name} rearranges ${sat_name}'),
+            'cardsDrawn' => clienttranslate('${player_name} draws ${count} card(s)'),
+            'deckReshuffled' => clienttranslate('The discard pile is shuffled into a new deck'),
+            'budgetChanged' => clienttranslate('${player_name} raises Budget by ${delta} (${reason_label})'),
+            'cardDeployed' => clienttranslate('${player_name} deploys ${card_name} to ${sat_name}'),
+            'satelliteTurned' => clienttranslate('${player_name} turns ${sat_name}'),
+            'mayaChanged' => $variant === 'gain'
+                ? clienttranslate('${player_name} gains ${amount} Maya (${reason_label})')
+                : clienttranslate('${player_name} pays ${amount} Maya (${reason_label})'),
+            'fuelChanged' => $variant === 'use'
+                ? clienttranslate('${sat_name} uses ${amount} fuel (${reason_label})')
+                : clienttranslate('${sat_name} recovers ${amount} fuel (${reason_label})'),
+            'cardsDiscarded' => match ($variant) {
+                'sell' => clienttranslate('${player_name} sold ${count} card(s)'),
+                'mulligan' => clienttranslate('${player_name} mulligans ${count} card(s)'),
+                'proposal', 'effect' => clienttranslate('${player_name} discards ${count} card(s)'),
+                default => '',
+            },
+            default => '',
+        };
     }
 
     /** 区域の種類の英語名（N23 の area_label。翻訳の抽出用にリテラルで持つ） */

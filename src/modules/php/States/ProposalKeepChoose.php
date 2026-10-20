@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\States;
 
 use Bga\GameFramework\Actions\CheckAction;
 use Bga\GameFramework\Actions\Types\IntArrayParam;
+use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\projectedgeworth\Flow\Machine\ChoiceData;
 use Bga\Games\projectedgeworth\Flow\Machine\ChooseState;
@@ -37,13 +38,22 @@ class ProposalKeepChoose extends ChooseState
     /**
      * 残すカード（引いたカードの ID）。残さないカードは捨て札になる。選び直しは全員の確定まで可。
      *
+     * P068・P070・P072 のオプションは確定に同梱する（011 §6-5）。args の extra に候補がある。
+     *
      * @param list<int>|null $keep
+     * @param list<int>|null $handDiscard P068: 手札から捨てるカード（捨てた枚数だけ、引いたカードから多く残せる）
+     * @param array<string, mixed>|null $optionUses オプションの使用（宿主の鍵 => P070 は捨てる手札のカード ID、P072 は払う額）
+     * @param list<int>|null $sell オプションの支払いが足りないときに同梱する売却
      */
     #[PossibleAction]
     #[CheckAction(false)]
-    public function actConfirmKeep(#[IntArrayParam] ?array $keep): void
-    {
-        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ['keep' => ChoiceData::ids($keep)]);
+    public function actConfirmKeep(
+        #[IntArrayParam] ?array $keep,
+        #[IntArrayParam] ?array $handDiscard = null,
+        #[JsonParam(alphanum: false)] ?array $optionUses = null,
+        #[IntArrayParam] ?array $sell = null,
+    ): void {
+        $this->peConfirm((int) $this->game->getCurrentPlayerId(), ChoiceData::keep($keep, $handDiscard, $optionUses, $sell));
     }
 
     /**

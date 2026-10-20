@@ -46,7 +46,7 @@ final class Machine
 
     public function orbit(): OrbitDriver
     {
-        return $this->orbit ??= new OrbitDriver($this->ctx);
+        return $this->orbit ??= new OrbitDriver($this->ctx, $this->ctx->orbitMods);
     }
 
     public function end(): EndFlow
@@ -76,6 +76,9 @@ final class Machine
     public function sell(int $playerId, array $cardIds, int $stateId): array
     {
         $services = $this->ctx->services;
+        if ($stateId === StateId::EFFECT_WINDOW_RESOLVE) {
+            return $this->windows()->sell($playerId, ChoiceData::ids($cardIds));
+        }
         if ($stateId === StateId::SETUP_LAUNCH_PAD_PLACE) {
             if ($this->setup()->nextPlacer() !== $playerId) {
                 throw new RuleViolation('You cannot sell cards now');
@@ -108,7 +111,7 @@ final class Machine
     }
 
     /**
-     * 売却が可能な同時選択の状態（009 §8 の表。11 は別に扱う。31 は効果エンジンの結線後に追加する）。
+     * 売却が可能な同時選択の状態（009 §8 の表。11 は別に扱う。31 は WindowFlow::sell が扱う）。
      *
      * @return list<int>
      */
@@ -124,6 +127,7 @@ final class Machine
             StateId::LINK_MAIN_CHOOSE,
             StateId::LINK_BONUS_CHOOSE,
             StateId::PROPOSAL_KEEP_CHOOSE,
+            StateId::EFFECT_WINDOW_RESOLVE,
         ];
     }
 }

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
+use Bga\Games\projectedgeworth\Effects\Runtime\ActionEvents;
 use Bga\Games\projectedgeworth\Flow\NoOrbitModifiers;
 use Bga\Games\projectedgeworth\Flow\OrbitModifiers;
 use Bga\Games\projectedgeworth\Flow\OrbitPhase;
@@ -52,6 +53,7 @@ final class OrbitDriver
                     if ($moves !== []) {
                         $notes->add($this->ctx->notices->satellitesMoved($moves));
                     }
+                    $this->ctx->record(...ActionEvents::entered($services->layout, $before, $after));
                     break;
                 case 'fuel':
                     $before = $this->bySatId($orbit->activeSatellites());
@@ -71,7 +73,9 @@ final class OrbitDriver
                     $notes->addAll($this->fuelNotices($before, $orbit->activeSatellites(), 'nearMiss'));
                     break;
                 case 'landing':
-                    foreach ($orbit->stepLanding(ScoringBoard::fromLayout($services->layout)) as $landing) {
+                    $landings = $orbit->stepLanding(ScoringBoard::fromLayout($services->layout));
+                    $this->ctx->record(...ActionEvents::landed($landings));
+                    foreach ($landings as $landing) {
                         $sat = $services->satellites->get($landing->satId);
                         $notes->add($this->ctx->notices->satelliteLanded($sat, $landing->cell, $landing->sea, $landing->maya));
                         $notes->add($this->ctx->notices->mayaChanged(

@@ -287,6 +287,26 @@ final class ProjectCardRepository
         );
     }
 
+    /**
+     * 衛星のカードの配置を丸ごと書く（P022 の付け替え）。引数の衛星に今ある（または新しく置く）カードだけが対象で、
+     * 各衛星のカードを下の段から渡す。1 機 4 枚まで。対象のカードの集合は変えない（呼び出し側が検証済み）。
+     *
+     * @param array<int, list<int>> $placement 衛星 ID => カード ID（下の段から）
+     */
+    public function arrange(array $placement): void
+    {
+        foreach ($placement as $satId => $ids) {
+            if (count($ids) > self::MAX_DEPLOYED) {
+                throw new \DomainException("satellite $satId would have more than " . self::MAX_DEPLOYED . ' deployed cards');
+            }
+        }
+        foreach ($placement as $satId => $ids) {
+            foreach ($ids as $i => $id) {
+                $this->place($id, CardLocation::Satellite, $satId, $i + 1);
+            }
+        }
+    }
+
     private function compactTiers(int $satId): void
     {
         foreach ($this->deployedIds($satId) as $i => $id) {

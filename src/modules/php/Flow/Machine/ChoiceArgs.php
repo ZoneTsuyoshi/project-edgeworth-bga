@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Effects\Runtime\StepMods;
 use Bga\Games\projectedgeworth\Flow\Action\Payability;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
@@ -70,6 +71,14 @@ final class ChoiceArgs
             StateId::PROPOSAL_KEEP_CHOOSE => [
                 'drawn' => $phases->proposal()->drawn($playerId),
                 'keep' => $phases->proposal()->keepCount($playerId),
+                // PROPOSAL_OPTIONS（P068・P070・P072）の候補。なければ空（011 §6-5）
+                'extra' => $services->hooks->proposalExtras(
+                    $playerId,
+                    $phases->proposal()->isBonusHolder($playerId),
+                    $phases->proposal()->drawn($playerId),
+                ),
+                'sellValue' => $services->selling->price($playerId),
+                'hand' => $hand,
             ],
             default => [],
         };
@@ -84,7 +93,7 @@ final class ChoiceArgs
         $targets = [];
         foreach ($deploy->hand($playerId) as $cardNumber) {
             foreach ($deploy->targets($playerId, $cardNumber) as $target) {
-                $targets[$cardNumber][] = [
+                $entry = [
                     'satId' => $target->satellite->id,
                     'tier' => $target->deployedCount + 1,
                     'cost' => $target->cost->total(),
@@ -92,6 +101,7 @@ final class ChoiceArgs
                     'minSales' => $target->payability->minSales(),
                     'selectable' => $target->isSelectable(),
                 ];
+                $targets[$cardNumber][] = $entry + $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $target->satellite->id], $target->cost->total());
             }
         }
         $args = ['targets' => $targets];
@@ -116,7 +126,7 @@ final class ChoiceArgs
                     'blocked' => $option->blocked,
                     'minSales' => $option->payability->minSales(),
                     'selectable' => $option->isSelectable(),
-                ];
+                ] + $this->mods(3, $playerId, ['sat' => $option->satellite->id], $option->cost);
             }
         }
         $turnable = [];
@@ -152,11 +162,24 @@ final class ChoiceArgs
                         'total' => $option->cost->total(),
                     ],
                     'minSales' => self::minSales($option->payability),
-                ];
+                ] + $this->mods(4, $playerId, ['sat' => $option->satellite->id, 'cell' => $candidate->cell], $option->cost->total());
             }
             $linkable[] = ['cell' => $candidate->cell, 'selectable' => $candidate->isSelectable(), 'sats' => $sats];
         }
         return ['linkable' => $linkable];
+    }
+
+    /**
+     * 起動の修正（USE_MODS）の候補。使える修正がなければキーごと載せない（011 §6-3）。
+     *
+     * @param array<string, mixed> $subject
+     * @return array{useMods?: array<string, mixed>}
+     */
+    private function mods(int $actionNo, int $playerId, array $subject, int $total): array
+    {
+        $options = $this->ctx->effects?->stepMods->options($actionNo, $playerId, $subject) ?? [];
+
+        return $options === [] ? [] : ['useMods' => StepMods::describe($options, $total)];
     }
 
     private static function minSales(Payability $payability): ?int

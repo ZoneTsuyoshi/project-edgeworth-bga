@@ -16,7 +16,6 @@ use Bga\Games\projectedgeworth\Game;
 
 /**
  * 効果の窓を開く（009 §3.5、§6.2）。window_id の窓にトリガーされた効果を集め、選択が要る人がいれば 31、いなければ 32 へ。
- * 今回は効果エンジンを結線していないので、常にバリア（32）へ素通りする（差し込み口は Flow\\Machine\\WindowFlow のコメント）。
  */
 class EffectWindowOpen extends GameState
 {

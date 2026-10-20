@@ -28,6 +28,7 @@ use Bga\Games\projectedgeworth\Data\BgaDatabase;
 use Bga\Games\projectedgeworth\Data\Database;
 use Bga\Games\projectedgeworth\Data\GlobalValues;
 use Bga\Games\projectedgeworth\Data\PlayerValues;
+use Bga\Games\projectedgeworth\Effects\Runtime\EffectRuntime;
 use Bga\Games\projectedgeworth\Flow\ConfirmAction;
 use Bga\Games\projectedgeworth\Flow\ConfirmMode;
 use Bga\Games\projectedgeworth\Flow\Machine\ConfirmResult;
@@ -60,8 +61,7 @@ class Game extends \Bga\GameFramework\Table
     /**
      * 状態機械のルール層への入口（Flow/Machine）。状態クラスはここから各フローを取り出す。
      *
-     * 効果エンジンの本番結線（申し送り N-4・N-7）の差し込み口: FlowContext の WindowGate（窓を開くか）と ActionHooks
-     * （コスト・候補への修正）に、効果エンジンの実装を渡す。今は効果なし（既定の NoEffectWindowGate・NoActionHooks）。
+     * 効果エンジンは EffectRuntime が組み立てる（全カードの部品と条件、WindowGate、ActionHooks、OrbitModifiers。申し送り N-4・N-7）。
      */
     public function peMachine(): Machine
     {
@@ -70,6 +70,7 @@ class Game extends \Bga\GameFramework\Table
             $this->peGlobals,
             new BgaRandom(),
             fn(int $playerId): string => $this->getPlayerNameById($playerId),
+            effects: new EffectRuntime($this->peDatabase, $this->peGlobals),
         ));
     }
 

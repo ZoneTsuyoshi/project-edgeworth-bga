@@ -15,6 +15,7 @@ use Bga\Games\projectedgeworth\Effects\Context\EffectHost;
 use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
 use Bga\Games\projectedgeworth\Effects\Context\GameMutator;
 use Bga\Games\projectedgeworth\Effects\Context\GameView;
+use Bga\Games\projectedgeworth\Effects\Context\StagedLinkRequest;
 use Bga\Games\projectedgeworth\Effects\Parts\PartCall;
 use Bga\Games\projectedgeworth\Effects\Parts\PartRegistry;
 use Bga\Games\projectedgeworth\Effects\Parts\ResultPart;
@@ -121,6 +122,48 @@ final class EffectEngine
         $this->dirty = [];
 
         return $result;
+    }
+
+    /**
+     * 窓を開いたら効果が積まれるか（読み取りだけ。窓の状態は作らない）。`WindowGate` が窓を開くかの判定に使う。
+     *
+     * @param list<GameEvent> $events
+     */
+    public function hasTriggers(string $windowId, array $events): bool
+    {
+        $probe = new WindowState($windowId);
+        foreach ($events as $event) {
+            if ($this->collector->collect($probe, $event) !== []) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 溜めたログを取り出す（通知にしたら二重に出さない）。
+     *
+     * @return list<LogEntry>
+     */
+    public function takeLogs(): array
+    {
+        return $this->requireState()->takeLogs();
+    }
+
+    /**
+     * `openWindow()` の報告で取り出したステージを、バリアでコミットするまで持ち越すために戻す。
+     *
+     * @param list<StagedLinkRequest> $requests
+     */
+    public function restage(array $requests): void
+    {
+        $this->requireState()->restage($requests);
+    }
+
+    public function isAborted(): bool
+    {
+        return $this->requireState()->isAborted();
     }
 
     public function isOpen(): bool

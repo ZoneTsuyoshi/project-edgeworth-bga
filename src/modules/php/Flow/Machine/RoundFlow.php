@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\Games\projectedgeworth\Data\ActionCardState;
 use Bga\Games\projectedgeworth\Data\FlowPhase;
+use Bga\Games\projectedgeworth\Effects\Runtime\ActionEvents;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
 
@@ -68,7 +69,12 @@ final class RoundFlow
     {
         $actionCards = $this->ctx->services->actionCards;
         $before = $actionCards->all();
+        $upright = [];
+        foreach ($before as $playerId => $states) {
+            $upright[$playerId] = array_keys(array_filter($states, static fn(ActionCardState $s): bool => $s === ActionCardState::Upright));
+        }
         $this->ctx->phases->planning()->collect();
+        $this->ctx->record(...ActionEvents::retrieve($upright));
         $after = $actionCards->all();
 
         $moves = [];
@@ -101,6 +107,11 @@ final class RoundFlow
     {
         $result = $this->ctx->phases->runner()->resolve($this->ctx->phases->planning(), StateId::PLANNING_PLOT, StepMode::Main);
         $notices = (new OutcomeNotices($this->ctx))->reveal($result);
+        $choices = [];
+        foreach ($result->outcomes as $outcome) {
+            $choices[$outcome->playerId] = (int) $outcome->details['action'];
+        }
+        $this->ctx->record(ActionEvents::reveal($choices));
         if ($this->ctx->gate->needsWindow('PL2')) {
             $this->ctx->globals->setWindowId('PL2');
             $this->ctx->globals->setWindowResume(StateId::ACTION_PHASE_ROUTER);

@@ -15,8 +15,8 @@ use Bga\Games\projectedgeworth\Flow\StateId;
 use Bga\Games\projectedgeworth\Game;
 
 /**
- * バリア（007 §1-2、009 §3.5、§6.3）。ステージされた通信確立のコミットと保留通知の送信は効果エンジンの結線で追加する。
- * 窓を閉じ、window_resume（戻り先の状態 ID）を整数で返して遷移する（009 V-4）。
+ * バリア（007 §1-2、009 §3.5、§6.3）。ステージされた通信確立を全員分一斉にコミットし（世代 +1）、起きた `LINKED` をプールに積んで、
+ * 選択が要る人がいれば 31 へ戻る（'again'）。なければ窓を閉じ、保留通知を流して、window_resume（戻り先の状態 ID）を整数で返して遷移する（009 V-4）。
  */
 class EffectWindowBarrier extends GameState
 {
@@ -33,11 +33,11 @@ class EffectWindowBarrier extends GameState
         );
     }
 
-    public function onEnteringState(): int
+    public function onEnteringState(): int|string
     {
-        $exit = $this->game->peMachine()->windows()->close();
+        $exit = $this->game->peMachine()->windows()->barrier();
         $this->game->peSend($exit->notices);
 
-        return $exit->resume;
+        return $exit->resume ?? 'again';
     }
 }

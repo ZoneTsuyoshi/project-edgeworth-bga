@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
+use Bga\Games\projectedgeworth\Effects\Runtime\ActionEvents;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
 
@@ -66,6 +67,7 @@ final class PhaseDrivers
             ['main', 'commit:main'],
             $afterMain,
             ['bonus', 'commit:bonus'],
+            in_array($actionNo, [2, 3], true) ? ['win:AB'] : [],
             $afterBonus,
             ['next'],
         );
@@ -84,7 +86,9 @@ final class PhaseDrivers
                     $notes->addAll($this->commit($actionNo, StepMode::Main, $mainState));
                     return null;
                 case 'commit:bonus':
+                    $holders = $this->ctx->services->bonusHolders($actionNo);
                     $notes->addAll($this->commit($actionNo, StepMode::Bonus, $bonusState));
+                    $this->ctx->record(...ActionEvents::bonusStep($actionNo, $holders));
                     return null;
                 default:
                     throw new \LogicException("unknown op: $op");
@@ -97,7 +101,7 @@ final class PhaseDrivers
      */
     public function proposal(): DriverResult
     {
-        $ops = array_merge($this->ctx->globals->roundNo() === 0 ? [] : ['win:XD'], ['draw', 'commit', 'win:PB', 'next']);
+        $ops = array_merge($this->ctx->globals->roundNo() === 0 ? [] : ['win:XD'], ['draw', 'win:PA', 'choose', 'commit', 'win:PB', 'next']);
         return (new StepProgram($this->ctx, StateId::PROPOSAL_DRIVER))->run($ops, function (string $op, NoticeList $notes): ?string {
             if ($op === 'draw') {
                 $mark = $this->ctx->reshuffleMark();
@@ -114,6 +118,10 @@ final class PhaseDrivers
                     ));
                 }
                 $notes->add($this->ctx->counters());
+                $this->ctx->record(...ActionEvents::proposalDrawn(array_map('count', $drawn)));
+                return null;
+            }
+            if ($op === 'choose') {
                 return 'choose';
             }
             $notes->addAll($this->commit(5, StepMode::Main, StateId::PROPOSAL_KEEP_CHOOSE));
@@ -140,8 +148,42 @@ final class PhaseDrivers
         }
         $mark = $this->ctx->reshuffleMark();
         $step = $this->ctx->phases->stepFor($actionNo);
-        $result = $this->ctx->phases->runner()->resolve($step, $stateId, $mode);
+
+        // 起動の修正（USE_MODS）: 確定済みの鍵を、コストの計算の間だけ効かせ、払えた選択の分を使用済みにする
+        $effects = $this->ctx->effects;
+        $keysByPlayer = [];
+        foreach ($effects === null ? [] : $participants as $playerId) {
+            $own = $services->choices->ownChoice($playerId, $stateId);
+            $keysByPlayer[$playerId] = array_values(array_map('strval', (array) ($own['useMods'] ?? [])));
+        }
+        $journalMark = $effects?->game->journalMark() ?? 0;
+        $effects?->hooks->useMods(array_values(array_unique(array_merge([], ...array_values($keysByPlayer)))));
+        try {
+            $result = $this->ctx->phases->runner()->resolve($step, $stateId, $mode);
+        } finally {
+            $effects?->hooks->useMods([]);
+        }
         $services->globals->setStepParticipants([]);
-        return (new OutcomeNotices($this->ctx))->commit($actionNo, $mode, $result, $auto, $before, $mark);
+        $this->ctx->record(...ActionEvents::fromCommit($actionNo, $result));
+        $notices = (new OutcomeNotices($this->ctx))->commit($actionNo, $mode, $result, $auto, $before, $mark);
+
+        if ($effects !== null) {
+            $effectNotices = new EffectNotices($this->ctx);
+            foreach ($result->outcomes as $outcome) {
+                $keys = $keysByPlayer[$outcome->playerId] ?? [];
+                if ($keys === [] || $outcome->isPass()) {
+                    continue;
+                }
+                $effects->useMods->commit($keys);
+                foreach ($keys as $key) {
+                    $notices[] = $effectNotices->used($outcome->playerId, $key);
+                }
+            }
+            // 企画のオプション（P068・P070・P072）などの、効果エンジンの書き込みの結果
+            $built = $effectNotices->build(0, [], $effects->game->journalSince($journalMark));
+            array_push($notices, ...$built['held'], ...$built['private']);
+        }
+
+        return $notices;
     }
 }

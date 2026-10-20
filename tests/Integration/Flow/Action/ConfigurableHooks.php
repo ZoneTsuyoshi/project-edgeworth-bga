@@ -13,6 +13,7 @@ use Bga\Games\projectedgeworth\Data\Satellite;
 use Bga\Games\projectedgeworth\Flow\Action\ActionHooks;
 use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
 use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
+use Bga\Games\projectedgeworth\Flow\Action\StandardProposalHooks;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 
 /**
@@ -20,6 +21,8 @@ use Bga\Games\projectedgeworth\Flow\Action\StepMode;
  */
 final class ConfigurableHooks implements ActionHooks
 {
+    use StandardProposalHooks;
+
     public int $deployReduction = 0;
     public int $launchReduction = 0;
     /** @var list<int> */

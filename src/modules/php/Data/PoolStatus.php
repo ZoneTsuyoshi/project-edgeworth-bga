@@ -22,4 +22,6 @@ enum PoolStatus: string
     case Done = 'done';
     /** [Skip] した */
     case Skipped = 'skipped';
+    /** 再確認に失敗した、または窓の強制終了で捨てた */
+    case Dropped = 'dropped';
 }
