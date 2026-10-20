@@ -638,7 +638,7 @@ ProposalPlan = {
 | P090 ギムバル制御 | `ORBIT_ENTERED` | 起 | ◎ | R08 | target = THIS。K01 THIS、K08 | 任・対(DIRECTION) | ★3 | 新しい `TURNED` を起こす。反射は転回ではない |
 | P091 カスケードブースト | `ORBIT_ENTERED` | 起 | ◎ | R07 | areas = 1、fuelPerArea = 1、target = THIS、fireEntered = 真。K01 THIS、K08 | 任 | ★3 | |
 | P092 スプラッシュダウン | `LANDED` | 起 | ◎ | R01 | amount = 10。K01 ANY、K09 SEA | 自 | ★1 | 通常の着水の 10 マヤに加えて |
-| P093 オービタル72 | `ORBIT_ENTERED` | 常 | ◎ | R01 | amount = 3。K01 THIS、K07 | 自 | ★1 | 常時なので突入のたびに（追加移動でも）働く |
+| P093 オービタル72 | `ORBIT_ENTERED` | 起 | ◎ | R01 | amount = 3。K01 THIS、K07 | 自 | ★1 | 印刷どおり起動（各ラウンド 1 回）。作者回答 2026-10-20 |
 | P094 デコンフリクト | `NEAR_MISS` | 常 | ◎ | M13 | K03 | — | ★3 | 同じ区域の他の衛星が 1 機以下ならその衛星も除く（FAQ 行 58）。3 機なら残り 2 機はニアミス |
 | P095 フリップマニューバ | `ORBIT_ENTERED` | 起 | ◎ | R08 | target = THIS。K01 THIS、K07 | 任・対(DIRECTION) | ★3 | |
 | P096 アルファリンク | `ORBIT_ENTERED` | 起 | ◎ | R11 | costKind = SPECIAL、actor = THIS、area = BELOW。K01 THIS、K08 {A,C,F} | 任・対(AREA、USE_MODS) | ★4 | |
