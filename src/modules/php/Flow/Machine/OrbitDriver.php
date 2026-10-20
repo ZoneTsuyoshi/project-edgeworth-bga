@@ -68,7 +68,8 @@ final class OrbitDriver
                     }
                     ksort($byCell);
                     foreach ($byCell as $cell => $satIds) {
-                        $notes->add($this->ctx->notices->nearMiss($cell, $satIds));
+                        $owners = array_values(array_unique(array_map(static fn(int $id): int => $before[$id]->playerId, $satIds)));
+                        $notes->add($this->ctx->notices->nearMiss($cell, $satIds, $owners));
                     }
                     $notes->addAll($this->fuelNotices($before, $orbit->activeSatellites(), 'nearMiss'));
                     break;
