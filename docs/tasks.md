@@ -10,10 +10,10 @@
 
 | 優先 | 項目 | 必要になる時期 | 状態 |
 | --- | --- | --- | --- |
-| 1 | **BoardGameGeek へのゲーム登録**（手順・英語の紹介文・カテゴリーは [publishing/game-description.md](publishing/game-description.md)）。承認後に BGG_ID をエージェントに伝える（`src/gameinfos.jsonc` に設定する） | 公開の準備まで（承認に数週間かかるため最優先） | 申請済み（2026-10-19。承認後に BGG_ID を設定） |
+| 1 | **BoardGameGeek へのゲーム登録**（手順・英語の紹介文・カテゴリーは [publishing/game-description.md](publishing/game-description.md)）。承認後に BGG_ID をエージェントに伝える（`src/gameinfos.jsonc` に設定する） | 公開の準備まで（承認に数週間かかるため最優先） | 済（2026-10-20 承認。BGG_ID 481869 を設定。<https://boardgamegeek.com/boardgame/481869/project-edgeworth>） |
 | 2 | BGA Studio でのプロジェクト作成（プロジェクト名: `projectedgeworth`） | T-004 まで | 済（2026-10-19） |
 | 3 | 作者への質問への回答（[development/rule-questions.md](development/rule-questions.md)。回答がない項目は暫定案で了承とみなす） | 各仕様書の作成時 | 第 1 弾（Q-01〜Q-18）回答済み（2026-10-19） |
-| 4 | BGA のライセンス確認（作者が権利者であることを BGA に示す。アルファ申請時に承認メールを添える。[Pre-release checklist](https://en.doc.boardgamearena.com/Pre-release_checklist)）。MINIMUM JOURNEY と同じ手続きなので、まとめて進めると楽 | アルファ申請まで | 未着手 |
+| 4 | BGA のライセンス確認（作者が権利者として BGA に許諾のメールを送る。手順とメールの文面は [publishing/bga-license.md](publishing/bga-license.md)。アルファ申請時に許諾のメールを添える）。MINIMUM JOURNEY と同じ手続きなので、1 通でまとめて許諾してもよい | アルファ申請まで | 手順・文面を作成済み（2026-10-20）。作者の送信待ち |
 | 5 | GitHub の Secrets / Variables の登録（SSH 鍵は MINIMUM JOURNEY と使い回す。2026-10-19 作者回答。minimum-journey-bga と同じ名前・値をこのリポジトリにも登録する。手順は minimum-journey-bga の `specs/005-bga-sync.md` §7） | T-006 の導入時 | 導入済み（段階 1・2。2026-10-20 に初回の本番同期と Studio での開始を確認） |
 | 6 | BGA Studio 上の初期ファイルのダウンロードとファイル一覧の共有 | T-006 の導入時 | 済（2026-10-20。エージェントが SFTP で取得） |
 | 7 | 英語のカード文（プロジェクト 99 枚・衛星 40 面・褒賞・ミッション・アクション）の確認 | アルファ申請まで | 未着手（T-002 で案を作成） |

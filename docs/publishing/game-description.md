@@ -2,11 +2,11 @@
 
 BoardGameGeek（BGG）のゲーム登録と、BGA の Game Metadata Manager の説明文に使う英語の紹介文。ルールの内容はルールブック（`data/rulebooks/`）と公式ページ <https://danjiri-concerto.github.io/project-edgeworth/> に基づく。
 
-2026-10-19 に作者が BGG へ申請済み（申請前の検索では登録なし）。承認後に BGG_ID をここと `src/gameinfos.jsonc` に記録する。
+2026-10-19 に作者が BGG へ申請し、2026-10-20 に承認された。
 
 | 項目 | 値 |
 | --- | --- |
-| BGG_ID | 承認待ち |
+| BGG_ID | 481869（<https://boardgamegeek.com/boardgame/481869/project-edgeworth>） |
 
 ## 登録の手順
 
