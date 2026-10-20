@@ -4,7 +4,7 @@
  * 変更したら、コントロールパネルの「Reload game informations」が必要（仕様書 006 §8）。
  *
  * player_colors は衛星コマの色（青・緑・赤・黄）に対応させる。Setup/SetupPlayer::fromBgaColor と一致させること。
- * bgg_id は BGG のゲームページ（2026-10-20 承認）。publisher_bgg_id は出版社のページの ID が分かったら設定する。
+ * bgg_id は BGG のゲームページ（2026-10-20 承認）。publisher_bgg_id は BGG の出版社のページ（https://boardgamegeek.com/boardgamepublisher/64662/danjiri-concerto）。
  */
 {
     // Name of the game in English (will serve as the basis for translation)
@@ -17,7 +17,7 @@
     "publisher_website": "https://danjiri-concerto.github.io/index.html",
 
     // Board Game Geek ID of the publisher
-    "publisher_bgg_id": 0,
+    "publisher_bgg_id": 64662,
 
     // Board game geek ID of the game
     "bgg_id": 481869,
