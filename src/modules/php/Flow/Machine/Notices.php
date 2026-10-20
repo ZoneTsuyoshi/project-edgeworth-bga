@@ -93,6 +93,16 @@ final class Notices
         ]);
     }
 
+    /** N37: 効果（EUROPA）でアクション選択ボーナスを宣言した */
+    public function bonusDeclared(int $playerId, int $actionNo): Notice
+    {
+        return new Notice('bonusDeclared', clienttranslate('${player_name} declares the ${action_name} action bonus'), $this->player($playerId) + [
+            'action_no' => $actionNo,
+            'action_name' => self::actionName($actionNo),
+            'i18n' => ['action_name'],
+        ]);
+    }
+
     /**
      * N7
      *

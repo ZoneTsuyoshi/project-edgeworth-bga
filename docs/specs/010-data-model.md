@@ -633,6 +633,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N34 | `effectQuestions` | 本人 | 31 の args の `_private[playerId]` と同じ形（`windowId`、`pending`、`questions`、`hand`、`sellValue`）。答えた後で問いが無ければ `questions` は空 | `''` | 31 の `actUseEffect` / `actSkipEffect` / `actOrderEffects` の直後。31 の args は入場時のものなので、クライアントが残りの問い（ORDER の次の EFFECT、二段階の効果の二段目など）を知る。保留に積まず即時に送る（本人の問いは公開情報ではない） |
 | N35 | `effectWaiting` | 全員 | `waiting`（`[{ "player_id", "sources": [カードキー] }]`。31 の args の公開部分と同じ） | `''` | N34 と同時、および zombie の処理の後。待機表示「Waiting for X (CARD_NAME)」（008 §5-1）を更新する。カードは公開情報 |
 | N36 | `publicFameUpdated` | 全員 | `fame`（`{ID: {"total", "detail"}}`。`getAllDatas.publicFame` と同じ形。ミッション V を除く） | `''` | ゲームオプション 105 が Visible のときだけ。N33 を送る箇所（各 GAME 状態の処理の最後とアクションの最後、予算ボーナスの後）で、値が変わりうるとき N33 の直後に送る。窓の最中は送らず、バリアの公開（N26 windowClosed）の後の N33 と同時に最新値を送る。Hidden では送らない |
+| N37 | `bonusDeclared` | 全員 | `player_id`、`player_name`、`action_no`、`action_name` | `${player_name} declares the ${action_name} action bonus` | 効果（EUROPA）がアクション選択ボーナスを宣言したとき（ジャーナル `bonus`）。窓の保留の通知としてバリアで公開。`bonus_holders` に保持者を加える（重ねて届いても同じ） |
 
 - 窓の外の GAME 状態（コミット）で出す通知は、その場で `notify->all` を呼ぶ（リクエストの終わりに順序どおり届く）。**窓の中（状態 31）の他人に見える通知**は §10.5 の規則に従う。
 - N36 は全員宛て。ゲームオプション 105 が Visible のときだけ送る。
@@ -903,7 +904,7 @@ D11 のとおり、ID は 10 以上、各節の中で一意、公開後は変更
 ## 他の仕様書への申し送り
 
 - → 011: 窓の問い（プロンプト）の組み立て（`pool`・`pool_state`・`pool_context` の中身）、`card_memo`・`sat_memo` の使い道、保留通知に積む効果ごとの通知（N27〜N29 と N29 の細目）、`PA` の `extra`（§9.3）、山札を見る効果の `_private` args。
-- → 012: 通知ハンドラ（N1〜N36）、`ev_id` による二重適用の防止（§10.5）、`getAllDatas` の `board.cells` からの盤面描画、名声の内訳の表（bga-score-sheet）、スコア欄の 0 の非表示（未確定 2）、燃料ゲージ（`fuelUsed`・`fuelCapacity`）、使用済みマーク（`activation`）、横向きのアクションカード（`actionCards` の 2）。
+- → 012: 通知ハンドラ（N1〜N37）、`ev_id` による二重適用の防止（§10.5）、`getAllDatas` の `board.cells` からの盤面描画、名声の内訳の表（bga-score-sheet）、スコア欄の 0 の非表示（未確定 2）、燃料ゲージ（`fuelUsed`・`fuelCapacity`）、使用済みマーク（`activation`）、横向きのアクションカード（`actionCards` の 2）。
 - → 009: 本書のグローバル値（`bonus_holders`〔`selected_actions` をキー集合で表す〕、`window_snapshot`、`commit_seq`、`held_seq`、`step_participants`、`flow_ctx`）を状態機械が読み書きする。
 
 ## 受け入れ条件
