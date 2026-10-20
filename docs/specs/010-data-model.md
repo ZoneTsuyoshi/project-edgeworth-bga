@@ -601,7 +601,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N2 | `choiceMarked` | 全員 | `player_id`、`state_id` | `''` | 同時選択の確定（初回のみ。内容なし）。チェックマーク。変更では送らない |
 | N3 | `choiceRecorded` | 本人 | `state_id`、`summary`（確定内容の要約） | `''` | 確定・再確定のたび。同じプレイヤーの別タブを同期（`getArgs` の `_private` と併用） |
 | N4 | `roundStarted` | 全員 | `round_no` | `Round ${round_no} begins` | 20。起動効果の使用済みマークを全員分外す。進行度の更新 |
-| N5 | `actionCardsCollected` | 全員 | `moves`（`{プレイヤー ID: {"toHand": [アクション番号], "toSideways": [アクション番号]}}`） | `''` | 21。アクションカードの回収をアニメーション（001 §6-1） |
+| N5 | `actionCardsCollected` | 全員 | `moves`（`{プレイヤー ID: {"toHand": [アクション番号], "toSideways": [アクション番号]}}`） | `''` | 21。アクションカードの回収をアニメーション（001 §6-1）。P001・P002 が縦向きのカードを手札に戻したとき（ジャーナル `actionKept`）も、同じ N5 で `toHand` を窓の保留の通知として送る |
 | N6 | `actionRevealed` | 全員 | `player_id`、`player_name`、`action_no`、`action_name` | `${player_name} chose ${action_name}` | 23。プロットを一斉に表向きにする。席順（基準プレイヤーから）で 1 件ずつ。`bonus_holders` を更新 |
 | N7 | `phaseStarted` | 全員 | `phase`、`phase_name`、`holders`（ボーナス保持者の ID 配列） | `${phase_name} phase begins` | 40 が次のフェイズへ進めるとき。フェイズ帯の点灯。保持者は公開 |
 | N8 | `cardsDrawn` | 全員 | `player_id`、`player_name`、`count`、`zone`（`hand` / `drawn`）、`reason`、`deck_count`、`discard_count` | `${player_name} draws ${count} card(s)` | 引いたとき（配備のボーナス、企画、衛星の打ち上げ時、山岳ボーナス、効果）。枚数と山の枚数だけ。裏向きのカードが山札から動く |

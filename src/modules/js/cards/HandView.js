@@ -221,7 +221,7 @@ export class ActionRow {
                 card.title = _('Used last round. Returns to your hand next round.');
             }
             this.tooltip.bind(card, actionKey(no));
-            if (this.allowed?.has(no) && state === ACTION_HAND) {
+            if (this.allowed?.has(no)) {
                 card.classList.add('pe-selectable');
                 card.tabIndex = 0;
                 card.addEventListener('click', () => {
