@@ -57,6 +57,24 @@ final class ModifierQuery
         return $value;
     }
 
+    /**
+     * 起動の修正のうち、この問い合わせで [Use] を選べるもの（`optional` で、今ラウンド未使用で、稼働条件・条件を満たす）。
+     * 配備・打ち上げ・通信確立の選択に同梱する `USE_MODS` の候補（011 §6-3）。
+     *
+     * @return list<array{EffectSpec, EffectHost}>
+     */
+    public function useModCandidates(Hook $hook, QueryContext $query, ?EffectHost $selfHost = null): array
+    {
+        $found = [];
+        foreach ($this->candidates($hook, $query, [], $selfHost, PartCategory::Modifier, true) as [$spec, $host]) {
+            if (!$host->used && $this->parts->modifier($spec->part)->appliesTo($query, $spec, $host)) {
+                $found[] = [$spec, $host];
+            }
+        }
+
+        return $found;
+    }
+
     /** `ALLOWED`: 禁止効果が 1 つでも効いていれば真 */
     public function forbidden(QueryContext $query): bool
     {
@@ -71,9 +89,10 @@ final class ModifierQuery
 
     /**
      * @param list<string> $useMods
+     * @param bool $listOptions 真なら [Use] / [Skip] を聞く起動の修正だけを、選ばれたかどうかに依らず挙げる（`useModCandidates()`）
      * @return list<array{EffectSpec, EffectHost}>
      */
-    private function candidates(Hook $hook, QueryContext $query, array $useMods, ?EffectHost $selfHost, PartCategory $category): array
+    private function candidates(Hook $hook, QueryContext $query, array $useMods, ?EffectHost $selfHost, PartCategory $category, bool $listOptions = false): array
     {
         if ($hook->kind() !== HookKind::Query) {
             throw new \InvalidArgumentException("{$hook->value} is not a query hook");
@@ -90,7 +109,8 @@ final class ModifierQuery
                 continue;
             }
             // 選択（[Use] / [Skip]）のある起動の修正だけが `$useMods` を要る。選択のない起動の修正（R011・R014 など `optional` が偽）は常に効く
-            if ($spec->kind === EffectKind::Activated && $spec->optional && !in_array($host->key(), $useMods, true)) {
+            $optionalMod = $spec->kind === EffectKind::Activated && $spec->optional;
+            if ($listOptions ? !$optionalMod : ($optionalMod && !in_array($host->key(), $useMods, true))) {
                 continue;
             }
             if ($spec->activeOnly && !$host->active) {

@@ -147,7 +147,7 @@ final class EffectMaterialTest extends TestCase
         $this->assertSame('stealth_phobos', $stealthPhobos?->cardKey);
         $this->assertSame(PartId::GainMaya, $stealthPhobos->part);
         $this->assertSame(['M+'], array_map(static fn($t): string => $t->symbol->value, $stealthPhobos->touches));
-        $this->assertNull(CardEffects::forProject('P005'), 'P005 は E-3 で定義する');
+        $this->assertNull(CardEffects::forProject('P099'), 'P099 は E-6 で定義する');
         $this->assertNull(CardEffects::get('no_such_card'));
     }
 

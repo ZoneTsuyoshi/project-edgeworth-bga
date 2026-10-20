@@ -29,12 +29,12 @@ final readonly class ConditionContext
     /** イベントまたは問い合わせの衛星 */
     public function satelliteId(): ?int
     {
-        return $this->event->satelliteId ?? $this->query->satelliteId;
+        return $this->event?->satelliteId ?? $this->query?->satelliteId;
     }
 
     /** 配備されたカード（またはこれから配備するカード）のタイプ */
     public function cardType(): ?ProjectType
     {
-        return $this->event->cardType ?? $this->query->cardType;
+        return $this->event?->cardType ?? $this->query?->cardType;
     }
 }

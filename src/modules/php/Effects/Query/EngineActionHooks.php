@@ -11,10 +11,12 @@ namespace Bga\Games\ProjectEdgeworth\Effects\Query;
 
 use Bga\Games\ProjectEdgeworth\Data\Satellite;
 use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
+use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
 use Bga\Games\ProjectEdgeworth\Flow\Action\ActionHooks;
 use Bga\Games\ProjectEdgeworth\Flow\Action\ForbiddenAction;
 use Bga\Games\ProjectEdgeworth\Flow\Action\ProposalCounts;
 use Bga\Games\ProjectEdgeworth\Flow\Action\StepMode;
+use Bga\Games\ProjectEdgeworth\Material\ActionKind;
 use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
 
 /**
@@ -29,7 +31,11 @@ final class EngineActionHooks implements ActionHooks
     /** @var list<string> */
     private array $useMods = [];
 
-    public function __construct(private readonly EffectQueries $queries)
+    /**
+     * @param GameView|null $view 渡すと、P036 の「打ち上げる衛星に配備されているカードの枚数」と、R011 の「自分で選んだボーナスか」
+     *                            （EUROPA の宣言で得たボーナスなら偽。K12、FAQ 行 71）を結ぶ。省略時は 0 枚・自分で選んだ扱い
+     */
+    public function __construct(private readonly EffectQueries $queries, private readonly ?GameView $view = null)
     {
     }
 
@@ -54,7 +60,9 @@ final class EngineActionHooks implements ActionHooks
 
     public function launchCostReduction(int $playerId, Satellite $satellite): int
     {
-        return $this->queries->launchCost(new QueryContext($playerId, $satellite->id), 0, $this->useMods)->reduction();
+        $attached = $this->view?->cardsOn($satellite->id) ?? 0;
+
+        return $this->queries->launchCost(new QueryContext($playerId, $satellite->id, attachedCount: $attached), 0, $this->useMods)->reduction();
     }
 
     public function extraLinkTargets(int $playerId, Satellite $satellite, StepMode $mode): array
@@ -81,7 +89,10 @@ final class EngineActionHooks implements ActionHooks
     {
         $mode = $bonus ? StepMode::Bonus : StepMode::Main;
 
-        return $this->queries->proposalCounts(new QueryContext($playerId, mode: $mode), $base);
+        // 宣言（R016）で得たボーナスでは、R011 は効かない（K12。FAQ 行 71）
+        $own = $bonus && $this->view !== null ? !$this->view->declaredBonus($playerId, ActionKind::Proposal->value) : null;
+
+        return $this->queries->proposalCounts(new QueryContext($playerId, mode: $mode, ownActionChoice: $own), $base);
     }
 
     public function budgetMainGain(int $playerId, int $base): int

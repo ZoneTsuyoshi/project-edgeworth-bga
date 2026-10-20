@@ -18,12 +18,16 @@ use Bga\Games\ProjectEdgeworth\Effects\Question\Answer;
 /**
  * R05 `RECOVER_FUEL`: 燃料を回復する。`amount`、`target`（`THIS` = このカードのある衛星 / `EVENT_SATELLITE` = イベントの衛星）。
  * 初期燃料庫より下には動かず、庫外のコマは動かさない（001 §4-4、FAQ 行 14・19。`GameMutator::recoverFuel()` が丸める）。
+ * 満タン（消費量 0）・庫外の衛星は実際に回復しないので発動した扱いにしない（作者回答 2026-10-20）: `isAvailable()` が偽で、起動（P043・P083・P084）は
+ * [Use] / [Skip] を聞かず使用済みにもならず、常時（P049）は何も起きない。
  */
 final class RecoverFuelPart extends AbstractResultPart
 {
     public function isAvailable(PartCall $call): bool
     {
-        return $this->satelliteId($call) !== null;
+        $satelliteId = $this->satelliteId($call);
+
+        return $satelliteId !== null && $call->ctx->view->canRecoverFuel($satelliteId);
     }
 
     public function apply(PartCall $call, ?Answer $answer): Outcome

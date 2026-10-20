@@ -26,6 +26,8 @@ final class PoolItem
         public readonly GameEvent $event,
         public int $stage = 1,
         public PoolItemStatus $status = PoolItemStatus::Pending,
+        /** @var array<string, mixed> 多段の効果が段のあいだで持ち越す値（P087: 1 段目で引いたカード）。保存する */
+        public array $memo = [],
     ) {
     }
 
@@ -58,6 +60,7 @@ final class PoolItem
             'event' => $this->event->toArray(),
             'stage' => $this->stage,
             'status' => $this->status->value,
+            'memo' => $this->memo,
         ];
     }
 
@@ -75,6 +78,7 @@ final class PoolItem
             GameEvent::fromArray($a['event']),
             (int) $a['stage'],
             PoolItemStatus::from((string) $a['status']),
+            (array) ($a['memo'] ?? []),
         );
     }
 }

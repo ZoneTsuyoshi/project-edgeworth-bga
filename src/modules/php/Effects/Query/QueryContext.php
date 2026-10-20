@@ -21,7 +21,7 @@ use Bga\Games\ProjectEdgeworth\Material\ProjectType;
  *   衛星の直下の区域、通信確立コストでは通信確立する区域。
  * - `direction`: 衛星の向き（`LINK_TARGETS` の右・左・前・後の拡張が使う）。
  * - `ownActionChoice`: そのアクション選択ボーナスを自分でそのアクションを選んで得ているか（K12。R016〜R020 の宣言で得たなら偽）。
- *   null は「自分で選んだ」として扱う（宣言で得たボーナスを扱う結線は E-3）。
+ *   null は「自分で選んだ」として扱う（`EngineActionHooks` が EUROPA の宣言を `GameView::declaredBonus()` で結ぶ）。
  */
 final readonly class QueryContext
 {

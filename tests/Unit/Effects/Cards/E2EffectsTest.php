@@ -445,9 +445,27 @@ final class E2EffectsTest extends TestCase
         $this->open($game, 'TE', [$this->turned($sat)]);
         $this->assertSame(0, $game->fuelUsed[$sat]);
 
+        // 満タン（消費量 0）では回復しないので発動した扱いにならず、使用済みにもならない（作者回答 2026-10-20）
         $game->used = [];
         $this->open($game, 'TE', [$this->turned($sat)]);
         $this->assertSame(0, $game->fuelUsed[$sat], '初期燃料庫より下には動かない（FAQ 行 19）');
+        $this->assertSame([], $game->used);
+    }
+
+    public function testP043DoesNothingForAFullOrOutOfFuelSatellite(): void
+    {
+        $game = $this->game();
+        $sat = $this->sat($game, self::P1, SatelliteShape::Hammer, true, 'hammer_moon');
+        $game->deploy($sat, 'P043');
+
+        $this->open($game, 'TE', [$this->turned($sat)]);
+        $this->assertSame([], $game->journal, '満タンでは問いも使用済みもない');
+        $this->assertSame([], $game->used);
+
+        $game->fuelUsed[$sat] = $game->fuelCapacity($sat) + 1;
+        $this->open($game, 'TE', [$this->turned($sat)]);
+        $this->assertSame([], $game->used, '庫外も同じ');
+        $this->assertSame($game->fuelCapacity($sat) + 1, $game->fuelUsed[$sat]);
     }
 
     // ---- 通信確立: P049 ----
@@ -541,6 +559,7 @@ final class E2EffectsTest extends TestCase
         $this->open($game, 'O1', [$this->entered($sat, 3, 'B', 'C')]);
 
         $this->assertSame($game->fuelCapacity($sat) + 1, $game->fuelUsed[$sat], '庫外のコマは回復しても戻らない（FAQ 行 14）');
+        $this->assertSame([], $game->used, '回復しないので発動した扱いにならない');
     }
 
     public function testLandingRewardsDependOnTheKindOfAreaAndStackWithEachOther(): void

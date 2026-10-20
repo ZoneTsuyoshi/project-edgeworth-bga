@@ -62,6 +62,9 @@ final class FakeGame implements GameView, GameMutator
     /** @var array<int, list<int>> プレイヤー => 通信確立済みの区域 */
     public array $linkedCells = [];
 
+    /** @var array<int, array<string, true>> プレイヤー => EUROPA の宣言で得たアクション */
+    public array $declared = [];
+
     public bool $proposalPhase = false;
 
     /** @var array<string, true> */
@@ -288,6 +291,31 @@ final class FakeGame implements GameView, GameMutator
     public function journalNames(): array
     {
         return array_map(static fn(array $j): string => $j[0], $this->journal);
+    }
+
+    public function canRecoverFuel(int $satelliteId): bool
+    {
+        $used = $this->fuelUsed[$satelliteId] ?? 0;
+
+        return $used >= 1 && $used <= $this->fuelCapacity($satelliteId);
+    }
+
+    public function discardFromHand(int $playerId, array $cardIds): void
+    {
+        $this->hand[$playerId] = array_values(array_diff($this->hand[$playerId], $cardIds));
+        array_push($this->discard, ...$cardIds);
+        $this->note('discard', count($cardIds));
+    }
+
+    public function declareBonus(int $playerId, string $action): void
+    {
+        $this->declared[$playerId][$action] = true;
+        $this->note('declareBonus');
+    }
+
+    public function declaredBonus(int $playerId, string $action): bool
+    {
+        return isset($this->declared[$playerId][$action]);
     }
 
     public function deviceCountOn(int $satelliteId): int

@@ -51,4 +51,16 @@ interface GameMutator
 
     /** 計画フェイズの回収で、縦向きのアクションカード（I〜V = 1〜5）を横向きにせず手札に戻す（R15。P001・P002） */
     public function returnPlottedActionToHand(int $playerId, int $actionNo): void;
+
+    // ---- E-3 で足した書き込み（R04・R14 と企画のオプション） ----
+
+    /**
+     * 手札から捨て札へ捨てる。売却ではないのでマヤは得ない（FAQ 行 31・60・70。R04、P068・P070・P087）。
+     *
+     * @param list<int> $cardIds
+     */
+    public function discardFromHand(int $playerId, array $cardIds): void;
+
+    /** EUROPA の宣言で、そのアクション（`ActionKind` の値）のアクション選択ボーナスを得る者に加える（R14。011 §2-2、007 未確定 6） */
+    public function declareBonus(int $playerId, string $action): void;
 }

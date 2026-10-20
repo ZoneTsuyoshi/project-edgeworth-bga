@@ -50,4 +50,22 @@ interface GameView
 
     /** 区域 `$cell` が、プレイヤーが通信確立済みの区域か（発射拠点の区域を含む。FAQ 行 44。K07） */
     public function isOwnLinkedArea(int $playerId, int $cell): bool;
+
+    // ---- E-3 で足した読み取り ----
+
+    /** 衛星に配備されているプロジェクトカードの枚数（P036: 打ち上げる衛星のカード 1 枚につき。衛星カードは数えない） */
+    public function cardsOn(int $satelliteId): int;
+
+    /**
+     * そのアクションのボーナスを、EUROPA の宣言で得ているか（K12。自分で選んで得たなら偽。R011 は宣言で得たボーナスには効かない。FAQ 行 71）。
+     *
+     * @param string $action `ActionKind` の値
+     */
+    public function declaredBonus(int $playerId, string $action): bool;
+
+    /**
+     * 燃料の回復で実際に動くか（消費量 c が 1 以上で、燃料庫の中 c <= C にある）。満タン（c = 0）と庫外（燃料切れ c > C）の衛星は
+     * 回復しても動かないので偽（R05。燃料回復の効果は発動した扱いにしない）。
+     */
+    public function canRecoverFuel(int $satelliteId): bool;
 }

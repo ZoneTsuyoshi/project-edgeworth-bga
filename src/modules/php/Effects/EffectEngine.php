@@ -638,9 +638,16 @@ final class EffectEngine
                     'canPayBySelling' => $maya + $sellable >= $spec->cost->amount,
                 ];
             } elseif ($spec->cost->kind === CostKind::PayMayaTier) {
-                $cost += ['tiers' => $spec->cost->tiers, 'canPay' => $spec->cost->tiers !== [] && $maya >= min(array_keys($spec->cost->tiers))];
+                $cheapest = $spec->cost->tiers === [] ? null : min(array_keys($spec->cost->tiers));
+                $sellable = count($this->view->hand($playerId)) * $this->view->sellPrice($playerId);
+                $cost += [
+                    'tiers' => $spec->cost->tiers,
+                    'canPay' => $cheapest !== null && $maya >= $cheapest,
+                    'shortfall' => $cheapest === null ? 0 : max(0, $cheapest - $maya),
+                    'canPayBySelling' => $cheapest !== null && $maya + $sellable >= $cheapest,
+                ];
             } else {
-                $cost += ['amount' => $spec->cost->amount];
+                $cost += ['amount' => $spec->cost->amount, 'canPay' => count($this->view->hand($playerId)) >= $spec->cost->amount];
             }
         }
 
