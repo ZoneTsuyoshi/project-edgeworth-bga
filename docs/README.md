@@ -14,6 +14,7 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 | [development/rule-questions.md](development/rule-questions.md) | 作者への質問（処理順・同時処理・アナログ特有の操作）と回答 |
 | [development/faq-workflow.md](development/faq-workflow.md) | FAQ（サイト側の `faq.xlsx`）の起票・改修の手順 |
 | [publishing/game-description.md](publishing/game-description.md) | 英語のゲーム紹介文と BGG 登録の手順 |
+| [publishing/bga-license.md](publishing/bga-license.md) | BGA のライセンス申請（作者が権利者として許諾する）の手順とメールの文面 |
 
 ## 一次情報
 
