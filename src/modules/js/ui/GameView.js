@@ -72,19 +72,11 @@ export class GameView {
         this.sheetBox = el('div', { id: 'pe-sheet' });
         this.meBox = el('div', { id: 'pe-me' });
         this.othersBox = el('div', { id: 'pe-others' });
-        this.detailButton = el('button', {
-            type: 'button',
-            class: 'pe-btn pe-btn-small',
-            'aria-pressed': this.detailAll ? 'true' : 'false',
-            title: _('Show all satellites with deployed cards stacked as on the paper cards'),
-            onClick: () => this.setDetailAll(!this.detailAll),
-        }, [this.detailAll ? _('Simple view') : _('Detail view')]);
         const boardHead = el('div', { class: 'pe-board-head' }, [el('span', { class: 'pe-board-title' }, [_('Board')])]);
         this.root.append(this.bandBox, this.fieldBox, this.panelBox, this.scoreBox, this.boardWrap, this.meBox, this.othersBox);
 
         this.band = new PhaseBand(this.bandBox);
         this.field = new FieldView(env, this.tooltip, this.fieldBox);
-        this.fieldBox.append(this.detailButton);
         this.board = new BoardView(env, this.boardWrap);
         this.boardWrap.prepend(boardHead);
         this.boardWrap.append(this.sheetBox);
@@ -140,7 +132,7 @@ export class GameView {
         for (const id of rotated) {
             const player = model.players[id];
             const mine = id === model.me;
-            const area = new PlayerArea(this.env, this.tooltip, player, { mine, rewards: model.rewards });
+            const area = new PlayerArea(this.env, this.tooltip, player, { mine, rewards: model.rewards, onToggleDetail: () => this.setDetailAll(!this.detailAll) });
             area.setFame(model.publicFame?.[id] ?? null);
             if (mine) {
                 area.hand.setCards(model.myHand);
@@ -285,8 +277,6 @@ export class GameView {
      */
     setDetailAll(detail) {
         this.detailAll = detail;
-        this.detailButton.setAttribute('aria-pressed', detail ? 'true' : 'false');
-        this.detailButton.textContent = detail ? _('Simple view') : _('Detail view');
         writeDetailPref(detail);
         for (const area of this.areas.values()) {
             area.setDetail(detail);

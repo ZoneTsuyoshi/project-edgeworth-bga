@@ -2035,3 +2035,9 @@ html[data-theme="dark"] .pe-zoom {
     transform: translateX(-50%);
     pointer-events: none;
 }
+
+/* 詳細 / 簡略の切り替え（プレイヤーの領域の見出しの右端。作者回答 2026-10-20） */
+.pe-detail-toggle {
+    flex: none;
+    margin-left: auto;
+}

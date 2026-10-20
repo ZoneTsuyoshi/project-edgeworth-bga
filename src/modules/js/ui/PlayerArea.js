@@ -16,7 +16,7 @@ export class PlayerArea {
      * @param {import('../cards/CardView.js').Env} env
      * @param {import('../cards/Tooltip.js').Tooltip} tooltip
      * @param {import('./normalize.js').PlayerModel} player
-     * @param {{ mine: boolean, rewards?: string[] }} opts
+     * @param {{ mine: boolean, rewards?: string[], onToggleDetail?: () => void }} opts
      */
     constructor(env, tooltip, player, opts) {
         this.env = env;
@@ -40,6 +40,14 @@ export class PlayerArea {
         this.rewards = opts.rewards ?? [];
         /** @type {{ total: number, detail: Record<string, any> } | null} 途中の名声（ゲームオプション 105） */
         this.fame = null;
+        /** 詳細 / 簡略の切り替え（作者回答 2026-10-20: プレイヤーの領域の見出しにだけ置く。どの領域で押しても全員の衛星をまとめて切り替える） */
+        this.detailButton = el('button', {
+            type: 'button',
+            class: 'pe-btn pe-btn-small pe-detail-toggle',
+            'aria-pressed': 'false',
+            title: _('Show all satellites with deployed cards stacked as on the paper cards'),
+            onClick: () => opts.onToggleDetail?.(),
+        }, [_('Detail view')]);
         this.satsBox = el('div', { class: 'pe-sats' });
         this.actionsBox = el('div');
         this.missionsBox = el('div');
@@ -47,7 +55,7 @@ export class PlayerArea {
         this.actions = new ActionRow(env, tooltip, this.actionsBox, { mine: opts.mine });
         this.hand = new HandView(env, tooltip, this.handBox);
         this.root.append(
-            el('header', { class: 'pe-player-head' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), this.title, this.marks, this.statsBox]),
+            el('header', { class: 'pe-player-head' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), this.title, this.marks, this.statsBox, this.detailButton]),
             this.satsBox,
             el('div', { class: 'pe-player-row' }, [
                 el('div', { class: 'pe-player-group' }, [el('span', { class: 'pe-field-label' }, [_('Actions')]), this.actionsBox]),
@@ -63,6 +71,8 @@ export class PlayerArea {
      */
     setDetail(detail) {
         this.detail = detail;
+        this.detailButton.setAttribute('aria-pressed', detail ? 'true' : 'false');
+        this.detailButton.textContent = detail ? _('Simple view') : _('Detail view');
         for (const v of this.sats.values()) {
             v.setDetail(detail);
         }
