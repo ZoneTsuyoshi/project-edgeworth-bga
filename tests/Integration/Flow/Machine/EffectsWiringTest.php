@@ -501,6 +501,46 @@ final class EffectsWiringTest extends MachineTestCase
         self::assertSame('XD', $closed[0]->args['window_id']);
     }
 
+    /** P001・P002 で手札に戻したアクションカードは、クライアントへ N5（手札へ）で伝わる（伝わらないと次ラウンドも横向きのまま選べなくなる） */
+    public function testKeptActionCardIsSentToClientsAsReturnedToHand(): void
+    {
+        $this->startEffects();
+        $notices = new \Bga\Games\projectedgeworth\Flow\Machine\EffectNotices(new FlowContext(
+            $this->db,
+            $this->globals,
+            new SeededRandom(5),
+            static fn(int $id): string => "Player$id",
+            effects: $this->effects,
+        ));
+
+        $built = $notices->build(101, [], [['t' => 'actionKept', 'p' => 101, 'action' => 2]]);
+
+        self::assertCount(1, $built['held']);
+        self::assertSame('actionCardsCollected', $built['held'][0]->name);
+        self::assertNull($built['held'][0]->to);
+        self::assertSame([101 => ['toHand' => [2], 'toSideways' => []]], $built['held'][0]->args['moves']);
+    }
+
+    /** EUROPA などで宣言したアクション選択ボーナスは N37 でクライアントへ伝わる */
+    public function testDeclaredBonusIsSentToClients(): void
+    {
+        $this->startEffects();
+        $notices = new \Bga\Games\projectedgeworth\Flow\Machine\EffectNotices(new FlowContext(
+            $this->db,
+            $this->globals,
+            new SeededRandom(5),
+            static fn(int $id): string => "Player$id",
+            effects: $this->effects,
+        ));
+
+        $built = $notices->build(101, [], [['t' => 'bonus', 'p' => 101, 'action' => 2]]);
+
+        self::assertCount(1, $built['held']);
+        self::assertSame('bonusDeclared', $built['held'][0]->name);
+        self::assertSame(101, $built['held'][0]->args['player_id']);
+        self::assertSame(2, $built['held'][0]->args['action_no']);
+    }
+
     /** ニアミスの修正（P085）は循環フェイズの問い合わせに本番結線されている */
     public function testNearMissModifierIsWiredIntoTheOrbit(): void
     {

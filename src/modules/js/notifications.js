@@ -152,6 +152,21 @@ export const HANDLERS = {
     view.refreshMarks();
   },
 
+  // N37: 効果（EUROPA）でアクション選択ボーナスを宣言した。保持者に加える（重ねて届いても同じ）
+  bonusDeclared(view, a) {
+    const m = view.m;
+    const pid = int(a.player_id);
+    const key = String(int(a.action_no));
+    const holders = m.bonusHolders[key] ?? [];
+    if (!holders.includes(pid)) {
+      holders.push(pid);
+    }
+    m.bonusHolders[key] = holders;
+    view.refreshBand();
+    view.refreshPlayer(pid);
+    view.refreshMarks();
+  },
+
   // N7: フェイズ開始。フェイズ帯の点灯。ボーナス保持者は公開
   phaseStarted(view, a) {
     const m = view.m;

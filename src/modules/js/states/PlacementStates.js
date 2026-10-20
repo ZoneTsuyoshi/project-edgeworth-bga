@@ -97,7 +97,8 @@ export class PlanningPlot extends ActionState {
         const labels = [_('I Budget'), _('II Deploy'), _('III Launch / Turn'), _('IV Link'), _('V Proposal')];
         labels.forEach((label, i) => {
             const no = i + 1;
-            const usable = selectable.includes(no) && (row.states[no] ?? 0) === 0;
+            // 選べるかはサーバーの `_private.selectable` を正とする（モデルの向きは見た目だけ）
+            const usable = selectable.includes(no);
             this.bga.statusBar.addActionButton(label, () => {
                 if (!usable) {
                     return;

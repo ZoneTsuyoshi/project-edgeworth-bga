@@ -103,6 +103,13 @@ final class EffectNotices
                 case 'fuel':
                     $held[] = $n->fuelChanged($services->satellites->get((int) $e['sat']), (int) $e['delta'], (int) $e['used'], (int) $e['capacity'], 'effect');
                     break;
+                case 'actionKept':
+                    // P001・P002: 縦向きのアクションカードを手札に戻した（N5 の回収は横向きと伝えているので、手札へ直す）
+                    $held[] = $n->actionCardsCollected([(int) $e['p'] => ['toHand' => [(int) $e['action']], 'toSideways' => []]]);
+                    break;
+                case 'bonus':
+                    $held[] = $n->bonusDeclared((int) $e['p'], (int) $e['action']);
+                    break;
                 case 'sat':
                     $touched[(int) $e['sat']] = true;
                     break;
