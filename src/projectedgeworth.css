@@ -1160,10 +1160,6 @@ html[data-theme="dark"] .pe-modal-body {
     align-items: center;
 }
 
-.pe-sat-detail-btn {
-    margin-left: auto;
-}
-
 /* 詳細表示（紙どおり）: 衛星カードの上に配備カードを下側約 55 % が見える向きで重ねる。1 枚の高さ = 衛星カードの幅 */
 .pe-sat-paper {
     --pe-sw: var(--pe-satellite-w);
@@ -1173,8 +1169,11 @@ html[data-theme="dark"] .pe-modal-body {
     align-items: center;
 }
 
+/* 1 枚目は衛星カード上部の窪み（RB p.7 ①。カードの上 34 % まで）に下端を合わせて重ねる。窪みの幅 = プロジェクトカードの幅 */
 .pe-paper-stack {
     position: relative;
+    z-index: 1;
+    margin-bottom: calc(var(--pe-sw) * 715 / 999 * -0.34);
     width: var(--pe-sw);
     height: calc(var(--pe-sw) * (1 + (var(--pe-paper-n, 1) - 1) * 0.55));
 }
@@ -1403,6 +1402,11 @@ html[data-theme="dark"] .pe-modal-body {
 html[data-theme="dark"] .pe-zoom {
     background: #262b36;
     color: #e7eaf0;
+}
+
+/* ホバーの拡大表示は操作を通す（カードのクリックを奪わない。作者回答 2026-10-20） */
+.pe-zoom.pe-zoom-hover {
+    pointer-events: none;
 }
 
 .pe-zoom[hidden] {

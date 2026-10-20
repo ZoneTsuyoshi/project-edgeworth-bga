@@ -1,7 +1,7 @@
 /**
  * 衛星 1 機の表示（仕様書 012 §4.2〜§4.5）。
  * 簡略表示（既定）: 衛星カードの上に配備カードの効果アイコンの帯を重ね、その下に配備カードのチップ（最大 4 行）と燃料ゲージ。
- * 詳細表示: 紙どおり、衛星カードの上に配備カードを下側約 55 % が見える向きで重ね、燃料コマを燃料庫の位置に置く。
+ * 詳細表示: 紙どおり、1 枚目は衛星カード上部の窪み（RB p.7 ①）に重ね、2 枚目以降はその上へ下側約 55 % が見える向きで重ね、燃料コマを燃料庫の位置に置く。
  * 起動効果の使用済みは歯車に × を重ね、カードを少し暗くする（008 §4）。歯車と × は画像に焼かない。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -92,9 +92,8 @@ export class SatelliteView {
         /** @type {SatellitePick | null} */
         this.pick = null;
         // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
-        this.root.addEventListener('click', (e) => {
-            const target = /** @type {HTMLElement} */ (e.target);
-            if (this.pick === null || this.pick.state === 'blocked' || target.closest('.pe-sat-detail-btn') !== null) {
+        this.root.addEventListener('click', () => {
+            if (this.pick === null || this.pick.state === 'blocked') {
                 return;
             }
             this.pick.onPick();
@@ -325,7 +324,7 @@ export class SatelliteView {
         return el('div', { class: 'pe-fuel' }, [slots, label]);
     }
 
-    /** 稼働状態・向き・衛星カードの起動効果、詳細表示の切り替えボタン */
+    /** 稼働状態・向き・衛星カードの起動効果（詳細 / 簡略の切り替えは画面全体で 1 つ。GameView。作者回答 2026-10-20） */
     renderFooter() {
         const sat = this.sat;
         const status = el('span', { class: 'pe-sat-status' }, [
@@ -334,16 +333,9 @@ export class SatelliteView {
         if (this.active && sat.dir !== null && sat.dir !== undefined) {
             status.prepend(el('span', { class: 'pe-dir-arrow', style: { transform: `rotate(${SATELLITE_ROTATION[sat.dir] ?? 0}deg)` }, 'aria-hidden': 'true' }, ['◀']));
         }
-        const detail = el('button', {
-            type: 'button',
-            class: 'pe-btn pe-btn-small pe-sat-detail-btn',
-            'aria-pressed': this.detail ? 'true' : 'false',
-            onClick: () => this.setDetail(!this.detail),
-        }, [this.detail ? _('Simple') : _('Detail')]);
         return el('div', { class: 'pe-sat-footer' }, [
             status,
             sat.activation === 1 ? el('span', { class: 'pe-sat-used' }, [_('Used'), gearIcon(true, false)]) : null,
-            detail,
         ]);
     }
 }

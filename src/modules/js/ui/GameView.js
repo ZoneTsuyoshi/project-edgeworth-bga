@@ -21,6 +21,28 @@ import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
 import { scoresFromGamedatas } from '../states/logic/score.js';
 
+const DETAIL_PREF_KEY = 'pe-detail-view';
+
+/** 詳細表示の選択を localStorage から読む（使えない環境では簡略表示） */
+function readDetailPref() {
+    try {
+        return localStorage.getItem(DETAIL_PREF_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * @param {boolean} detail
+ */
+function writeDetailPref(detail) {
+    try {
+        localStorage.setItem(DETAIL_PREF_KEY, detail ? '1' : '0');
+    } catch {
+        // 保存できなくても表示は切り替わる
+    }
+}
+
 export class GameView {
     /**
      * @param {import('../cards/CardView.js').Env} env
@@ -35,7 +57,7 @@ export class GameView {
         this.areas = new Map();
         /** @type {Map<number, PlayerPanel>} */
         this.panels = new Map();
-        this.detailAll = false;
+        this.detailAll = readDetailPref();
         /** 先送り済みの保留通知の ev_id（010 §10.5。windowClosed で空にする） */
         this.appliedEvents = new Set();
         this.tooltip = new Tooltip(env);
@@ -53,10 +75,10 @@ export class GameView {
         this.detailButton = el('button', {
             type: 'button',
             class: 'pe-btn pe-btn-small',
-            'aria-pressed': 'false',
-            title: _('Show satellites with deployed cards stacked as on the paper cards'),
+            'aria-pressed': this.detailAll ? 'true' : 'false',
+            title: _('Show all satellites with deployed cards stacked as on the paper cards'),
             onClick: () => this.setDetailAll(!this.detailAll),
-        }, [_('Detail view')]);
+        }, [this.detailAll ? _('Simple view') : _('Detail view')]);
         const boardHead = el('div', { class: 'pe-board-head' }, [el('span', { class: 'pe-board-title' }, [_('Board')])]);
         this.root.append(this.bandBox, this.fieldBox, this.panelBox, this.scoreBox, this.boardWrap, this.meBox, this.othersBox);
 
@@ -115,6 +137,7 @@ export class GameView {
                 area.hand.setCards(model.myHand);
                 area.refreshHand({ hand: model.myHand, missions: model.myMissions });
             }
+            area.setDetail(this.detailAll);
             this.areas.set(id, area);
             (mine ? this.meBox : this.othersBox).append(area.root);
         }
@@ -242,6 +265,8 @@ export class GameView {
     setDetailAll(detail) {
         this.detailAll = detail;
         this.detailButton.setAttribute('aria-pressed', detail ? 'true' : 'false');
+        this.detailButton.textContent = detail ? _('Simple view') : _('Detail view');
+        writeDetailPref(detail);
         for (const area of this.areas.values()) {
             area.setDetail(detail);
         }

@@ -1,5 +1,9 @@
 /**
  * 拡大表示（仕様書 012 §4.6）。PC はホバー 300〜500 ms 後、スマホ（タッチ）はタップ。選択モード中は長押し 500 ms。
+ * 【作者回答 2026-10-20】PC のホバー表示は、カードを覆わずクリックを奪わない: `pointer-events: none` にして、
+ * 画面の左右どちらかの端（ホバー中のカードがない側）に固定で出す。マウス押下で閉じる。選択モード中は待ち時間を長くし、
+ * 右クリックで即時に出す。タップ / 長押しで開く表示（タッチ）は従来どおり画面の中央付近で、チップもタップできる。
+ * すべてのカードの拡大表示はこのクラスの `bind` を通る（手札・場・衛星・選択パネル・効果の窓など）。
  * 要素は `document.body` 直下に置き（BGA の CSS zoom / transform の祖先を避ける。012 §10 教訓 4）、
  * 高さの上限は `window.innerHeight` からステータスバーを引く（教訓 3）。拡大用シートの読み込み前は通常のシートで代用する。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
@@ -10,6 +14,8 @@ import { zoomAvailableHeight, zoomWidth } from '../ui/layout-math.js';
 import { el } from '../ui/dom.js';
 
 const HOVER_DELAY_MS = 400;
+/** 選択モード中のホバーは、通り過ぎるだけで出ないよう長めに待つ（作者要望 2026-10-20）。右クリックなら待たずに出す */
+const HOVER_DELAY_SELECTING_MS = 900;
 const LONG_PRESS_MS = 500;
 const MOVE_THRESHOLD_PX = 8;
 
@@ -25,6 +31,8 @@ export class Tooltip {
         this.timer = null;
         /** @type {string | null} 表示中のカード */
         this.currentKey = null;
+        /** @type {'hover' | 'touch'} hover = 端に固定・操作を通す、touch = 中央・操作できる */
+        this.mode = 'touch';
         this.image = el('div', { class: 'pe-zoom-img' });
         this.text = el('div', { class: 'pe-zoom-text' });
         this.chips = el('div', { class: 'pe-zoom-chips' });
@@ -37,7 +45,7 @@ export class Tooltip {
             }
         }, true);
         this.root.addEventListener('pointerleave', (e) => {
-            if (e.pointerType === 'mouse') {
+            if (e.pointerType === 'mouse' && this.mode === 'touch') {
                 this.hide();
             }
         });
@@ -69,13 +77,21 @@ export class Tooltip {
         node.addEventListener('pointerenter', (e) => {
             if (e.pointerType === 'mouse') {
                 this.cancel();
-                this.timer = window.setTimeout(() => this.show(key, node, opts), HOVER_DELAY_MS);
+                const delay = this.env.selectionMode() ? HOVER_DELAY_SELECTING_MS : HOVER_DELAY_MS;
+                this.timer = window.setTimeout(() => this.show(key, node, opts, 'hover'), delay);
+            }
+        });
+        // 右クリックは待たずに出す（選択中でも確認できる）。ブラウザのメニューは出さない
+        node.addEventListener('contextmenu', (e) => {
+            if (this.env.selectionMode() || !this.root.hidden) {
+                e.preventDefault();
+                this.show(key, node, opts, 'hover');
             }
         });
         node.addEventListener('pointerleave', (e) => {
             if (e.pointerType === 'mouse') {
                 this.cancel();
-                if (!this.root.matches(':hover')) {
+                if (this.mode === 'hover' || !this.root.matches(':hover')) {
                     this.hide();
                 }
             }
@@ -121,9 +137,12 @@ export class Tooltip {
      * @param {string} key
      * @param {HTMLElement | null} anchor 表示位置の基準（無ければ画面中央）
      * @param {{ chips?: () => string[] }} [opts]
+     * @param {'hover' | 'touch'} [mode]
      */
-    show(key, anchor, opts = {}) {
+    show(key, anchor, opts = {}, mode = 'touch') {
         this.cancel();
+        this.mode = mode;
+        this.root.classList.toggle('pe-zoom-hover', mode === 'hover');
         const landscape = /^R\d/.test(key);
         this.currentKey = key;
         this.root.classList.toggle('pe-zoom-landscape', landscape);
@@ -150,11 +169,11 @@ export class Tooltip {
         // 衛星カードの拡大表示には配備されている全カードのチップを並べる。タップでそのカードの拡大表示に切り替える
         this.chips.replaceChildren();
         const chipKeys = opts.chips?.() ?? [];
-        for (const chipKey of chipKeys) {
+        for (const chipKey of mode === 'hover' ? [] : chipKeys) {
             const label = chipKey;
-            this.chips.append(el('button', { type: 'button', class: 'pe-zoom-chip', onClick: () => this.show(chipKey, anchor, opts) }, [label]));
+            this.chips.append(el('button', { type: 'button', class: 'pe-zoom-chip', onClick: () => this.show(chipKey, anchor, opts, 'touch') }, [label]));
         }
-        this.chips.hidden = chipKeys.length === 0;
+        this.chips.hidden = mode === 'hover' || chipKeys.length === 0;
 
         // 上部のステータスバー（BGA の #page-title）を隠さない
         const bar = document.getElementById('page-title');
@@ -166,7 +185,18 @@ export class Tooltip {
         const minTop = Math.max(8, barBottom + 8);
         let left = (viewWidth - rect.width) / 2;
         let top = Math.max(minTop, (window.innerHeight - rect.height) / 2);
-        if (anchor !== null) {
+        if (mode === 'hover' && anchor !== null) {
+            // ホバー中のカードがない側の画面の端に固定する（カードを覆わない）
+            const a = anchor.getBoundingClientRect();
+            const leftX = 8;
+            const rightX = Math.max(8, viewWidth - rect.width - 8);
+            const overlap = (/** @type {number} */ x) => Math.max(0, Math.min(x + rect.width, a.right) - Math.max(x, a.left));
+            left = a.left + a.width / 2 < viewWidth / 2 ? rightX : leftX;
+            if (overlap(left) > overlap(left === leftX ? rightX : leftX)) {
+                left = left === leftX ? rightX : leftX;
+            }
+            top = Math.max(minTop, (window.innerHeight - rect.height) / 2);
+        } else if (anchor !== null) {
             const a = anchor.getBoundingClientRect();
             left = Math.min(Math.max(8, a.left + a.width / 2 - rect.width / 2), Math.max(8, viewWidth - rect.width - 8));
             top = Math.min(Math.max(minTop, a.top + a.height / 2 - rect.height / 2), Math.max(minTop, window.innerHeight - rect.height - 8));
