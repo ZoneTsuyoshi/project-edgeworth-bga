@@ -16,9 +16,15 @@ import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format, privateOf } from './logic/common.js';
 import {
-  initialOrder, initialValues, mayaToPay, moveEntry, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, useEffectArgs, validateQuestion,
+  cardsInHand, clampSelection, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, useEffectArgs, validateQuestion,
 } from './logic/effects.js';
 import { cardName, modName } from './texts.js';
+
+/**
+ * 盤面・衛星カード・手札から直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。
+ * @typedef {{ kind: 'satellite', field: import('./logic/effects.js').Field, value: any, pick: (satId: number) => void }
+ *   | { kind: 'cards', field: import('./logic/effects.js').Field, value: number[], set: (ids: number[]) => void }} DirectDriver
+ */
 
 export class EffectWindowState extends ActionState {
     /**
@@ -99,7 +105,7 @@ export class EffectWindowState extends ActionState {
         this.questions = [];
         this.waiting = [];
         this.mine = null;
-        this.game.view?.panel.hide();
+        this.clearUi();
         this.bga.statusBar.removeActionButtons();
     }
 
@@ -113,7 +119,9 @@ export class EffectWindowState extends ActionState {
         const me = view.m.me;
         if (me !== null) {
             view.areas.get(me)?.hand.setSelectable(null);
+            view.areas.get(me)?.setSatPicks(null);
         }
+        view.satelliteHandler = null;
         this.bga.statusBar.removeActionButtons();
         if (this.sellMode !== null) {
             this.renderSell();
@@ -149,12 +157,22 @@ export class EffectWindowState extends ActionState {
         const body = [];
         /** @type {{ cells: number[], value: number | null, pick: (cell: number) => void } | null} */
         let areaDriver = null;
+        /** @type {DirectDriver | null} */
+        let satDriver = null;
+        /** @type {DirectDriver | null} */
+        let cardsDriver = null;
         for (const q of this.questions) {
             if (q.type === 'ORDER') {
                 body.push(this.orderBlock(q));
             } else {
                 const block = this.effectBlock(q, (driver) => {
                     areaDriver ??= driver;
+                }, (driver) => {
+                    if (driver.kind === 'satellite') {
+                        satDriver ??= driver;
+                    } else {
+                        cardsDriver ??= driver;
+                    }
                 });
                 body.push(block);
             }
@@ -165,6 +183,49 @@ export class EffectWindowState extends ActionState {
         const driver = /** @type {{ cells: number[], value: number | null, pick: (cell: number) => void } | null} */ (areaDriver);
         if (driver !== null) {
             view.stateFrame.selectCells(driver.cells.map((cell) => ({ cell, kind: cell === driver.value ? 'selected' : 'selectable' })), driver.pick);
+        }
+        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), /** @type {DirectDriver | null} */ (cardsDriver), driver !== null);
+    }
+
+    /**
+     * 衛星と手札の直接選択を出す（最初の該当フィールドだけ）。衛星 = 候補の衛星カードと盤面のコマ、手札 = 候補のカード（すべて手札のときだけ）。
+     * 外すのは refresh / clearUi（衛星の選択・手札の選択・衛星コマの受け口）。
+     * @param {DirectDriver | null} sat
+     * @param {DirectDriver | null} cards
+     * @param {boolean} hasArea 区域の選択が盤面を使っているか（そのときは衛星の区域の枠を足さない）
+     */
+    showDirect(sat, cards, hasArea) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const me = view.m.me;
+        if (me === null) {
+            return;
+        }
+        const area = view.areas.get(me);
+        if (sat?.kind === 'satellite') {
+            const picks = satellitePicks(sat.field, sat.value);
+            area?.setSatPicks(new Map([...picks].map(([satId, state]) => [satId, { state }])), (satId) => sat.pick(satId));
+            view.satelliteHandler = (satId) => {
+                if (!picks.has(satId)) {
+                    return false;
+                }
+                sat.pick(satId);
+                return true;
+            };
+            if (!hasArea) {
+                // 稼働中の候補は、盤面の区域も枠で示す（コマを押しても選べる）
+                const cells = [...picks].flatMap(([satId, state]) => {
+                    const cell = view.pieces.satelliteCell(satId);
+                    return cell === null ? [] : [{ cell, kind: /** @type {'selectable' | 'selected'} */ (state) }];
+                });
+                if (cells.length > 0) {
+                    view.stateFrame.selectCells(cells);
+                }
+            }
+        }
+        if (cards?.kind === 'cards') {
+            const hand = area?.hand;
+            hand?.setSelectable(cards.field.candidates.map(Number), { multi: cards.field.max > 1, onChange: (ids) => cards.set(ids) });
+            hand?.setChosen(cards.value);
         }
     }
 
@@ -244,9 +305,10 @@ export class EffectWindowState extends ActionState {
     /**
      * @param {import('./logic/effects.js').EffectQuestion} q
      * @param {(driver: { cells: number[], value: number | null, pick: (cell: number) => void }) => void} onArea
+     * @param {(driver: DirectDriver) => void} [onDirect]
      * @returns {HTMLElement}
      */
-    effectBlock(q, onArea) {
+    effectBlock(q, onArea, onDirect = () => {}) {
         const values = this.valuesOf(q);
         const key = keyOfNameId(q.cardKey);
         const info = key === null ? null : cardInfo(key);
@@ -262,7 +324,7 @@ export class EffectWindowState extends ActionState {
             ]),
         ]);
 
-        const fields = q.fields.map((field) => this.fieldEditor(q, field, values, onArea, changed));
+        const fields = q.fields.map((field) => this.fieldEditor(q, field, values, onArea, changed, onDirect));
         const preview = this.previewLine(q);
 
         // 代価と売却の同梱
@@ -425,9 +487,10 @@ export class EffectWindowState extends ActionState {
      * @param {Record<string, any>} values
      * @param {(driver: { cells: number[], value: number | null, pick: (cell: number) => void }) => void} onArea
      * @param {() => void} changed
+     * @param {(driver: DirectDriver) => void} [onDirect]
      * @returns {HTMLElement}
      */
-    fieldEditor(q, field, values, onArea, changed) {
+    fieldEditor(q, field, values, onArea, changed, onDirect = () => {}) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const set = (/** @type {any} */ value) => {
             values[field.key] = value;
@@ -442,6 +505,8 @@ export class EffectWindowState extends ActionState {
 
         switch (field.type) {
             case 'SATELLITE':
+                // 衛星カードと盤面のコマを押して選ぶ（チップは補助。選んだ衛星の表示を兼ねる）
+                onDirect({ kind: 'satellite', field, value: values[field.key], pick: (satId) => set(satId) });
                 return wrap([el('div', { class: 'pe-chip-row' }, field.candidates.map((id) => chip(view.satName(Number(id)), String(values[field.key]) === String(id), () => {
                     view.focusSatellite(Number(id));
                     set(Number(id));
@@ -474,6 +539,16 @@ export class EffectWindowState extends ActionState {
                 )))]);
             }
             case 'CARDS': {
+                if (cardsInHand(field, this.hand)) {
+                    // 候補がすべて手札: 手札のカードを直接押して選ぶ（一覧は出さない）
+                    const current = Array.isArray(values[field.key]) ? values[field.key].map(Number) : [];
+                    onDirect({ kind: 'cards', field, value: current, set: (ids) => set(clampSelection(current, ids, field.max)) });
+                    const names = current.map(cardName);
+                    return wrap([el('div', { class: 'pe-effect-preview' }, [
+                        format(_('Choose from your hand (${n} of ${max} selected)'), { n: current.length, max: field.max }),
+                        names.length === 0 ? '' : `: ${names.join(', ')}`,
+                    ])]);
+                }
                 const picker = new CardPicker(view, { ids: field.candidates.map(Number), selected: values[field.key], max: field.max, onChange: (ids) => set(ids) });
                 return wrap([picker.root]);
             }

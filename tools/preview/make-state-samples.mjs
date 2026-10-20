@@ -375,6 +375,19 @@ sample('effects-fields', {
   ]),
   steps: [],
 });
+// 衛星・手札を直接選ぶ（P024 の衛星、S005 の手札。衛星カード・盤面のコマ・手札を押して選ぶ）
+sample('effects-direct-satellite', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(30, 'swap_technician', { fields: [{ key: 'satellite', type: 'SATELLITE', min: 0, max: 0, candidates: [11, 12, 14], default: null }] })]),
+  steps: [{ click: '.pe-sat-pickable', nth: 2 }],
+});
+sample('effects-direct-hand', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(31, 'stealth_moon', { fields: [{ key: 'cards', type: 'CARDS', min: 0, max: 2, candidates: HAND, default: null }] })]),
+  steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-hand-card[data-id="70"]' }],
+});
 sample('effects-waiting', {
   state: 'EffectWindowResolve',
   active: false,
