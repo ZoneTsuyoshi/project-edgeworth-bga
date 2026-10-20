@@ -1,27 +1,24 @@
 # BGA Studio への自動同期。仕様書: docs/specs/006-bga-sync.md
 # 段階 2: workflow_dispatch の mode: test / dry-run / sync。mode: sync は Studio へ書き込み、
 # 転送の後に scripts/bga-sync/remote-delete.txt のファイルを削除する。
-# push トリガーは下にコメントアウトしてある。仕様書 006 §5.3 の順序（作者が mode: sync を手動で 1 回成功させ、
-# Studio で Express Start が動くことを確認してから有効にする）を守るため、有効化は別の PR で行う。
+# push トリガーは、仕様書 006 §5.3 の順序（手動の mode: sync を 1 回成功させ、Studio で開始できることを確認）を経て有効化済み。
 # Secrets / Variables が未登録の間は「未設定のためスキップ」と表示して成功終了する。
 name: BGA sync
 
 on:
-  # --- push トリガー（無効）---
-  # 有効にする手順: (1) 作者が workflow_dispatch の mode: sync を 1 回成功させる、(2) Studio で新しいゲームを作成して
-  # Express Start が動くことを確認する、(3) 別の PR で次の push: ブロックのコメントを外す（paths は仕様書 006 §6）。
-  # push:
-  #   branches: [main]
-  #   paths:
-  #     - 'src/**'
-  #     - 'data/**'
-  #     - 'scripts/build-sprites.mjs'
-  #     - 'scripts/check-sprites.mjs'
-  #     - 'scripts/lib/**'
-  #     - 'scripts/bga-sync/**'
-  #     - 'package.json'
-  #     - 'package-lock.json'
-  #     - '.github/workflows/bga-sync.yml'
+  # main へのマージ（push）で本番 sync を行う。2026-10-20 に手動 sync と Studio での開始を確認して有効化した
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'data/**'
+      - 'scripts/build-sprites.mjs'
+      - 'scripts/check-sprites.mjs'
+      - 'scripts/lib/**'
+      - 'scripts/bga-sync/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/bga-sync.yml'
   workflow_dispatch:
     inputs:
       mode:

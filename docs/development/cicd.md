@@ -90,3 +90,9 @@ GitHub Actions のワークフロー `Lint`（[../../.github/workflows/lint.yml]
 ## ユーザー側で必要な準備
 
 BGA Studio への同期の導入前に、リポジトリオーナー側で SSH 鍵の登録と Secrets / Variables の設定が必要です（作者の作業 5・6。[../tasks.md](../tasks.md) を参照）。
+
+## Studio 側の操作の補足（2026-10-20 の初回同期で確認）
+
+- `dbmodel.sql` を読み込み直すボタンは無い。Studio ではテーブルを作るたびに DB が `dbmodel.sql` から作り直される。
+- `gameinfos`・`stats`・`gameoptions` は変更のたびに自動で読み込み直される（コントロールパネルの各「Reload …」ボタンは手動で読み込み直すためのもの）。
+- 2026-10-20: 手動の `mode: sync` を実行し、Studio でゲーム画面が開くことを作者が確認した。以後は main へのマージで自動同期する。
