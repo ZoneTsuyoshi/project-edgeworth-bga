@@ -29,6 +29,11 @@ abstract class AbstractResultPart implements ResultPart
         return true;
     }
 
+    public function acceptsSale(PartCall $call): bool
+    {
+        return false;
+    }
+
     public function buildFields(PartCall $call): array
     {
         return [];

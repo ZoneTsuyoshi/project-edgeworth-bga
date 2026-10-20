@@ -68,4 +68,25 @@ interface GameView
      * 回復しても動かないので偽（R05。燃料回復の効果は発動した扱いにしない）。
      */
     public function canRecoverFuel(int $satelliteId): bool;
+
+    // ---- E-4 で足した読み取り ----
+
+    /**
+     * プレイヤーの衛星（稼働・非稼働とも）。
+     *
+     * @return list<int> 衛星 ID
+     */
+    public function satelliteIds(int $playerId): array;
+
+    /** 衛星 1 機の最新の状態（燃料庫の数 C は配備されているカードを数えた現在の値。無ければ null） */
+    public function satelliteState(int $satelliteId): ?SatelliteState;
+
+    // ---- E-5 で足した読み取り ----
+
+    /**
+     * 衛星に配備されているプロジェクトカード（下の段から）。
+     *
+     * @return list<int> カード番号
+     */
+    public function deployedCards(int $satelliteId): array;
 }

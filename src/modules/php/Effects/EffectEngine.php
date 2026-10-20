@@ -231,7 +231,7 @@ final class EffectEngine
         if (!$result->ok) {
             throw new EffectViolation($result->message);
         }
-        $this->checkSale($playerId, $spec, $answer, $item->stage === 1);
+        $this->checkSale($playerId, $spec, $answer, $item->stage === 1, $part->acceptsSale($call));
 
         $this->resolve($item, $answer);
         $this->settle($playerId);
@@ -556,10 +556,10 @@ final class EffectEngine
     }
 
     /** 売却するカードが手札にあり重複しないこと、C1 のマヤが（売却込みで）払えること */
-    private function checkSale(int $playerId, EffectSpec $spec, Answer $answer, bool $firstStage): void
+    private function checkSale(int $playerId, EffectSpec $spec, Answer $answer, bool $firstStage, bool $partAcceptsSale = false): void
     {
         $sell = $answer->sell;
-        if ($sell !== [] && (!$firstStage || $spec->cost === null)) {
+        if ($sell !== [] && (!$firstStage || ($spec->cost === null && !$partAcceptsSale))) {
             throw new EffectViolation('nothing to pay for');
         }
         if (count(array_unique($sell)) !== count($sell) || array_diff($sell, $this->view->hand($playerId)) !== []) {

@@ -9,9 +9,11 @@ declare(strict_types=1);
 
 namespace ProjectEdgeworthTests\Support\Effects;
 
+use Bga\Games\ProjectEdgeworth\Board\Direction;
 use Bga\Games\ProjectEdgeworth\Effects\Context\EffectHost;
 use Bga\Games\ProjectEdgeworth\Effects\Context\GameMutator;
 use Bga\Games\ProjectEdgeworth\Effects\Context\GameView;
+use Bga\Games\ProjectEdgeworth\Effects\Context\SatelliteState;
 use Bga\Games\ProjectEdgeworth\Flow\FuelMath;
 use Bga\Games\ProjectEdgeworth\Material\ProjectCards;
 use Bga\Games\ProjectEdgeworth\Material\ProjectType;
@@ -41,7 +43,7 @@ final class FakeGame implements GameView, GameMutator
     /** @var list<int> 山札（先頭から引く） */
     public array $deck = [];
 
-    /** @var array<int, array{player: int, shape: SatelliteShape, active: bool, key: string}> */
+    /** @var array<int, array{player: int, shape: SatelliteShape, active: bool, key: string, cell: ?int, dir: ?Direction}> */
     private array $satellites = [];
 
     /** @var list<array{no: int, sat: int}> 配備順 */
@@ -64,6 +66,9 @@ final class FakeGame implements GameView, GameMutator
 
     /** @var array<int, array<string, true>> プレイヤー => EUROPA の宣言で得たアクション */
     public array $declared = [];
+
+    /** @var array<int, int> 衛星 ID => 衛星カードの燃料庫の数（指定があれば、`key` から引く値より優先する） */
+    public array $baseFuel = [];
 
     public bool $proposalPhase = false;
 
@@ -101,6 +106,8 @@ final class FakeGame implements GameView, GameMutator
             'shape' => $shape,
             'active' => $active,
             'key' => $cardKey ?? strtolower($shape->value) . '_plain',
+            'cell' => null,
+            'dir' => null,
         ];
 
         return $id;
@@ -109,6 +116,20 @@ final class FakeGame implements GameView, GameMutator
     public function setActive(int $satId, bool $active): void
     {
         $this->satellites[$satId]['active'] = $active;
+    }
+
+    /** 稼働中の衛星の位置と向きを置く（`active` も真にする）。`$baseFuel` は衛星カードの燃料庫の数 */
+    public function place(int $satId, int $cell, Direction $dir, ?int $baseFuel = null, int $fuelUsed = 0): self
+    {
+        $this->satellites[$satId]['active'] = true;
+        $this->satellites[$satId]['cell'] = $cell;
+        $this->satellites[$satId]['dir'] = $dir;
+        $this->fuelUsed[$satId] = $fuelUsed;
+        if ($baseFuel !== null) {
+            $this->baseFuel[$satId] = $baseFuel;
+        }
+
+        return $this;
     }
 
     /** プロジェクトカード（'P013' など）を衛星に配備する（下の段から順に積む） */
@@ -273,6 +294,7 @@ final class FakeGame implements GameView, GameMutator
                 break;
             }
         }
+        $sum = $this->baseFuel[$satId] ?? $sum;
         foreach ($this->deployed as $d) {
             if ($d['sat'] === $satId) {
                 $sum += ProjectCards::get(sprintf('P%03d', $d['no']))->fuelSlots;
@@ -328,6 +350,128 @@ final class FakeGame implements GameView, GameMutator
         }
 
         return $count;
+    }
+
+    // ---- E-4 で足したもの ----
+
+    public function satelliteIds(int $playerId): array
+    {
+        return array_values(array_keys(array_filter($this->satellites, static fn(array $s): bool => $s['player'] === $playerId)));
+    }
+
+    public function satelliteState(int $satelliteId): ?SatelliteState
+    {
+        $s = $this->satellites[$satelliteId] ?? null;
+        if ($s === null) {
+            return null;
+        }
+
+        return new SatelliteState(
+            $satelliteId,
+            $s['player'],
+            $s['shape'],
+            $s['active'] ? ($s['cell'] ?? 0) : null,
+            $s['active'] ? ($s['dir'] ?? Direction::NE) : null,
+            $s['active'] ? ($this->fuelUsed[$satelliteId] ?? 0) : 0,
+            $this->fuelCapacity($satelliteId),
+        );
+    }
+
+    public function spendFuel(int $satelliteId, int $amount): int
+    {
+        $before = $this->fuelUsed[$satelliteId] ?? 0;
+        $after = FuelMath::change($before, $amount, $this->fuelCapacity($satelliteId));
+        $this->fuelUsed[$satelliteId] = $after;
+        $this->note('spendFuel', $after - $before);
+
+        return $after - $before;
+    }
+
+    public function setFuelUsed(int $satelliteId, int $used): void
+    {
+        $this->fuelUsed[$satelliteId] = $used;
+        $this->note('setFuelUsed', $used);
+    }
+
+    public function moveSatellite(int $satelliteId, int $cell, Direction $direction): void
+    {
+        $this->satellites[$satelliteId]['cell'] = $cell;
+        $this->satellites[$satelliteId]['dir'] = $direction;
+        $this->note('moveSatellite', $cell);
+    }
+
+    public function turnSatellite(int $satelliteId, Direction $direction): void
+    {
+        $this->satellites[$satelliteId]['dir'] = $direction;
+        $this->note('turnSatellite');
+    }
+
+    public function swapSatellites(int $satelliteIdA, int $satelliteIdB): void
+    {
+        foreach (['active', 'cell', 'dir'] as $key) {
+            [$this->satellites[$satelliteIdA][$key], $this->satellites[$satelliteIdB][$key]]
+                = [$this->satellites[$satelliteIdB][$key], $this->satellites[$satelliteIdA][$key]];
+        }
+        [$this->fuelUsed[$satelliteIdA], $this->fuelUsed[$satelliteIdB]]
+            = [$this->fuelUsed[$satelliteIdB] ?? 0, $this->fuelUsed[$satelliteIdA] ?? 0];
+        $this->note('swapSatellites');
+    }
+
+    // ---- E-5 で足したもの ----
+
+    /** 衛星カードの name_id を差し替える（R005 STEALTH MOON のように衛星カードに効果があるとき） */
+    public function setSatelliteKey(int $satelliteId, string $cardKey): void
+    {
+        $this->satellites[$satelliteId]['key'] = $cardKey;
+    }
+
+    public function deployedCards(int $satelliteId): array
+    {
+        return array_values(array_map(
+            static fn(array $d): int => $d['no'],
+            array_filter($this->deployed, static fn(array $d): bool => $d['sat'] === $satelliteId),
+        ));
+    }
+
+    public function deployFromHand(int $playerId, int $cardNo, int $satelliteId): void
+    {
+        $this->hand[$playerId] = array_values(array_diff($this->hand[$playerId], [$cardNo]));
+        $this->deployed[] = ['no' => $cardNo, 'sat' => $satelliteId];
+        $this->note('deployFromHand', $cardNo);
+    }
+
+    public function deployFromDeck(int $playerId, int $satelliteId): ?int
+    {
+        if ($this->deck === []) {
+            $this->deck = $this->discard;
+            $this->discard = [];
+        }
+        if ($this->deck === []) {
+            return null;
+        }
+        $cardNo = array_shift($this->deck);
+        $this->deployed[] = ['no' => $cardNo, 'sat' => $satelliteId];
+        $this->note('deployFromDeck', $cardNo);
+
+        return $cardNo;
+    }
+
+    public function discardDeployed(int $cardNo): void
+    {
+        $this->deployed = array_values(array_filter($this->deployed, static fn(array $d): bool => $d['no'] !== $cardNo));
+        $this->discard[] = $cardNo;
+        $this->note('discardDeployed', $cardNo);
+    }
+
+    public function rearrangeDeployed(array $placement): void
+    {
+        $this->deployed = array_values(array_filter($this->deployed, static fn(array $d): bool => !isset($placement[$d['sat']])));
+        foreach ($placement as $satelliteId => $cards) {
+            foreach ($cards as $cardNo) {
+                $this->deployed[] = ['no' => $cardNo, 'sat' => $satelliteId];
+            }
+        }
+        $this->note('rearrangeDeployed');
     }
 
     public function removeFromHand(int $playerId, int $cardNo): void

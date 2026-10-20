@@ -74,6 +74,8 @@ final class CardEffects
         return [
             ...CardEffectsE2::build(),
             ...CardEffectsE3::specs(),
+            ...CardEffectsE4::specs(),
+            ...CardEffectsE5::specs(),
             // P006 予算折衝官: 予算発行の始めに 5 マヤ支払って予算 +1
             new EffectSpec(
                 'budget_negotiator',

@@ -76,6 +76,11 @@ final class TriggerCollector
         if ($spec->kind === EffectKind::Activated && $host->used) {
             return false;
         }
+        // 配備直後の打ち上げ時効果（P035・R005 が配備したカード。FAQ 行 16・69）: `cardId` を持つ `LAUNCHED` は、そのカードの
+        // `ON_LAUNCH`（`selfOnly`）だけに反応する。衛星の打ち上げ自体はもう済んでいるので、他のカードの打ち上げに反応する効果は再び働かない
+        if ($event->hook === Hook::Launched && $event->cardId !== null && (!$spec->selfOnly || $host->kind !== 'P' || $host->src !== $event->cardId)) {
+            return false;
+        }
         $own = $event->hook === Hook::Deployed && $host->kind === 'P' && $event->cardId === $host->src;
         if ($spec->selfOnly) {
             $mine = $event->hook === Hook::Deployed

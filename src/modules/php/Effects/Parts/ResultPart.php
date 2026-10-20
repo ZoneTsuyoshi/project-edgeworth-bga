@@ -33,6 +33,12 @@ interface ResultPart
      */
     public function buildFields(PartCall $call): array;
 
+    /**
+     * [Use] の答えに売却するカードを同梱できるか。支払い C（`EffectSpec::$cost`）があれば既定で同梱できる。支払いのない効果が
+     * 解決の中でマヤを払う場合（R09 の配備コスト）は真にして、支払えるかを `validate()` で確認する（008 §2-6）。
+     */
+    public function acceptsSale(PartCall $call): bool;
+
     /** フィールドの共通の検証（`AnswerValidator`）の後に呼ぶ、部品固有の検証（組み合わせの整合・支払いなど） */
     public function validate(PartCall $call, Answer $answer): ValidationResult;
 
