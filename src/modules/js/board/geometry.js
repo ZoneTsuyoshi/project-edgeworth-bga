@@ -296,3 +296,17 @@ export function cubeStackOffset(level) {
 export function satelliteStackOffset(index) {
   return { dx: 0.12 * index, dy: 0.12 * index };
 }
+
+/**
+ * 時計回りの角度を、いま表示している角度から最短で回るように連続させる（0° ↔ 300° で一周しない）。
+ * @param {number} current 現在の（累積した）角度
+ * @param {number} target 目標（0〜360）
+ * @returns {number}
+ */
+export function nearestAngle(current, target) {
+  let delta = (((target - current) % 360) + 360) % 360;
+  if (delta > 180) {
+    delta -= 360;
+  }
+  return current + delta;
+}

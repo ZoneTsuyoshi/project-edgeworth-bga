@@ -2,10 +2,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, neighbor, regionBorderSegments, regionCenterCell, shiftOf, toDoubled, TILE_ASPECT,
+  boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
 import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
-import { nearestAngle } from '../../src/modules/js/board/PieceLayer.js';
 
 test('行のずれと区域 ID（003 §1.1・§1.4）', () => {
   assert.equal(shiftOf(1, 0), 1);

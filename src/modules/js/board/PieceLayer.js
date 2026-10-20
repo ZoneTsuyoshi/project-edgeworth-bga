@@ -6,7 +6,7 @@
  * コマは区域の外側の絶対配置の箱（CSS 変数の位置）に入れ、位置の変更を transition で動かす。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { cellOriginUnits, cellRowCol, cubeStackOffset, neighbor, SATELLITE_ROTATION, satelliteStackOffset, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
+import { cellOriginUnits, cellRowCol, cubeStackOffset, nearestAngle, neighbor, SATELLITE_ROTATION, satelliteStackOffset, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
 import { applySprite, COLOR_LETTERS, pieceSprite } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
 
@@ -31,19 +31,6 @@ const BOUNCE_MS = 200;
  * @property {number} fuelCapacity
  */
 
-/**
- * 時計回りの角度を、いま表示している角度から最短で回るように連続させる（0° ↔ 300° で一周しない）。
- * @param {number} current 現在の（累積した）角度
- * @param {number} target 目標（0〜360）
- * @returns {number}
- */
-export function nearestAngle(current, target) {
-  let delta = (((target - current) % 360) + 360) % 360;
-  if (delta > 180) {
-    delta -= 360;
-  }
-  return current + delta;
-}
 
 /**
  * @param {number} ms
