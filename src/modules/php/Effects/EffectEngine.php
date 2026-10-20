@@ -71,7 +71,7 @@ final class EffectEngine
         private readonly EffectCatalog $catalog,
         ?ConditionEvaluator $conditions = null,
     ) {
-        $this->ctx = new EffectContext($view, $mutator);
+        $this->ctx = new EffectContext($view, $mutator, fn(): array => $this->state?->staged() ?? []);
         $this->collector = new TriggerCollector($view, $catalog, $conditions ?? new ConditionEvaluator());
         $this->conflicts = new ConflictResolver();
         $this->validator = new AnswerValidator();

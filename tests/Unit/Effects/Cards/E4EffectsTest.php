@@ -645,13 +645,11 @@ final class E4EffectsTest extends TestCase
         $engine->openWindow('O1', [$this->entered($sat, 14, 'C', 'A')]);   // C → A に突入した直後
         $this->use($engine, 'cascade_boost');                                 // 14 → 3: A → B
         $this->assertSame(3, $f->game->satelliteState($sat)?->cell);
-        // P090 は最初の突入（C → A）と追加移動の突入（A → B）の 2 件がプールにあり、同じ向きに触れるので衝突として ORDER を聞く
-        $questions = $engine->questionsFor(self::P1);
-        $this->assertSame(QuestionType::Order, $questions[0]->type);
-        $engine->orderEffects(self::P1, array_column($questions[0]->entries, 'entryId'));
+        // P090 は最初の突入（C → A）で保留中なので、追加移動の突入（A → B）では重複させない（N-9）。同一カード同士の ORDER は聞かない
+        $this->assertSame(QuestionType::Effect, $engine->questionsFor(self::P1)[0]->type);
         $this->use($engine, 'gimbal_control', ['direction' => 'NW']);
         $this->assertSame(Direction::NW, $f->game->satelliteState($sat)?->direction);
-        $this->assertSame([], $engine->playersNeedingInput(), '2 件目は使用済みで捨てられる');
+        $this->assertSame([], $engine->playersNeedingInput(), '重複していないので 1 件だけ');
         $this->assertSame(['P:91' => true, 'P:90' => true], $f->game->used);
     }
 

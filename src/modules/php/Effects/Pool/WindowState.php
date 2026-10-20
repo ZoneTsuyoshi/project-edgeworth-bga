@@ -122,6 +122,16 @@ final class WindowState
     }
 
     /**
+     * ステージされた通信確立（コミット前の予約）。取り出さない。
+     *
+     * @return list<StagedLinkRequest>
+     */
+    public function staged(): array
+    {
+        return $this->staged;
+    }
+
+    /**
      * ステージされた通信確立を取り出して空にする（バリアでコミットする分）。
      *
      * @return list<StagedLinkRequest>

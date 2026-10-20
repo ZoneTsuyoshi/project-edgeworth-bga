@@ -64,6 +64,9 @@ final class FakeGame implements GameView, GameMutator
     /** @var array<int, list<int>> プレイヤー => 通信確立済みの区域 */
     public array $linkedCells = [];
 
+    /** @var array<int, int> プレイヤー => 発射拠点の区域（先駆コストの受け取り・(ii) の判定。E-6） */
+    public array $pads = [];
+
     /** @var array<int, array<string, true>> プレイヤー => EUROPA の宣言で得たアクション */
     public array $declared = [];
 
@@ -280,7 +283,30 @@ final class FakeGame implements GameView, GameMutator
 
     public function isOwnLinkedArea(int $playerId, int $cell): bool
     {
-        return in_array($cell, $this->linkedCells[$playerId] ?? [], true);
+        return in_array($cell, $this->linkedCells[$playerId] ?? [], true) || ($this->pads[$playerId] ?? null) === $cell;
+    }
+
+    public function linkedCells(int $playerId): array
+    {
+        return $this->linkedCells[$playerId] ?? [];
+    }
+
+    public function pioneerRecipients(int $playerId, int $cell): array
+    {
+        $ids = [];
+        foreach ($this->players as $other) {
+            if ($other === $playerId) {
+                continue;
+            }
+            if (in_array($cell, $this->linkedCells[$other] ?? [], true)) {
+                $ids[] = $other;
+            }
+            if (($this->pads[$other] ?? null) === $cell) {
+                $ids[] = $other;
+            }
+        }
+
+        return $ids;
     }
 
     /** 燃料庫の数 C = 衛星カード + 配備されているプロジェクトカード（001 §4-4） */

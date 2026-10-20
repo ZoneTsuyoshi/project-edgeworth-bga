@@ -50,6 +50,9 @@ final class TriggerCollector
                 if (!$this->reacts($spec, $host, $event)) {
                     continue;
                 }
+                if ($spec->kind === EffectKind::Activated && $this->hasPending($state, $host)) {
+                    continue;   // 起動効果は各ラウンド 1 回。保留中の同じ宿主の要素があれば、重複させない（N-9）
+                }
                 $item = PoolItem::forHost($state->nextId(), $host, $event);
                 $state->add($item);
                 $added[] = $item;
@@ -57,6 +60,17 @@ final class TriggerCollector
         }
 
         return $added;
+    }
+
+    private function hasPending(WindowState $state, EffectHost $host): bool
+    {
+        foreach ($state->items() as $item) {
+            if ($item->isPending() && $item->playerId === $host->playerId && $item->hostKind === $host->kind && $item->hostSrc === $host->src) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

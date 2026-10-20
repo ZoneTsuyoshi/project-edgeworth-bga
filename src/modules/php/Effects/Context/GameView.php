@@ -89,4 +89,21 @@ interface GameView
      * @return list<int> カード番号
      */
     public function deployedCards(int $satelliteId): array;
+
+    // ---- E-6 で足した読み取り ----
+
+    /**
+     * プレイヤーのキューブがある区域（発射拠点は含まない。通信確立の上限 16 個の数え方と、岩礁の割引の判定）。
+     *
+     * @return list<int>
+     */
+    public function linkedCells(int $playerId): array;
+
+    /**
+     * 区域の先駆コストの受け取り人: その区域に他プレイヤーのキューブがある者と、他プレイヤーの発射拠点の持ち主（001 U-10）。席順。
+     * 受け取り人 1 人につき先駆コスト 3（`LinkPhase::pioneerRecipients()` と同じ）。
+     *
+     * @return list<int>
+     */
+    public function pioneerRecipients(int $playerId, int $cell): array;
 }

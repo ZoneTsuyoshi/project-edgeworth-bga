@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Action;
 
 use Bga\Games\projectedgeworth\Board\Adjacency;
-use Bga\Games\projectedgeworth\Board\AreaType;
 use Bga\Games\projectedgeworth\Data\LinkRepository;
 use Bga\Games\projectedgeworth\Data\Satellite;
 
@@ -74,28 +73,11 @@ final class LinkPhase implements ActionStep
     public function cost(int $playerId, Satellite $satellite, int $cell, bool $special = false): LinkCost
     {
         $type = $this->services->layout->areaType($cell);
-        $reef = $this->hasAdjacentOwnReef($playerId, $cell, $type) ? 1 : 0;
-        $baseArea = $type->areaCost();
-        $afterReef = max(0, $baseArea - $reef);
+        $reef = LinkCost::reefDiscount($this->services->layout, $this->services->links->cellsFor($playerId), $cell);
+        $recipients = $this->services->hooks->pioneerWaived($playerId, $satellite) ? [] : $this->pioneerRecipients($playerId, $cell);
+        $reduction = $this->services->hooks->linkCostReduction($playerId, $satellite, $cell);
 
-        $shares = [];
-        if (!$this->services->hooks->pioneerWaived($playerId, $satellite)) {
-            foreach ($this->pioneerRecipients($playerId, $cell) as $to) {
-                $shares[] = ['to' => $to, 'amount' => LinkCost::PIONEER_UNIT];
-            }
-        }
-
-        $reduction = max(0, $this->services->hooks->linkCostReduction($playerId, $satellite, $cell));
-        $area = max(0, $afterReef - $reduction);
-        $remaining = max(0, $reduction - $afterReef);
-        foreach ($shares as $i => $share) {
-            $cut = min($remaining, $share['amount']);
-            $shares[$i]['amount'] = $share['amount'] - $cut;
-            $remaining -= $cut;
-        }
-        $shares = array_values(array_filter($shares, static fn(array $s): bool => $s['amount'] > 0));
-
-        return new LinkCost($baseArea, $reef, $reduction, $area, $shares, $special ? LinkCost::SPECIAL_COST : 0);
+        return LinkCost::compute($type, $reef, $reduction, $recipients, false, $special);
     }
 
     /**
@@ -269,23 +251,6 @@ final class LinkPhase implements ActionStep
             }
         }
         throw new RuleViolation('This satellite cannot link that area');
-    }
-
-    private function hasAdjacentOwnReef(int $playerId, int $cell, AreaType $type): bool
-    {
-        if (!$type->isLand()) {
-            return false;
-        }
-        $geometry = $this->services->layout->geometry();
-        $here = $geometry->cellFromId($cell);
-        $own = $this->services->links->cellsFor($playerId);
-        foreach (Adjacency::neighbors($geometry, $here->x, $here->y) as $near) {
-            $id = $geometry->cellId($near->x, $near->y);
-            if (in_array($id, $own, true) && $this->services->layout->areaType($id) === AreaType::REEF) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
