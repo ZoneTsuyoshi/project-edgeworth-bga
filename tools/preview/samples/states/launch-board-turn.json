@@ -1,0 +1,79 @@
+{
+ "sample": "three-players-advanced",
+ "state": "LaunchMainChoose",
+ "active": true,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "_private": {
+   "myChoice": null,
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3,
+   "launchable": [
+    {
+     "satId": 13,
+     "cost": 10,
+     "blocked": "no_project",
+     "minSales": 0,
+     "selectable": false
+    },
+    {
+     "satId": 15,
+     "cost": 15,
+     "blocked": null,
+     "minSales": 0,
+     "selectable": true,
+     "useMods": {
+      "options": [
+       {
+        "hostKey": "P:36",
+        "cardKey": "lightweight_frame",
+        "reduction": 4,
+        "cost": 11
+       }
+      ],
+      "all": 11
+     }
+    }
+   ],
+   "turnable": [
+    {
+     "satId": 11,
+     "dir": "NE",
+     "blocked": null,
+     "selectable": true
+    },
+    {
+     "satId": 12,
+     "dir": "SW",
+     "blocked": null,
+     "selectable": true
+    },
+    {
+     "satId": 14,
+     "dir": "SE",
+     "blocked": null,
+     "selectable": true
+    }
+   ]
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-sat-piece[data-sat-id=\"11\"]"
+  }
+ ]
+}

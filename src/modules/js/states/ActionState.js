@@ -132,6 +132,12 @@ export class ActionState extends ChoiceState {
     /** @returns {string} 選択中のタイトル（BGA の自動のタイトルの代わり） */
     // 派生クラスの renderEdit が setTitle を呼ぶ
 
+    /**
+     * 確定済みの内容を、待機中に盤面・衛星・手札の上へ「予定」として出す（本人の画面だけ。他のプレイヤーの未公開の選択は出さない）。
+     * @param {Record<string, any>} _choice
+     */
+    showPlan(_choice) {}
+
     // ---- 共通の流れ ----
 
     refresh() {
@@ -169,6 +175,7 @@ export class ActionState extends ChoiceState {
             return;
         }
         view.stateFrame.leaveSelection();
+        view.satelliteHandler = null;
         view.panel.hide();
         const me = view.m.me;
         if (me !== null) {
@@ -176,6 +183,8 @@ export class ActionState extends ChoiceState {
             area?.hand.setSelectable(null);
             area?.actions.setSelectable(null);
             area?.setSatPicks(null);
+            area?.setSatPlans(null);
+            area?.hand.setPlanned(null);
         }
     }
 
@@ -186,6 +195,7 @@ export class ActionState extends ChoiceState {
         const choice = this.confirmed ?? {};
         const summary = this.summarize(choice);
         this.bga.statusBar.setTitle(summary === '' ? _('You have confirmed. Waiting for other players') : format(_('You have confirmed: ${summary}. Waiting for other players'), { summary }));
+        this.showPlan(choice);
         this.bga.statusBar.addActionButton(_('Change my choice'), () => {
             this.editing = true;
             this.restore(this.confirmed);

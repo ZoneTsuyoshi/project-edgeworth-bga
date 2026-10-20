@@ -52,6 +52,19 @@ export class MulliganState extends ActionState {
         );
     }
 
+    /**
+     * 確定済みの引き直し（捨てる予定のカード）を手札の上に出す。
+     * @param {Record<string, any>} choice
+     */
+    showPlan(choice) {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null || me === null) {
+            return;
+        }
+        view.areas.get(me)?.hand.setPlanned(new Map(mulliganSelectionFrom(choice).map((id) => [id, _('Discard')])));
+    }
+
     extraReserved() {
         return [];
     }

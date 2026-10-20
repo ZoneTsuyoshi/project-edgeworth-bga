@@ -39,6 +39,22 @@ export class LinkState extends ActionState {
         return _('pass (abandon the cube)');
     }
 
+    /**
+     * 確定済みの通信確立を予定として出す（区域の枠、半透明のキューブ、衛星の上の札）。
+     * @param {Record<string, any>} choice
+     */
+    showPlan(choice) {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null || me === null || choice.op !== 'link') {
+            return;
+        }
+        const cell = Number(choice.cell);
+        view.highlights.set([{ cell, kind: 'selected' }]);
+        view.pieces.setPreview({ kind: 'cube', cell, colorIndex: view.m.players[me].colorIndex });
+        view.areas.get(me)?.setSatPlans(new Map([[Number(choice.sat), [{ text: format(_('Link: area ${cell}'), { cell }) }]]]));
+    }
+
     extraReserved() {
         return [...this.sel.sell];
     }

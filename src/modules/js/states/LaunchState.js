@@ -7,7 +7,7 @@
 import { directionLabel } from '../board/Highlights.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
-import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, validateLaunch } from './logic/launch.js';
+import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from './logic/launch.js';
 import { costNote, launchBlockedText, turnBlockedText } from './texts.js';
 
 export class LaunchState extends ActionState {
@@ -46,6 +46,29 @@ export class LaunchState extends ActionState {
         }
     }
 
+    /**
+     * 確定済みの打ち上げ / 転回を予定として出す（衛星の上の札、盤面の半透明のコマ）。
+     * @param {Record<string, any>} choice
+     */
+    showPlan(choice) {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null || me === null || (choice.op !== 'launch' && choice.op !== 'turn')) {
+            return;
+        }
+        const player = view.m.players[me];
+        const satId = Number(choice.sat);
+        const sat = player.satellites.find((s) => s.satId === satId);
+        const dir = String(choice.dir);
+        const cell = choice.op === 'launch' ? player.padCell : (sat?.cell ?? null);
+        const label = choice.op === 'launch' ? _('Launch') : _('Turn');
+        view.areas.get(me)?.setSatPlans(new Map([[satId, [{ text: `${label}: ${directionLabel(dir)}` }]]]));
+        if (cell !== null) {
+            view.highlights.set([{ cell, kind: 'selected' }]);
+            view.pieces.setPreview({ kind: 'satellite', cell, colorIndex: player.colorIndex, shape: sat?.shape, dir });
+        }
+    }
+
     extraReserved() {
         return [...this.sel.sell];
     }
@@ -68,11 +91,20 @@ export class LaunchState extends ActionState {
         const funds = { maya: this.maya, price: this.price, sellable: this.hand.length };
         const launchable = parseLaunchable(mine.launchable);
         const turnable = parseTurnable(mine.turnable);
-        const canLaunch = !this.isBonus && launchable.some((o) => launchState(o, funds).usable);
-        const canTurn = turnable.some((o) => o.blocked === null);
         const canBudget = this.isBonus && mine.canBudget === true;
         let ok = sel.op === 'budget' && canBudget;
         let hint = this.isBonus ? _('${you} may turn a satellite or raise your budget (Action bonus), or pass') : _('${you} must launch a satellite, turn one, or pass');
+        const ops = satelliteOps(sel.satId, { launchable, turnable, funds, isBonus: this.isBonus });
+        // 盤面の衛星コマを押して、転回する衛星を選ぶ（[Turn] の前でも後でもよい）
+        view.satelliteHandler = sel.op === 'launch' || sel.op === 'budget' ? null : (satId) => {
+            if (!turnable.some((o) => o.satId === satId && o.blocked === null)) {
+                return false;
+            }
+            sel.satId = sel.satId === satId ? null : satId;
+            sel.dir = null;
+            this.refresh();
+            return true;
+        };
 
         if (sel.op === 'launch') {
             /** @type {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>>} */
@@ -148,16 +180,56 @@ export class LaunchState extends ActionState {
             }
         } else if (sel.op === 'budget') {
             hint = _('${you} will raise your budget by 1 (Action bonus). Confirm to raise');
+        } else {
+            // [Launch] / [Turn] より先に、衛星カード（または盤面の衛星コマ）を選ぶこともできる
+            /** @type {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>>} */
+            const picks = new Map();
+            if (!this.isBonus) {
+                for (const option of launchable) {
+                    const state = launchState(option, funds);
+                    if (sel.satId === option.satId) {
+                        picks.set(option.satId, { state: 'selected' });
+                    } else if (state.usable) {
+                        picks.set(option.satId, { state: state.pay.kind === 'free' ? 'selectable' : 'sellable', note: costNote(option.cost, state.pay) });
+                    } else {
+                        picks.set(option.satId, { state: 'blocked', note: option.blocked === null ? costNote(option.cost, state.pay) : launchBlockedText(option.blocked) });
+                    }
+                }
+            }
+            for (const option of turnable) {
+                if (sel.satId === option.satId) {
+                    picks.set(option.satId, { state: 'selected' });
+                } else if (option.blocked === null) {
+                    picks.set(option.satId, { state: 'selectable' });
+                } else {
+                    picks.set(option.satId, { state: 'blocked', note: turnBlockedText(option.blocked) });
+                }
+            }
+            area?.setSatPicks(picks, (satId) => {
+                sel.satId = sel.satId === satId ? null : satId;
+                this.refresh();
+            });
+            if (sel.satId !== null) {
+                hint = format(_('${you} chose ${sat}. Now choose Launch or Turn'), { sat: view.satName(sel.satId) });
+            } else {
+                hint = `${hint}. ${_('You can also choose a satellite first')}`;
+            }
         }
 
         this.bga.statusBar.setTitle(hint);
         if (sel.op === null) {
             if (!this.isBonus) {
-                this.addOp('launch', _('Launch'), canLaunch);
+                this.addOp('launch', _('Launch'), ops.launch);
             }
-            this.addOp('turn', _('Turn'), canTurn);
+            this.addOp('turn', _('Turn'), ops.turn);
             if (this.isBonus) {
                 this.addOp('budget', _('Budget +1'), canBudget);
+            }
+            if (sel.satId !== null) {
+                this.bga.statusBar.addActionButton(_('Reset'), () => {
+                    this.reset();
+                    this.refresh();
+                }, { color: 'secondary' });
             }
         } else {
             this.bga.statusBar.addActionButton(_('Confirm'), () => {

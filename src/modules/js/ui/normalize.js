@@ -4,6 +4,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { CARD_INFO } from '../cards/card-info.js';
+import { parsePublicFame } from '../states/logic/score.js';
 import { int } from './dom.js';
 
 /** gameinfos.jsonc の player_colors（青・緑・赤・橙）→ 色番号（0 = BLUE、1 = GREEN、2 = RED、3 = YELLOW。002 §3.6） */
@@ -84,6 +85,7 @@ export function colorOfSatelliteCard(card) {
  * @property {Record<string, number[]>} bonusHolders アクション番号 → 保持者（キーがある = 選ばれたアクション）
  * @property {{ id: string } | null} window
  * @property {unknown} finalScores
+ * @property {Record<number, { total: number, detail: Record<string, any> }> | null} publicFame 途中の名声（ゲームオプション 105 が Visible のときだけ。ミッションを除く）。キーが無ければ null
  */
 
 /**
@@ -155,5 +157,6 @@ export function normalizeGamedatas(raw, me) {
     bonusHolders: Object.fromEntries(Object.entries(raw.bonusHolders ?? {}).map(([k, v]) => [k, /** @type {unknown[]} */ (v).map((x) => int(x))])),
     window: raw.window ?? null,
     finalScores: raw.finalScores ?? null,
+    publicFame: parsePublicFame(raw.publicFame),
   };
 }

@@ -89,7 +89,15 @@ export class GameView {
         this.boardWrap.prepend(boardHead);
         this.boardWrap.append(this.sheetBox);
         this.highlights = new Highlights(this.board);
-        this.pieces = new PieceLayer(this.board, { onSatelliteClick: (satId) => this.focusSatellite(satId) });
+        /** @type {((satId: number) => boolean) | null} 盤面の衛星コマのタップを、操作中の状態が受ける（受けたら true。転回の衛星の選択） */
+        this.satelliteHandler = null;
+        this.pieces = new PieceLayer(this.board, {
+            onSatelliteClick: (satId) => {
+                if (this.satelliteHandler?.(satId) !== true) {
+                    this.focusSatellite(satId);
+                }
+            },
+        });
         this.sheet = new BottomSheet(this.sheetBox);
         this.panel = new ChoicePanel(this.panelBox);
         this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
@@ -132,7 +140,8 @@ export class GameView {
         for (const id of rotated) {
             const player = model.players[id];
             const mine = id === model.me;
-            const area = new PlayerArea(this.env, this.tooltip, player, { mine });
+            const area = new PlayerArea(this.env, this.tooltip, player, { mine, rewards: model.rewards });
+            area.setFame(model.publicFame?.[id] ?? null);
             if (mine) {
                 area.hand.setCards(model.myHand);
                 area.refreshHand({ hand: model.myHand, missions: model.myMissions });
@@ -223,8 +232,20 @@ export class GameView {
             if (host !== null) {
                 const panel = new PlayerPanel(this.env, host, p, m.rewards);
                 panel.setBase(m.basePlayer === id);
+                panel.setFame(m.publicFame?.[id] ?? null);
+                panel.listeners.add(() => this.areas.get(id)?.renderStats());
                 this.panels.set(id, panel);
             }
+        }
+    }
+
+    /** 途中の名声（ゲームオプション 105 が Visible のとき。通知 N36）をパネルと自分の領域に反映する */
+    refreshFame() {
+        const m = this.m;
+        for (const id of m.playerOrder) {
+            const fame = m.publicFame?.[id] ?? null;
+            this.panels.get(id)?.setFame(fame);
+            this.areas.get(id)?.setFame(fame);
         }
     }
 

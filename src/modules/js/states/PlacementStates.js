@@ -92,6 +92,20 @@ export class PlanningPlot extends ActionState {
             this.refresh();
         });
         this.bga.statusBar.setTitle(this.no === null ? _('${you} must choose an Action Card') : _('${you} chose an Action Card. Confirm it'));
+        // アクションカードを押す代わりに、ステータスバーの 5 択のボタンでも選べる（選べないカードは押せない）
+        const selectable = (this.mine.selectable ?? []).map(Number);
+        const labels = [_('I Budget'), _('II Deploy'), _('III Launch / Turn'), _('IV Link'), _('V Proposal')];
+        labels.forEach((label, i) => {
+            const no = i + 1;
+            const usable = selectable.includes(no) && (row.states[no] ?? 0) === 0;
+            this.bga.statusBar.addActionButton(label, () => {
+                if (!usable) {
+                    return;
+                }
+                this.no = this.no === no ? null : no;
+                this.refresh();
+            }, { color: this.no === no ? 'primary' : 'secondary', disabled: !usable });
+        });
         if (this.no !== null) {
             const no = this.no;
             this.bga.statusBar.addActionButton(this.confirmed === null ? _('Confirm') : _('Confirm the new choice'), () => this.send('actConfirmPlot', { actionNo: no }, { action: no }), { color: 'primary' });

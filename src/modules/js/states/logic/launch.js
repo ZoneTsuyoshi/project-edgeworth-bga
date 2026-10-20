@@ -131,3 +131,23 @@ export function launchSelectionFrom(choice) {
     useMods: Array.isArray(choice?.useMods) ? choice.useMods.map(String) : [],
   };
 }
+
+/**
+ * 衛星 1 機に対してできる操作（衛星を先に選んだあと、[Launch] / [Turn] のどちらを押せるか）。
+ * 打ち上げは非稼働の衛星（メインのみ。売却を使えば払えるものを含む）、転回は稼働中の衛星。
+ * @param {number | null} satId
+ * @param {{ launchable: LaunchOption[], turnable: TurnOption[], funds: import('./common.js').Funds, isBonus: boolean }} ctx
+ * @returns {{ launch: boolean, turn: boolean }}
+ */
+export function satelliteOps(satId, ctx) {
+  if (satId === null) {
+    return {
+      launch: !ctx.isBonus && ctx.launchable.some((o) => launchState(o, ctx.funds).usable),
+      turn: ctx.turnable.some((o) => o.blocked === null),
+    };
+  }
+  return {
+    launch: !ctx.isBonus && ctx.launchable.some((o) => o.satId === satId && launchState(o, ctx.funds).usable),
+    turn: ctx.turnable.some((o) => o.satId === satId && o.blocked === null),
+  };
+}

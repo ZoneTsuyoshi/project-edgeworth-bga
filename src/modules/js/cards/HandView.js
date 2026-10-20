@@ -37,6 +37,17 @@ export class HandView {
         this.ids = [];
         this.count = 0;
         this.sel = new Selectable();
+        /** @type {Map<number, string>} 予定のカード（確定済みの内容が使うカード）→ 札の文言 */
+        this.planned = new Map();
+    }
+
+    /**
+     * 確定済みの内容が使う手札に「予定」の印を付ける（本人の画面だけ）。null で外す。
+     * @param {Map<number, string> | null} planned
+     */
+    setPlanned(planned) {
+        this.planned = planned ?? new Map();
+        this.render();
     }
 
     /**
@@ -110,6 +121,11 @@ export class HandView {
                 card.classList.add('pe-unselectable');
             }
             card.classList.toggle('pe-selected', this.sel.chosen.has(id));
+            const plan = this.planned.get(id);
+            if (plan !== undefined) {
+                card.classList.add('pe-planned');
+                card.append(el('span', { class: 'pe-plan-badge' }, [plan]));
+            }
             this.root.append(card);
         }
     }
@@ -224,6 +240,10 @@ export class ActionRow {
                 ? createCardBack(this.env, 'AREV', ['pe-action-card', 'pe-action-plot'])
                 : createCard(this.env, actionKey(this.plot.actionNo), { classes: ['pe-action-card', 'pe-action-plot'] });
             back.append(el('span', { class: 'pe-check', 'aria-label': _('Confirmed') }, ['✓']));
+            if (this.plot.actionNo !== null) {
+                back.classList.add('pe-planned');
+                back.append(el('span', { class: 'pe-plan-badge' }, [_('Planned')]));
+            }
             this.root.append(el('div', { class: 'pe-action-slot pe-action-plotslot' }, [back]));
         }
     }

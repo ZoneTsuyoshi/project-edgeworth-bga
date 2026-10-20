@@ -45,6 +45,25 @@ export class ProposalState extends ActionState {
         return parts.join('; ');
     }
 
+    /**
+     * 確定済みの企画（残すカード）を、選択パネルに「予定」として出す。手札から捨てる予定のカードは手札の上に印を付ける。
+     * @param {Record<string, any>} choice
+     */
+    showPlan(choice) {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null || me === null) {
+            return;
+        }
+        const sel = proposalSelectionFrom(choice);
+        const picker = new CardPicker(view, { ids: sel.keep, selected: sel.keep, disabled: new Set(sel.keep) });
+        view.panel.show({
+            title: _('Planned: the cards you will keep'),
+            body: [el('div', { class: 'pe-choice-section' }, [picker.root])],
+        }, { scroll: false });
+        view.areas.get(me)?.hand.setPlanned(new Map(sel.handDiscard.map((id) => [id, _('Discard')])));
+    }
+
     extraReserved() {
         const plan = parseProposal(this.mine);
         return [...reservedHand(plan, this.sel), ...this.sel.sell];

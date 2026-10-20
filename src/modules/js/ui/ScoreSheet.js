@@ -9,7 +9,7 @@ import { rankScores } from '../states/logic/score.js';
 import { clear, el } from './dom.js';
 
 /** @returns {Record<string, string>} 区分の見出し（001 §12） */
-function sectionLabels() {
+export function sectionLabels() {
     return {
         I: _('I Budget'),
         II: _('II Maya'),

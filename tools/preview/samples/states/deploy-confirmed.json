@@ -18,7 +18,9 @@
     "sat": 13,
     "sell": [],
     "extra": {
-     "op": "draw"
+     "op": "deploy",
+     "card": 18,
+     "sat": 13
     }
    },
    "hand": [

@@ -6,9 +6,9 @@ import {
   compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, sellableHand, sellsWholeHand, sideAvailability, soleOption,
 } from '../../src/modules/js/states/logic/common.js';
 import {
-  deployActionArgs, deployedCards, deployPairs, deployQuote, deploySelectionFrom, extraPairs, extraVariant, parseTargets, validateDeploy, withoutMods,
+  deployActionArgs, deployedCards, deployPairs, deployQuote, deploySelectionFrom, deployStage, extraPairs, extraVariant, parseTargets, passNeedsBonusChoice, validateDeploy, withoutMods,
 } from '../../src/modules/js/states/logic/deploy.js';
-import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, validateLaunch } from '../../src/modules/js/states/logic/launch.js';
+import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from '../../src/modules/js/states/logic/launch.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, parseLinkable, validateLink } from '../../src/modules/js/states/logic/link.js';
 import { mulliganActionArgs, mulliganButton, mulliganPicks } from '../../src/modules/js/states/logic/mulligan.js';
 import {
@@ -17,7 +17,7 @@ import {
 import {
   answerFields, fieldDefault, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, useEffectArgs, validateField, validateQuestion,
 } from '../../src/modules/js/states/logic/effects.js';
-import { playerScore, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
+import { fameBreakdown, mergePublicFame, parsePublicFame, playerScore, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
 
 const funds = (maya, price = 3, sellable = 5) => ({ maya, price, sellable });
 
@@ -417,4 +417,66 @@ test('名声の内訳（N32）', () => {
   // 順位（同点は同順位）
   const ranked = rankScores([playerScore(1, { total: 100 }, []), playerScore(2, { total: 120 }, []), playerScore(3, { total: 100 }, [])]);
   assert.deepEqual(ranked.map((r) => [r.playerId, r.rank]), [[2, 1], [1, 2], [3, 2]]);
+});
+
+test('配備のボーナス: 1 枚目を選んだら、ボーナスの使い方を選ぶまで確定に進まない', () => {
+  const none = { cardId: null, satId: null, extra: null };
+  const main = { cardId: 3, satId: 11, extra: null };
+  const ctx = { isBonus: true, canDraw: true, bonusDeclined: false, passing: false, extraStage: false };
+  // ボーナスなし: 1 枚目が決まれば確定できる
+  assert.equal(deployStage(none, { ...ctx, isBonus: false }), 'main');
+  assert.equal(deployStage(main, { ...ctx, isBonus: false }), 'ready');
+  // ボーナスあり: 1 枚目 → ボーナスの選択（確定は出さない）
+  assert.equal(deployStage(none, ctx), 'main');
+  assert.equal(deployStage({ cardId: 3, satId: null, extra: null }, ctx), 'main');
+  assert.equal(deployStage(main, ctx), 'bonus');
+  // 選び終わったら確定できる
+  assert.equal(deployStage(main, { ...ctx, bonusDeclined: true }), 'ready');
+  assert.equal(deployStage({ ...main, extra: { op: 'draw' } }, ctx), 'ready');
+  // 追加の配備を選んでいる間は extra
+  assert.equal(deployStage({ ...main, extra: { op: 'deploy', cardId: null, satId: null, useMods: [] } }, { ...ctx, extraStage: true }), 'extra');
+  // [Pass] から: 1 枚引くか、何もしないかを選ぶ
+  assert.equal(deployStage(none, { ...ctx, passing: true }), 'bonusOnly');
+  assert.equal(deployStage({ ...none, extra: { op: 'draw' } }, { ...ctx, passing: true }), 'ready');
+  assert.equal(passNeedsBonusChoice({ isBonus: true, canDraw: true }), true);
+  assert.equal(passNeedsBonusChoice({ isBonus: true, canDraw: false }), false);
+  assert.equal(passNeedsBonusChoice({ isBonus: false, canDraw: false }), false);
+  // 送る内容（サーバーの形のまま）: pass + 1 枚引く
+  assert.deepEqual(deployActionArgs({ extra: { op: 'draw' } }), { op: 'pass', extra: '{"op":"draw"}' });
+});
+
+test('打ち上げ / 転回: 衛星を先に選んだとき、押せるのは打ち上げか転回のどちらか', () => {
+  const launchable = parseLaunchable([
+    { satId: 13, cost: 10, blocked: 'no_project' },
+    { satId: 15, cost: 15, blocked: null },
+  ]);
+  const turnable = parseTurnable([{ satId: 11, dir: 'NE', blocked: null }, { satId: 12, dir: 'E', blocked: 'forbidden' }]);
+  const ctx = { launchable, turnable, funds: funds(20), isBonus: false };
+  assert.deepEqual(satelliteOps(15, ctx), { launch: true, turn: false });
+  assert.deepEqual(satelliteOps(13, ctx), { launch: false, turn: false });
+  assert.deepEqual(satelliteOps(11, ctx), { launch: false, turn: true });
+  assert.deepEqual(satelliteOps(12, ctx), { launch: false, turn: false });
+  assert.deepEqual(satelliteOps(null, ctx), { launch: true, turn: true });
+  // 払えない打ち上げは選べない / ボーナス（72）に打ち上げはない
+  assert.equal(satelliteOps(15, { ...ctx, funds: funds(5, 3, 0) }).launch, false);
+  assert.deepEqual(satelliteOps(15, { ...ctx, isBonus: true }), { launch: false, turn: false });
+});
+
+test('途中の名声（ゲームオプション 105）: キーが無ければ null、あれば合計と I〜IX（V を除く）の内訳', () => {
+  assert.equal(parsePublicFame(undefined), null);
+  assert.equal(parsePublicFame(null), null);
+  const raw = { 101: { total: '12', detail: { total: 12, I: { points: 8, budget: 8 }, V: { points: 9 }, IX: { points: 4 } } }, 102: { total: 3, detail: { total: 3 } } };
+  const fame = parsePublicFame(raw);
+  assert.equal(fame?.[101].total, 12);
+  const rows = fameBreakdown(fame?.[101].detail ?? {});
+  assert.deepEqual(rows.map((r) => r.section), ['I', 'II', 'III', 'IV', 'VI', 'VII', 'VIII', 'IX']);
+  assert.equal(rows.find((r) => r.section === 'I')?.points, 8);
+  assert.equal(rows.find((r) => r.section === 'IX')?.points, 4);
+  assert.equal(rows.find((r) => r.section === 'II')?.points, 0);
+  // 通知は届いたプレイヤーの分だけ置き換える。Hidden（キー無し）の通知は何も変えない
+  const merged = mergePublicFame(fame, { 101: { total: 15, detail: { total: 15 } } });
+  assert.equal(merged?.[101].total, 15);
+  assert.equal(merged?.[102].total, 3);
+  assert.equal(mergePublicFame(null, undefined), null);
+  assert.equal(mergePublicFame(fame, undefined), fame);
 });

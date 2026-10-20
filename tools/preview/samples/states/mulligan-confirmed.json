@@ -1,0 +1,32 @@
+{
+ "sample": "three-players-advanced",
+ "state": "SetupMulligan",
+ "active": false,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "_private": {
+   "myChoice": {
+    "discard": [
+     18,
+     70
+    ]
+   },
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ]
+  }
+ },
+ "steps": []
+}

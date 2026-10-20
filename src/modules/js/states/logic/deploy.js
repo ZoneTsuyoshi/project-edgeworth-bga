@@ -250,3 +250,43 @@ export function deploySelectionFrom(choice) {
     extra,
   };
 }
+
+/**
+ * 配備の操作の段階。ボーナス保持者は、1 枚目（または [Pass]）を選んだら、ボーナスの使い方を必ず選んでから確定する。
+ * - main: 通常の配備を選んでいる（まだ何も決まっていない / 1 枚目の途中）
+ * - bonus: 1 枚目が決まった。[Deploy another card] / [Draw 1 card] / [No bonus] のどれかを選ぶ（[Confirm] は出さない）
+ * - extra: 追加の配備（2 枚目）を選んでいる
+ * - bonusOnly: [Pass] を押した。通常の配備をせずにボーナスだけ使うか（1 枚引く）、何もしないかを選ぶ
+ * - ready: すべて選んだ。[Confirm] で 1 回に確定する
+ * @param {Pick<DeploySelection, 'cardId' | 'satId' | 'extra'>} sel
+ * @param {{ isBonus: boolean, canDraw: boolean, bonusDeclined: boolean, passing: boolean, extraStage: boolean }} ctx
+ * @returns {'main' | 'bonus' | 'extra' | 'bonusOnly' | 'ready'}
+ */
+export function deployStage(sel, ctx) {
+  const mainDone = sel.cardId !== null && sel.satId !== null;
+  if (!ctx.isBonus) {
+    return mainDone ? 'ready' : 'main';
+  }
+  if (!mainDone) {
+    if (!ctx.passing) {
+      return 'main';
+    }
+    return sel.extra?.op === 'draw' ? 'ready' : 'bonusOnly';
+  }
+  if (sel.extra?.op === 'deploy' && ctx.extraStage) {
+    return 'extra';
+  }
+  if (sel.extra?.op === 'draw' || ctx.bonusDeclined) {
+    return 'ready';
+  }
+  return 'bonus';
+}
+
+/**
+ * [Pass] を押したとき、ボーナスの選択へ進むか（1 枚引けるボーナス保持者だけ）。それ以外はそのまま確定する。
+ * @param {{ isBonus: boolean, canDraw: boolean }} ctx
+ * @returns {boolean}
+ */
+export function passNeedsBonusChoice(ctx) {
+  return ctx.isBonus && ctx.canDraw;
+}

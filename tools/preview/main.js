@@ -38,6 +38,11 @@ window._ = (/** @type {string} */ s) => s;
 
 const raw = await (await fetch(`./samples/${sampleName}.json`)).json();
 const me = raw._me ?? null;
+// ?fame=1: 名声の公開オプション（ゲームオプション 105 が Visible）の getAllDatas を再現する
+if (params.get('fame') === '1') {
+    const detail = (total) => ({ total, I: { points: 6, budget: 6 }, II: { points: 4, maya: 12 }, III: { points: 8, land: 5, sea: 3 }, IV: { points: 3, regions: ['A', 'B'] }, VI: { points: 5, sats: [] }, VII: { points: total - 26, a: 0, b: 0, c: 0 }, VIII: { points: 0, rewards: [] }, IX: { points: 0 } });
+    raw.publicFame = Object.fromEntries(Object.keys(raw.players).map((id, i) => [id, { total: 40 - i * 7, detail: detail(40 - i * 7) }]));
+}
 const side = /** @type {HTMLElement} */ (document.getElementById('pv-side'));
 const panelHosts = new Map();
 

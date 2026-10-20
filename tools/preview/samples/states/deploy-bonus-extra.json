@@ -472,12 +472,6 @@
   },
   {
    "clickText": "Deploy another card"
-  },
-  {
-   "click": ".pe-hand-card[data-id=\"18\"]"
-  },
-  {
-   "click": ".pe-sat[data-sat-id=\"13\"]"
   }
  ]
 }

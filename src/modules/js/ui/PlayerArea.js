@@ -9,13 +9,14 @@ import { ActionRow, HandView } from '../cards/HandView.js';
 import { renderMissions } from '../cards/FieldView.js';
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
+import { buildStats } from './PlayerStats.js';
 
 export class PlayerArea {
     /**
      * @param {import('../cards/CardView.js').Env} env
      * @param {import('../cards/Tooltip.js').Tooltip} tooltip
      * @param {import('./normalize.js').PlayerModel} player
-     * @param {{ mine: boolean }} opts
+     * @param {{ mine: boolean, rewards?: string[] }} opts
      */
     constructor(env, tooltip, player, opts) {
         this.env = env;
@@ -33,6 +34,12 @@ export class PlayerArea {
         });
         this.title = el('span', { class: 'pe-player-name' }, [player.name]);
         this.marks = el('span', { class: 'pe-player-marks' });
+        /** 見出しの行の数値（マヤ・予算・手札・稼働中の衛星・通信確立数・褒賞の比較値・名声）。プレイヤーパネルと同じ内容 */
+        this.statsBox = el('span', { class: 'pe-player-stats' });
+        /** @type {string[]} 褒賞の 2 面 */
+        this.rewards = opts.rewards ?? [];
+        /** @type {{ total: number, detail: Record<string, any> } | null} 途中の名声（ゲームオプション 105） */
+        this.fame = null;
         this.satsBox = el('div', { class: 'pe-sats' });
         this.actionsBox = el('div');
         this.missionsBox = el('div');
@@ -40,7 +47,7 @@ export class PlayerArea {
         this.actions = new ActionRow(env, tooltip, this.actionsBox, { mine: opts.mine });
         this.hand = new HandView(env, tooltip, this.handBox);
         this.root.append(
-            el('header', { class: 'pe-player-head' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), this.title, this.marks]),
+            el('header', { class: 'pe-player-head' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), this.title, this.marks, this.statsBox]),
             this.satsBox,
             el('div', { class: 'pe-player-row' }, [
                 el('div', { class: 'pe-player-group' }, [el('span', { class: 'pe-field-label' }, [_('Actions')]), this.actionsBox]),
@@ -59,6 +66,21 @@ export class PlayerArea {
         for (const v of this.sats.values()) {
             v.setDetail(detail);
         }
+    }
+
+    /** 見出しの行の数値をモデルに合わせて描き直す */
+    renderStats() {
+        const stats = buildStats(this.env, this.player, this.rewards, this.fame);
+        this.statsBox.replaceChildren(...stats.first, ...stats.second);
+    }
+
+    /**
+     * 途中の名声（ゲームオプション 105）を受ける。null で出さない。
+     * @param {{ total: number, detail: Record<string, any> } | null} fame
+     */
+    setFame(fame) {
+        this.fame = fame;
+        this.renderStats();
     }
 
     /**
@@ -82,6 +104,16 @@ export class PlayerArea {
         for (const [satId, view] of this.sats) {
             const spec = picks?.get(satId);
             view.setPick(spec === undefined ? null : { ...spec, onPick: () => onPick(satId) });
+        }
+    }
+
+    /**
+     * 衛星の上に「予定」の札を出す（map に無い衛星は消す）。null で全部消す。
+     * @param {Map<number, import('../cards/SatelliteView.js').SatellitePlan[]> | null} plans
+     */
+    setSatPlans(plans) {
+        for (const [satId, view] of this.sats) {
+            view.setPlans(plans?.get(satId) ?? []);
         }
     }
 
@@ -116,6 +148,7 @@ export class PlayerArea {
             }
         }
         this.actions.setStates(p.actionCards);
+        this.renderStats();
         this.refreshHand();
     }
 

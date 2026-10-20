@@ -42,6 +42,13 @@ const SATELLITE_FUEL_COUNT = 2;
  */
 
 /**
+ * 衛星の上に出す「予定」（配備予定のカード、打ち上げ / 転回の予定など）。本人の画面だけ。
+ * @typedef {object} SatellitePlan
+ * @property {string} text 札の文言（例: 配備予定: カード名）
+ * @property {string} [cardKey] 配備予定のカード（P001 形式。半透明の小さなカードを添える）
+ */
+
+/**
  * 燃料の表示値。c = 消費、C = 容量。R = C - c。燃料切れは c > C（008 §7）。
  * @param {number} fuelUsed
  * @param {number} capacity
@@ -91,6 +98,8 @@ export class SatelliteView {
         this.root = el('div', { class: 'pe-sat', dataset: { satId: sat.satId } });
         /** @type {SatellitePick | null} */
         this.pick = null;
+        /** @type {SatellitePlan[]} 自分の確定済み（または選択中）の予定。半透明の札で衛星の上に出す */
+        this.plans = [];
         // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
         this.root.addEventListener('click', () => {
             if (this.pick === null || this.pick.state === 'blocked') {
@@ -120,6 +129,38 @@ export class SatelliteView {
         this.root.querySelector(':scope > .pe-sat-note')?.remove();
         if (pick?.note !== undefined && pick.note !== '') {
             this.root.prepend(el('div', { class: `pe-sat-note pe-sat-note-${pick.state}`, role: 'status' }, [pick.note]));
+        }
+    }
+
+    /**
+     * 予定の札を出す（空配列で消す）。
+     * @param {SatellitePlan[]} plans
+     */
+    setPlans(plans) {
+        this.plans = plans;
+        this.applyPlans();
+    }
+
+    /** 予定の札を今の plans に合わせる（衛星の最上段に置く） */
+    applyPlans() {
+        this.root.querySelector(':scope > .pe-sat-plans')?.remove();
+        this.root.classList.toggle('pe-sat-planned', this.plans.length > 0);
+        if (this.plans.length === 0) {
+            return;
+        }
+        const box = el('div', { class: 'pe-sat-plans', role: 'status' }, this.plans.map((plan) => {
+            const children = [];
+            if (plan.cardKey !== undefined) {
+                children.push(createCard(this.env, plan.cardKey, { classes: ['pe-plan-card'] }));
+            }
+            children.push(el('span', { class: 'pe-plan-text' }, [plan.text]));
+            return el('div', { class: 'pe-plan' }, children);
+        }));
+        const note = this.root.querySelector(':scope > .pe-sat-note');
+        if (note === null) {
+            this.root.prepend(box);
+        } else {
+            note.after(box);
         }
     }
 
@@ -160,6 +201,7 @@ export class SatelliteView {
             this.renderFooter(),
         );
         this.applyPick();
+        this.applyPlans();
     }
 
     /** 衛星カード（横長）。拡大表示を結びつける */
@@ -237,9 +279,40 @@ export class SatelliteView {
         const cards = this.sat.cards;
         const stack = el('div', { class: 'pe-paper-stack', style: { '--pe-paper-n': cards.length } });
         cards.forEach((c, i) => {
-            const key = projectKey(c.id);
-            const node = createCard(this.env, key, { classes: ['pe-paper-card', ...(c.activation === 1 ? ['pe-used'] : [])] });
-            node.style.setProperty('--pe-paper-level', String(i));
+            stack.append(this.renderPaperCard(c, i));
+        });
+        const satCard = this.renderSatelliteCard();
+        SATELLITE_FUEL_SLOTS.slice(0, SATELLITE_FUEL_COUNT).forEach((slot) => {
+            satCard.append(el('span', {
+                class: 'pe-fuel-slot',
+                style: { left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, width: `${slot.w * 100}%`, height: `${slot.h * 100}%` },
+            }));
+        });
+        // 燃料コマを、下から数えた c 番目のスロットに置く（c が容量を超えたら枠の外。簡略表示のゲージと同じ規則）
+        try {
+            this.placePaperMarker(stack, satCard);
+        } catch {
+            // 燃料コマが置けなくても、カードの重なりは出す（下の燃料ゲージで燃料は分かる）
+        }
+        if (cards.length > 0) {
+            wrap.append(stack);
+        }
+        wrap.append(satCard);
+        return wrap;
+    }
+
+    /**
+     * 詳細表示の配備カード 1 枚。飾り（燃料庫・歯車・拡大表示）の組み立てで例外が出ても、カードそのものは必ず出す
+     * （例外が出ると render() の途中で止まり、簡略表示のまま切り替わらない。作者報告 2026-10-20）。
+     * @param {{ id: number, activation: number }} c
+     * @param {number} level 0 始まりの段
+     * @returns {HTMLElement}
+     */
+    renderPaperCard(c, level) {
+        const key = projectKey(c.id);
+        const node = createCard(this.env, key, { classes: ['pe-paper-card', ...(c.activation === 1 ? ['pe-used'] : [])] });
+        node.style.setProperty('--pe-paper-level', String(level));
+        try {
             const info = chipInfo(key);
             projectFuelSlots(info?.fuelSlots ?? 0).forEach((slot) => {
                 node.append(el('span', {
@@ -251,22 +324,10 @@ export class SatelliteView {
                 node.append(gearIcon(c.activation === 1, info.activeOnly && !this.active));
             }
             this.tooltip.bind(node, key);
-            stack.append(node);
-        });
-        const satCard = this.renderSatelliteCard();
-        SATELLITE_FUEL_SLOTS.slice(0, SATELLITE_FUEL_COUNT).forEach((slot) => {
-            satCard.append(el('span', {
-                class: 'pe-fuel-slot',
-                style: { left: `${slot.x * 100}%`, top: `${slot.y * 100}%`, width: `${slot.w * 100}%`, height: `${slot.h * 100}%` },
-            }));
-        });
-        // 燃料コマを、下から数えた c 番目のスロットに置く（c が容量を超えたら枠の外。簡略表示のゲージと同じ規則）
-        this.placePaperMarker(stack, satCard);
-        if (cards.length > 0) {
-            wrap.append(stack);
+        } catch {
+            // 飾りが付かなくても、カードの絵は出す
         }
-        wrap.append(satCard);
-        return wrap;
+        return node;
     }
 
     /**

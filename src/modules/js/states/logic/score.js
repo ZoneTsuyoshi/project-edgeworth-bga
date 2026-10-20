@@ -106,3 +106,45 @@ export function rankScores(scores) {
   const sorted = [...scores].sort((a, b) => b.total - a.total);
   return sorted.map((s) => ({ ...s, rank: 1 + sorted.filter((o) => o.total > s.total).length }));
 }
+
+/** 途中の名声（ゲームオプション 105）の内訳に出す区分。ミッション（V）は含めない（001 §12） */
+export const PUBLIC_FAME_SECTIONS = SECTIONS.filter((section) => section !== 'V');
+
+/**
+ * getAllDatas の `publicFame`（プレイヤー ID => `{ total, detail }`）を読む。キーが無ければ null（Hidden。何も出さない）。
+ * @param {unknown} raw
+ * @returns {Record<number, { total: number, detail: Record<string, any> }> | null}
+ */
+export function parsePublicFame(raw) {
+  if (raw === null || raw === undefined || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  /** @type {Record<number, { total: number, detail: Record<string, any> }>} */
+  const result = {};
+  for (const [id, value] of Object.entries(/** @type {Record<string, any>} */ (raw))) {
+    const detail = value?.detail !== null && typeof value?.detail === 'object' ? value.detail : {};
+    const total = Number.parseInt(String(value?.total ?? detail.total), 10);
+    result[Number(id)] = { total: Number.isNaN(total) ? 0 : total, detail };
+  }
+  return result;
+}
+
+/**
+ * N36 の `fame` を、今の途中の名声へ重ねる（通知に無いプレイヤーは前の値のまま）。
+ * @param {Record<number, { total: number, detail: Record<string, any> }> | null} current
+ * @param {unknown} fame
+ * @returns {Record<number, { total: number, detail: Record<string, any> }> | null}
+ */
+export function mergePublicFame(current, fame) {
+  const next = parsePublicFame(fame);
+  return next === null ? current : { ...(current ?? {}), ...next };
+}
+
+/**
+ * 途中の名声の内訳（ホバーで出す行）。ミッション（V）を除く I〜IX。
+ * @param {Record<string, any>} detail
+ * @returns {{ section: string, points: number }[]}
+ */
+export function fameBreakdown(detail) {
+  return PUBLIC_FAME_SECTIONS.map((section) => ({ section, points: Number.parseInt(String(detail?.[section]?.points), 10) || 0 }));
+}

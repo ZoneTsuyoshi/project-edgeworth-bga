@@ -31,6 +31,18 @@ sample('mulligan', {
   args: choice({ hand: HAND }),
   steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-hand-card[data-id="70"]' }],
 });
+sample('mulligan-confirmed', {
+  state: 'SetupMulligan',
+  active: false,
+  args: choice({ hand: HAND, myChoice: { discard: [18, 70] } }),
+  steps: [],
+});
+sample('planning-confirmed', {
+  state: 'PlanningPlot',
+  active: false,
+  args: choice({ selectable: [1, 2, 5], myChoice: { action: 2 } }),
+  steps: [],
+});
 sample('planning', {
   state: 'PlanningPlot',
   active: true,
@@ -83,16 +95,40 @@ sample('deploy-main-sat-first', {
   args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
   steps: [{ click: '.pe-sat[data-sat-id="13"]' }],
 });
+const bonusArgs = () => choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true });
+// ボーナス保持者: 1 枚目を選ぶと、[Confirm] ではなくボーナスの選択（もう 1 枚 / 1 枚引く / ボーナスなし）に進む
+sample('deploy-bonus-stage', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
+  steps: [{ click: '.pe-hand-card[data-id="44"]' }, { click: '.pe-sat[data-sat-id="13"]' }],
+});
 sample('deploy-bonus-draw', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true }),
+  args: bonusArgs(),
   steps: [{ click: '.pe-hand-card[data-id="44"]' }, { click: '.pe-sat[data-sat-id="13"]' }, { clickText: 'Draw 1 card' }],
+});
+sample('deploy-bonus-none', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
+  steps: [{ click: '.pe-hand-card[data-id="44"]' }, { click: '.pe-sat[data-sat-id="13"]' }, { clickText: 'No bonus' }],
 });
 sample('deploy-bonus-extra', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true }),
+  args: bonusArgs(),
+  steps: [
+    { click: '.pe-hand-card[data-id="44"]' },
+    { click: '.pe-sat[data-sat-id="13"]' },
+    { clickText: 'Deploy another card' },
+  ],
+});
+sample('deploy-bonus-extra-done', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
   steps: [
     { click: '.pe-hand-card[data-id="44"]' },
     { click: '.pe-sat[data-sat-id="13"]' },
@@ -101,10 +137,36 @@ sample('deploy-bonus-extra', {
     { click: '.pe-sat[data-sat-id="13"]' },
   ],
 });
+sample('deploy-bonus-extra-confirmed', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
+  steps: [
+    { click: '.pe-hand-card[data-id="44"]' },
+    { click: '.pe-sat[data-sat-id="13"]' },
+    { clickText: 'Deploy another card' },
+    { click: '.pe-hand-card[data-id="18"]' },
+    { click: '.pe-sat[data-sat-id="13"]' },
+    { clickText: 'Confirm' },
+  ],
+});
+// ボーナスだけ使う（[Pass] → 1 枚引く）
+sample('deploy-bonus-pass', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
+  steps: [{ clickText: 'Pass' }],
+});
+sample('deploy-bonus-pass-draw', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: bonusArgs(),
+  steps: [{ clickText: 'Pass' }, { clickText: 'Draw 1 card' }],
+});
 sample('deploy-confirmed', {
   state: 'DeployMainChoose',
   active: false,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [], extra: { op: 'draw' } }, bonus: true, canDraw: true }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [], extra: { op: 'deploy', card: 18, sat: 13 } }, bonus: true, canDraw: true }),
   steps: [],
 });
 
@@ -143,6 +205,43 @@ sample('launch-main-sell', {
   args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
   steps: [{ clickText: 'Launch' }, { click: '.pe-sat[data-sat-id="15"]' }, { click: '.pe-dpad-btn[aria-label="Up-left"]' }],
 });
+// 衛星を先に選んでから [Launch] / [Turn]（衛星カード、または盤面の衛星コマ）
+sample('launch-sat-first', {
+  state: 'LaunchMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
+  steps: [{ click: '.pe-sat[data-sat-id="15"]' }],
+});
+sample('launch-sat-first-direction', {
+  state: 'LaunchMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
+  steps: [{ click: '.pe-sat[data-sat-id="15"]' }, { clickText: 'Launch' }],
+});
+sample('launch-board-turn', {
+  state: 'LaunchMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
+  steps: [{ click: '.pe-sat-piece[data-sat-id="11"]' }],
+});
+sample('launch-board-turn-direction', {
+  state: 'LaunchMainChoose',
+  active: true,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable }),
+  steps: [{ click: '.pe-sat-piece[data-sat-id="11"]' }, { clickText: 'Turn' }, { click: '.pe-dpad-btn[aria-label="Up-right"]' }],
+});
+sample('launch-confirmed', {
+  state: 'LaunchMainChoose',
+  active: false,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable, myChoice: { op: 'launch', sat: 15, dir: 'SE', sell: [], useMods: [] } }),
+  steps: [],
+});
+sample('turn-confirmed', {
+  state: 'LaunchMainChoose',
+  active: false,
+  args: choice({ hand: HAND, sellValue: 3, launchable, turnable, myChoice: { op: 'turn', sat: 11, dir: 'W' } }),
+  steps: [],
+});
 sample('launch-bonus', {
   state: 'LaunchBonusChoose',
   active: true,
@@ -170,6 +269,12 @@ sample('link-main-sell', {
   maya: 7,
   args: choice({ hand: HAND, sellValue: 3, linkable }),
   steps: [{ cellClick: 32 }],
+});
+sample('link-confirmed', {
+  state: 'LinkMainChoose',
+  active: false,
+  args: choice({ hand: HAND, sellValue: 3, linkable, myChoice: { op: 'link', cell: 22, sat: 14, sell: [], useMods: [] } }),
+  steps: [],
 });
 sample('link-bonus', {
   state: 'LinkBonusChoose',
@@ -201,6 +306,12 @@ sample('proposal', {
     { keepCount: { [ME]: 2, [OTHERS[0]]: 2, [OTHERS[1]]: 2 } },
   ),
   steps: [{ click: '.pe-picker-slot:nth-child(1) .pe-picker-card' }, { click: '.pe-picker-slot:nth-child(2) .pe-picker-card' }, { click: 'input[type="radio"][name="pe-opt-P:72"]:not(:checked):not(:disabled)', nth: 2 }],
+});
+sample('proposal-confirmed', {
+  state: 'ProposalKeepChoose',
+  active: false,
+  args: choice({ drawn: [5, 6, 7, 8, 9], keep: 2, hand: HAND, sellValue: 3, extra: [], myChoice: { keep: [6, 8], handDiscard: [], optionUses: {}, sell: [] } }),
+  steps: [],
 });
 sample('proposal-plain', {
   state: 'ProposalKeepChoose',

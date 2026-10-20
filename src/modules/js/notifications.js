@@ -7,7 +7,7 @@
  */
 import { chipInfo } from './cards/card-text.js';
 import { projectKey } from './cards/sprite-layout.js';
-import { scoreFromNotification } from './states/logic/score.js';
+import { mergePublicFame, scoreFromNotification } from './states/logic/score.js';
 import { int } from './ui/dom.js';
 
 /**
@@ -476,6 +476,12 @@ export const HANDLERS = {
     view.areas.get(pid)?.setMarks({ isBase: view.m.basePlayer === pid, finalFame: int(a.fame) });
     view.band.set({ phase: 'END' });
     view.score.add(scoreFromNotification(a));
+  },
+
+  // N36: 途中の名声（ゲームオプション 105 が Visible のときだけ届く。ミッションを除く）。パネルと自分の領域に出す
+  publicFameUpdated(view, a) {
+    view.m.publicFame = mergePublicFame(view.m.publicFame, a.fame);
+    view.refreshFame();
   },
 
   // N33: 山と手札の枚数カウンターを再同期（変更があった者だけ）
