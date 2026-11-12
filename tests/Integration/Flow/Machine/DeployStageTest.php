@@ -21,6 +21,9 @@ use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Machine\DeployStageFlow;
 use Bga\Games\projectedgeworth\Flow\Machine\FlowContext;
 use Bga\Games\projectedgeworth\Flow\Machine\Machine;
+use Bga\Games\projectedgeworth\Flow\Machine\PublicView;
+use Bga\Games\projectedgeworth\Stats\StatsRecorder;
+use ProjectEdgeworthTests\Support\ArrayStatStore;
 use Bga\Games\projectedgeworth\Flow\Machine\StageResult;
 use Bga\Games\projectedgeworth\Flow\StateId;
 use Bga\Games\projectedgeworth\Material\SatelliteShape;
@@ -419,5 +422,200 @@ final class DeployStageTest extends MachineTestCase
         self::assertTrue($reset->wasConfirmed);
         self::assertNull($this->effects->game->s()->choices->ownChoice(101, StateId::DEPLOY_MAIN_CHOOSE));
         self::assertSame([CardLocation::Hand], [$this->cards->locationOf(4)['location']]);
+    }
+
+    /** @return array<string, mixed> 閲覧者から見た getAllDatas の公開部分（観戦者は存在しない ID） */
+    private function view(int $viewerId): array
+    {
+        return (new PublicView($this->machine->ctx))->build($viewerId);
+    }
+
+    /** @return list<int> 閲覧者から見た、ある衛星に配備されたカード */
+    private function seenDeployed(array $view, int $owner, int $satId): array
+    {
+        foreach ($view['playerData'][$owner]['satellites'] as $sat) {
+            if ($sat['satId'] === $satId) {
+                return array_map(static fn(array $c): int => $c['id'], $sat['cards']);
+            }
+        }
+        throw new \LogicException('no satellite');
+    }
+
+    /** ステージ中は、他人と観戦者の getAllDatas にステージ分（配備・マヤ・手札・山札・捨て札）が出ない。本人には出る。バリア後は全員に出る */
+    public function testOthersAndSpectatorsDoNotSeeTheStagedCardUntilTheBarrier(): void
+    {
+        $this->startStage();
+        $a = $this->satId(101, SatelliteShape::Hammer);
+        $this->toHand(101, 9, 4, 1);
+        $waiting = $this->enterDeploy();
+        // P009 は配備時に 1 枚引く。4 を売却して払う（捨て札・マヤ・手札・山札がすべて動く）
+        $this->playerValues->setMaya(101, 0);
+        $publicBefore = $this->view(102);
+        $handCount = $publicBefore['playerData'][101]['handCount'];
+
+        $this->stage(101, ['op' => 'deploy', 'card' => 9, 'sat' => $a, 'sell' => [4]]);
+        self::assertNotSame($publicBefore['deckCount'], $this->machine->ctx->deckCount(), '実際には山札が減っている');
+
+        foreach ([102, 999] as $viewer) {
+            $other = $this->view($viewer);
+            self::assertSame([], $this->seenDeployed($other, 101, $a), "viewer $viewer");
+            self::assertSame($publicBefore['playerData'][101], $other['playerData'][101], "viewer $viewer");
+            self::assertSame($publicBefore['deckCount'], $other['deckCount']);
+            self::assertSame($publicBefore['discard'], $other['discard']);
+            self::assertSame($handCount, $other['playerData'][101]['handCount']);
+        }
+        $mine = $this->view(101);
+        self::assertSame([9], $this->seenDeployed($mine, 101, $a));
+        self::assertSame($this->machine->ctx->deckCount(), $mine['deckCount']);
+        self::assertContains(4, $mine['discard']);
+        self::assertSame($this->playerValues->maya(101), $mine['playerData'][101]['maya']);
+        self::assertSame($this->machine->ctx->services->players->maya(101), $mine['playerData'][101]['maya']);
+        self::assertNotContains(4, $this->view(102)['discard']);
+
+        $this->finish($waiting);
+        foreach ([101, 102, 999] as $viewer) {
+            self::assertSame([9], $this->seenDeployed($this->view($viewer), 101, $a), "after the barrier: viewer $viewer");
+        }
+        self::assertContains(4, $this->view(102)['discard']);
+    }
+
+    /** 2 人がステージしたとき: それぞれ自分のステージ分は見え、相手のステージ分は見えない。山札・捨て札も相手の増減だけを戻す */
+    public function testTwoStagersEachSeeOnlyTheirOwn(): void
+    {
+        $this->startStage();
+        $a = $this->satId(101, SatelliteShape::Hammer);
+        $b = $this->satId(102, SatelliteShape::Hammer);
+        $this->toHand(101, 9, 4);
+        $this->toHand(102, 8, 5);
+        $waiting = $this->enterDeploy([101, 102]);
+        $before = $this->view(999);
+
+        $this->stage(101, ['op' => 'deploy', 'card' => 9, 'sat' => $a, 'sell' => [4]]);
+        $this->stage(102, ['op' => 'deploy', 'card' => 8, 'sat' => $b, 'sell' => [5]]);
+
+        $v101 = $this->view(101);
+        $v102 = $this->view(102);
+        $spectator = $this->view(999);
+        self::assertSame([9], $this->seenDeployed($v101, 101, $a));
+        self::assertSame([], $this->seenDeployed($v101, 102, $b));
+        self::assertSame([8], $this->seenDeployed($v102, 102, $b));
+        self::assertSame([], $this->seenDeployed($v102, 101, $a));
+        self::assertSame([], $this->seenDeployed($spectator, 101, $a));
+        self::assertSame([], $this->seenDeployed($spectator, 102, $b));
+        self::assertSame($before['playerData'], $spectator['playerData']);
+        self::assertSame($before['deckCount'], $spectator['deckCount']);
+        self::assertSame($before['discard'], $spectator['discard']);
+        self::assertContains(4, $v101['discard']);
+        self::assertNotContains(5, $v101['discard']);
+        self::assertContains(5, $v102['discard']);
+        self::assertNotContains(4, $v102['discard']);
+        self::assertSame($this->machine->ctx->services->players->maya(101), $v101['playerData'][101]['maya']);
+        self::assertSame($before['playerData'][102]['maya'], $v101['playerData'][102]['maya']);
+        $this->finish($waiting);
+    }
+
+    /** ステージの公開通知は保留に積まれ、本人にはメッセージ空の先送りが即座に届く。バリアで全員に、ステージした順・発生順で流れる */
+    public function testPublicNoticesAreHeldAndReleasedAtTheBarrierInStageOrder(): void
+    {
+        $this->startStage();
+        $a = $this->satId(101, SatelliteShape::Hammer);
+        $b = $this->satId(102, SatelliteShape::Hammer);
+        $this->toHand(101, 9, 4, 1);
+        $this->toHand(102, 8, 5);
+        $waiting = $this->enterDeploy([101, 102]);
+        $mark = count($this->walker->notices);
+
+        // 102 が先にステージし、101 が後
+        $this->stage(102, ['op' => 'deploy', 'card' => 8, 'sat' => $b, 'sell' => [5]]);
+        $this->stage(101, ['op' => 'deploy', 'card' => 9, 'sat' => $a, 'sell' => [4]]);
+        $staged = array_slice($this->walker->notices, $mark);
+        foreach ($staged as $notice) {
+            self::assertNotNull($notice->to, $notice->name . ' は全員宛てにしない');
+        }
+        $early = array_values(array_filter($staged, static fn($n): bool => isset($n->args['ev_id'])));
+        self::assertNotEmpty($early);
+        foreach ($early as $notice) {
+            self::assertSame('', $notice->message);
+        }
+        $held = $this->db->rows('SELECT `held_origin`, `held_type`, `held_args` FROM `held_notif` ORDER BY `held_id`');
+        $origins = array_map(static fn(array $r): int => (int) $r['held_origin'], $held);
+        $sorted = $origins;
+        sort($sorted);
+        self::assertSame([102, 101], array_values(array_unique($origins)), 'ステージした順');
+        $types102 = array_values(array_map(static fn(array $r): string => $r['held_type'], array_filter($held, static fn(array $r): bool => (int) $r['held_origin'] === 102)));
+        self::assertSame(['cardsDiscarded', 'mayaChanged', 'mayaChanged', 'cardDeployed'], array_slice($types102, 0, 4), '売却 → 売却益 → 支払い → 配備の発生順');
+
+        $mark = count($this->walker->notices);
+        $this->finish($waiting, ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 1, 'sat' => $a]]);
+        $after = array_slice($this->walker->notices, $mark);
+        $released = array_values(array_filter($after, static fn($n): bool => ($n->args['early'] ?? false) === true && $n->to === null));
+        self::assertCount(count($held), $released);
+        self::assertSame(
+            array_map(static fn(array $r): int => (int) (json_decode($r['held_args'], true)['ev_id']), $held),
+            array_map(static fn($n): int => $n->args['ev_id'], $released),
+            'held_id の昇順',
+        );
+        self::assertSame(0, $this->db->value('SELECT COUNT(*) FROM `held_notif`') + 0);
+        foreach ($released as $notice) {
+            self::assertNotSame('', $notice->message, $notice->name);
+        }
+        // 2 枚目のコミットの通知は、保留分の後
+        $lastReleased = array_search(end($released), $after, true);
+        $deployNotices = array_keys(array_filter($after, static fn($n): bool => $n->name === 'cardDeployed' && $n->to === null && !isset($n->args['early'])));
+        foreach ($deployNotices as $index) {
+            self::assertGreaterThan($lastReleased, $index);
+        }
+    }
+
+    /** Reset すると、そのプレイヤーの保留分は捨てられる（ほかの人の保留は残る）。確定が消えるときは choiceUnmarked が全員に出る */
+    public function testResetDiscardsOnlyThatPlayersHeldNotices(): void
+    {
+        $this->startStage();
+        $a = $this->satId(101, SatelliteShape::Hammer);
+        $b = $this->satId(102, SatelliteShape::Hammer);
+        $this->toHand(101, 4, 1);
+        $this->toHand(102, 8, 5);
+        $this->enterDeploy([101, 102]);
+
+        $this->stage(102, ['op' => 'deploy', 'card' => 8, 'sat' => $b]);
+        $theirs = (int) $this->db->value('SELECT COUNT(*) FROM `held_notif` WHERE `held_origin` = 102');
+        $this->machine->choice(StateId::DEPLOY_MAIN_CHOOSE)->confirm(101, ['op' => 'pass']);
+        $result = $this->stage(101, ['op' => 'deploy', 'card' => 4, 'sat' => $a]);
+        self::assertTrue($result->wasConfirmed);
+        $unmarked = array_values(array_filter($result->notices, static fn($n): bool => $n->name === 'choiceUnmarked'));
+        self::assertCount(1, $unmarked);
+        self::assertNull($unmarked[0]->to);
+        self::assertSame(101, $unmarked[0]->args['player_id']);
+        self::assertGreaterThan(0, (int) $this->db->value('SELECT COUNT(*) FROM `held_notif` WHERE `held_origin` = 101'));
+
+        $this->machine->deployStage()->reset(101);
+        self::assertSame(0, (int) $this->db->value('SELECT COUNT(*) FROM `held_notif` WHERE `held_origin` = 101'));
+        self::assertSame($theirs, (int) $this->db->value('SELECT COUNT(*) FROM `held_notif` WHERE `held_origin` = 102'));
+        self::assertSame([], $this->seenDeployed($this->view(101), 102, $b), '相手のステージ分は本人にも見えない');
+    }
+
+    /** 統計: ステージ中は数えず（先送りは本人宛て）、バリアの公開通知で 1 回ずつ数える。Reset した分は数えない */
+    public function testStatsCountEachStagedDeploymentOnce(): void
+    {
+        $this->startStage();
+        $a = $this->satId(101, SatelliteShape::Hammer);
+        $this->toHand(101, 4, 1, 2);
+        $waiting = $this->enterDeploy();
+
+        $this->stage(101, ['op' => 'deploy', 'card' => 2, 'sat' => $a]);
+        $this->machine->deployStage()->reset(101);
+        $this->stage(101, ['op' => 'deploy', 'card' => 4, 'sat' => $a]);
+        $store = new ArrayStatStore();
+        $stats = new StatsRecorder($store);
+        $stats->init();
+        $stats->recordNotices($this->walker->notices);
+        self::assertSame(0, $store->player('cards_deployed', 101), 'ステージ中は数えない');
+
+        $this->finish($waiting, ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 1, 'sat' => $a]]);
+        $store = new ArrayStatStore();
+        $stats = new StatsRecorder($store);
+        $stats->init();
+        $stats->recordNotices($this->walker->notices);
+        self::assertSame(2, $store->player('cards_deployed', 101), '4 と 1 の 2 回（Reset した 2 は数えない）');
     }
 }

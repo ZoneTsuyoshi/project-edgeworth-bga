@@ -76,6 +76,10 @@ final class PhaseDrivers
                     $stage->resolved,
                 ));
             }
+            // バリア: ステージ中に保留した公開通知を、ステージした順（held_id の昇順）に全員へ流す。コミット（2 枚目・ステージしていない分）の通知はその後
+            if ($staged !== []) {
+                $notes->addAll((new EffectNotices($this->ctx))->release(true));
+            }
             $notes->addAll($this->commit(2, StepMode::Main, StateId::DEPLOY_MAIN_CHOOSE));
             $this->ctx->services->deployStages->clear();
             $this->ctx->record(...ActionEvents::bonusStep(2, $holders));

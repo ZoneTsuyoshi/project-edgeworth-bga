@@ -58,6 +58,29 @@ final class HeldNotificationRepository
         return (int) $this->db->value('SELECT COUNT(*) FROM `held_notif`');
     }
 
+    /**
+     * 起点のプレイヤーの分だけ捨てる（II 配備の [Reset]）。
+     */
+    public function clearOrigin(int $originPlayerId): void
+    {
+        $this->db->execute("DELETE FROM `held_notif` WHERE `held_origin` = $originPlayerId");
+    }
+
+    /**
+     * 起点のプレイヤーごとの最初の held_id（ステージした順を知るため）。
+     *
+     * @return array<int, int> プレイヤー ID => 最小の held_id
+     */
+    public function firstIdByOrigin(): array
+    {
+        $out = [];
+        foreach ($this->db->rows('SELECT `held_origin`, MIN(`held_id`) AS `first_id` FROM `held_notif` GROUP BY `held_origin`') as $row) {
+            $out[(int) $row['held_origin']] = (int) $row['first_id'];
+        }
+
+        return $out;
+    }
+
     public function clear(): void
     {
         $this->db->execute('DELETE FROM `held_notif`');
