@@ -415,7 +415,8 @@ Question (type = "EFFECT") = {
     mandatory:  bool,                             # 真なら [Skip] なし（P087 の捨てなど）
     cost:       {kind: "NONE" / "MAYA" / "MAYA_TIER" / "DISCARD", amount | tiers, canPay: bool, shortfall: int},   # 払えない場合は売却で足りるかを shortfall で示す（008 §2-6）
     fields:     [Field, ...],
-    preview:    {...}                             # 結果の見込み（例: 配備コストの内訳、燃料の残り）。サーバーが計算する（008 §2-6）
+    preview:    {...},                            # 結果の見込み（例: 配備コストの内訳、燃料の残り）。サーバーが計算する（008 §2-6）
+    hostSat:    int | null                        # 効果を持つカードのある衛星の ID（012 追補 2026-11-12。クライアントが問いの対象として強調する。表示用で、検証には使わない）
 }
 
 Field = {key, type, min, max, candidates, default}

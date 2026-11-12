@@ -270,6 +270,16 @@ export class PieceLayer {
     }
 
     /**
+     * 問いの対象の衛星コマを強調する（効果の窓）。null で全部消す。
+     * @param {Set<number> | null} satIds
+     */
+    setSubjects(satIds) {
+        for (const piece of /** @type {NodeListOf<HTMLElement>} */ (this.layer.querySelectorAll('.pe-sat-piece'))) {
+            piece.classList.toggle('pe-sat-piece-subject', satIds?.has(Number(piece.dataset.satId)) === true);
+        }
+    }
+
+    /**
      * @param {number} satId
      */
     removeSatellite(satId) {

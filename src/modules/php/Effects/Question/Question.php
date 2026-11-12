@@ -21,6 +21,7 @@ final readonly class Question
      * @param array<string, mixed> $cost EFFECT: 代価の表示（kind / amount / tiers / canPay / shortfall / canPayBySelling）
      * @param list<Field> $fields EFFECT: 中身の選択
      * @param array<string, mixed> $preview EFFECT: 結果の見込み（サーバーが計算する。008 §2-6）
+     * @param int|null $hostSat EFFECT: 効果を持つカードのある衛星（クライアントが問いの対象として強調する。衛星に紐づかないときは null）
      */
     public function __construct(
         public QuestionType $type,
@@ -32,6 +33,7 @@ final readonly class Question
         public array $cost = [],
         public array $fields = [],
         public array $preview = [],
+        public ?int $hostSat = null,
     ) {
     }
 
@@ -56,8 +58,9 @@ final readonly class Question
         array $cost,
         array $fields,
         array $preview = [],
+        ?int $hostSat = null,
     ): self {
-        return new self(QuestionType::Effect, [], [], $entryId, $cardKey, $mandatory, $cost, $fields, $preview);
+        return new self(QuestionType::Effect, [], [], $entryId, $cardKey, $mandatory, $cost, $fields, $preview, $hostSat);
     }
 
     /**
@@ -77,6 +80,7 @@ final readonly class Question
             'cost' => $this->cost,
             'fields' => array_map(static fn(Field $f): array => $f->toArray(), $this->fields),
             'preview' => $this->preview,
+            'hostSat' => $this->hostSat,
         ];
     }
 }
