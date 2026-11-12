@@ -1,0 +1,164 @@
+[
+    {
+        "participants": [
+            101,
+            102,
+            103
+        ],
+        "confirmed": [
+            103
+        ],
+        "_private": {
+            "101": {
+                "myChoice": null,
+                "hand": [
+                    30,
+                    38,
+                    32,
+                    91,
+                    6
+                ],
+                "sellValue": 3,
+                "linkable": [
+                    {
+                        "cell": 24,
+                        "selectable": true,
+                        "sats": [
+                            {
+                                "satId": 1,
+                                "cost": {
+                                    "area": 5,
+                                    "pioneer": [],
+                                    "total": 5
+                                },
+                                "minSales": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "102": {
+                "myChoice": null,
+                "hand": [
+                    72,
+                    71,
+                    29,
+                    28,
+                    74
+                ],
+                "sellValue": 3,
+                "linkable": [
+                    {
+                        "cell": 24,
+                        "selectable": true,
+                        "sats": [
+                            {
+                                "satId": 6,
+                                "cost": {
+                                    "area": 5,
+                                    "pioneer": [],
+                                    "total": 5
+                                },
+                                "minSales": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "103": {
+                "myChoice": null,
+                "hand": [
+                    95,
+                    27,
+                    48,
+                    92,
+                    84
+                ],
+                "sellValue": 3,
+                "linkable": []
+            }
+        }
+    },
+    {
+        "participants": [
+            101,
+            102,
+            103
+        ],
+        "confirmed": [
+            103
+        ],
+        "_private": {
+            "101": {
+                "myChoice": null,
+                "hand": [
+                    30,
+                    38,
+                    32,
+                    91,
+                    6
+                ],
+                "sellValue": 3,
+                "linkable": [
+                    {
+                        "cell": 24,
+                        "selectable": true,
+                        "sats": [
+                            {
+                                "satId": 1,
+                                "cost": {
+                                    "area": 5,
+                                    "pioneer": [],
+                                    "total": 5
+                                },
+                                "minSales": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "102": {
+                "myChoice": null,
+                "hand": [
+                    72,
+                    71,
+                    29,
+                    28,
+                    74
+                ],
+                "sellValue": 3,
+                "linkable": [
+                    {
+                        "cell": 24,
+                        "selectable": true,
+                        "sats": [
+                            {
+                                "satId": 6,
+                                "cost": {
+                                    "area": 5,
+                                    "pioneer": [],
+                                    "total": 5
+                                },
+                                "minSales": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "103": {
+                "myChoice": {
+                    "op": "pass"
+                },
+                "hand": [
+                    95,
+                    27,
+                    48,
+                    92,
+                    84
+                ],
+                "sellValue": 3,
+                "linkable": []
+            }
+        }
+    }
+]

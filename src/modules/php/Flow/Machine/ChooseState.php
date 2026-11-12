@@ -47,7 +47,11 @@ abstract class ChooseState extends GameState
     {
         [$entry, $notices] = $this->game->peMachine()->choice($this->id)->enter();
         $this->game->peSend($notices);
-        $this->game->gamestate->setPlayersMultiactive($entry->active, 'allConfirmed', true);
+        $moved = $this->game->gamestate->setPlayersMultiactive($entry->active, 'allConfirmed', true);
+        // 選べる人が誰もいないのにフレームワークが遷移しなかった場合（戻り値が false）は、自分で遷移して全員待機で止まるのを防ぐ
+        if ($entry->active === [] && $moved === false) {
+            $this->game->gamestate->nextState('allConfirmed');
+        }
     }
 
     /**

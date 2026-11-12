@@ -37,11 +37,14 @@ final class ChoiceArgs
         // これを怠ると、入場直後の args の参加者と _private が空になり、全員の画面が「Waiting for other players」で止まる。
         $participants = $services->globals->stepParticipants();
         $confirmed = $services->choices->confirmedPlayers($flow->stateId);
+        /** @var array<int, array<mixed>> $pendingAuto 入場前に、enter() が自動で確定するはずの人の [Pass] 相当 */
+        $pendingAuto = [];
         if ($participants === []) {
             $participants = $flow->step->participants($flow->mode);
             foreach ($participants as $playerId) {
                 if (!$flow->step->canAct($playerId, $flow->mode) && !in_array($playerId, $confirmed, true)) {
                     $confirmed[] = $playerId;
+                    $pendingAuto[$playerId] = $flow->step->defaultChoice($playerId, $flow->mode);
                 }
             }
             sort($confirmed);
@@ -59,7 +62,7 @@ final class ChoiceArgs
         }
         $private = [];
         foreach ($participants as $playerId) {
-            $private[$playerId] = $this->privateFor($flow, $playerId);
+            $private[$playerId] = $this->privateFor($flow, $playerId, $pendingAuto[$playerId] ?? null);
         }
         $args['_private'] = $private;
         return $args;
@@ -67,12 +70,14 @@ final class ChoiceArgs
 
     /**
      * 1 人分の `_private`（本人の確定内容と候補）。II 配備のステージ・[Reset] の通知にも同じ形で載せる。
+     * `$autoChoice` は入場前の getArgs で、まだ書かれていない自動 [Pass] を確定内容として返すための値（入場後の args と同じ形にする）。
      *
+     * @param array<mixed>|null $autoChoice
      * @return array<string, mixed>
      */
-    public function privateFor(ChoiceFlow $flow, int $playerId): array
+    public function privateFor(ChoiceFlow $flow, int $playerId, ?array $autoChoice = null): array
     {
-        return ['myChoice' => $this->ctx->services->choices->ownChoice($playerId, $flow->stateId)]
+        return ['myChoice' => $this->ctx->services->choices->ownChoice($playerId, $flow->stateId) ?? $autoChoice]
             + $this->detail($flow, $playerId);
     }
 
