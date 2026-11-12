@@ -22,7 +22,7 @@ use Bga\Games\projectedgeworth\Effects\Question\FieldType;
  *
  * パラメータ: `count`（捨てる枚数）、`drawFirst`（P087: 1 段目に引く枚数。あれば 2 段の効果で、1 段目は強制で自動に引き、
  * 2 段目が手札から `count` 枚を捨てる問い）、`justDrawn`（zombie の既定は直前に引いたカード。未確定 3）。
- * 捨てる問いの `cards` は手札から選ぶ（直前に引いたカードを含む）。手札が `count` 枚に満たなければ手札の全部。手札が空なら問いなしで何もしない。
+ * 捨てる問いの `cards` は手札から選ぶ（直前に引いたカードを含む）。強制の捨てで手札が `count` 枚以下なら問わずに手札の全部を自動で捨てる。手札が空なら問いなしで何もしない。
  * 1 段目で引いたカードは `PoolItem::$memo['drawn']` に残し、再接続しても zombie の既定が同じになる。
  */
 final class DiscardHandPart extends AbstractResultPart
@@ -40,7 +40,11 @@ final class DiscardHandPart extends AbstractResultPart
         $hand = $call->ctx->view->hand($call->host->playerId);
         $count = min($this->count($call), count($hand));
 
-        return $count === 0 ? [] : [new Field('cards', FieldType::Cards, $hand, $count, $count)];
+        if ($count === 0 || $this->isForcedWholeHand($call, $hand)) {
+            return []; // 強制の捨てで選べる組み合わせが 1 通り（手札が count 枚以下）なら問わず、apply が自動で捨てる（011 追補 2026-11-12）
+        }
+
+        return [new Field('cards', FieldType::Cards, $hand, $count, $count)];
     }
 
     public function apply(PartCall $call, ?Answer $answer): Outcome
@@ -54,6 +58,10 @@ final class DiscardHandPart extends AbstractResultPart
             return new Outcome([], [new LogEntry('cardsDrawn', ['player_id' => $playerId, 'card_key' => $call->spec->cardKey, 'count' => $drawn])]);
         }
         $cards = array_values(array_map('intval', (array) ($answer?->fields['cards'] ?? [])));
+        $hand = $call->ctx->view->hand($playerId);
+        if ($cards === [] && $this->isForcedWholeHand($call, $hand)) {
+            $cards = $hand;
+        }
         if ($cards === []) {
             return Outcome::none();
         }
@@ -93,6 +101,15 @@ final class DiscardHandPart extends AbstractResultPart
     private function count(PartCall $call): int
     {
         return (int) ($call->spec->params['count'] ?? 1);
+    }
+
+    /**
+     * @param list<int> $hand
+     * 強制（任意でない）で、手札の全部を捨てるしかないか（手札が 1 枚以上 count 枚以下）
+     */
+    private function isForcedWholeHand(PartCall $call, array $hand): bool
+    {
+        return !$call->spec->optional && $hand !== [] && count($hand) <= $this->count($call);
     }
 
     /** 捨てる段か（`drawFirst` があれば 2 段目、なければ 1 段目） */

@@ -21,11 +21,15 @@ use Bga\Games\projectedgeworth\Effects\Question\Question;
 use Bga\Games\projectedgeworth\Flow\Action\ProposalCounts;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Material\ActionKind;
+use Bga\Games\projectedgeworth\Material\EffectKind;
+use Bga\Games\projectedgeworth\Material\EffectSpec;
 use Bga\Games\projectedgeworth\Material\Hook;
+use Bga\Games\projectedgeworth\Material\PartId;
 use Bga\Games\projectedgeworth\Material\ProjectType;
 use Bga\Games\projectedgeworth\Material\SatelliteShape;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ProjectEdgeworthTests\Support\Effects\ArrayCatalog;
 use ProjectEdgeworthTests\Support\Effects\E3Fixture;
 
 /**
@@ -558,6 +562,52 @@ final class E3EffectsTest extends TestCase
         $this->assertSame(0, $f->game->maya[self::P1], '効果による捨てなので売却額は得ない（FAQ 行 70）');
         $this->assertSame(['P:87' => true], $f->game->used);
         $this->assertFalse($engine->questionsFor(self::P1) !== []);
+    }
+
+    public function testP087AutoDiscardsWhenTheHandAfterDrawingHasOnlyOneCard(): void
+    {
+        $f = new E3Fixture(0);
+        $f->game->hand[self::P1] = [];
+        $f->satellite(self::P1, ['P087']);
+        $engine = $f->engine();
+
+        $report = $engine->openWindow('O0', [$this->orbitStart()]);
+
+        $this->assertFalse($report->needsInput(), '手札が引いた 1 枚だけなら問わない');
+        $this->assertSame([], $f->game->hand[self::P1]);
+        $this->assertSame([101], $f->game->discard);
+        $this->assertSame(0, $f->game->maya[self::P1]);
+        $this->assertSame(1, $engine->closeWindow()->resolvedCount);
+    }
+
+    public function testP087AsksWhenTheHandAfterDrawingHasTwoOrMoreCards(): void
+    {
+        $f = new E3Fixture(0);
+        $f->game->hand[self::P1] = [50];
+        $f->satellite(self::P1, ['P087']);
+        $engine = $f->engine();
+
+        $report = $engine->openWindow('O0', [$this->orbitStart()]);
+
+        $this->assertSame([self::P1], $report->playersNeedingInput);
+        $this->assertSame([], $f->game->discard);
+    }
+
+    public function testAnOptionalDiscardIsNeverAutoResolvedEvenWithOneCardInHand(): void
+    {
+        $f = new E3Fixture(0);
+        $f->game->hand[self::P1] = [50];
+        $f->satellite(self::P1, [], true, 'opt_discard');
+        $spec = new EffectSpec(
+            'opt_discard', Hook::OrbitStart, EffectKind::Activated, true, true, false, PartId::DiscardHand,
+            ['count' => 1], null, [], [], 1,
+        );
+        $engine = new EffectEngine($f->game, $f->game, $f->parts, new ArrayCatalog([$spec]), $f->conditions);
+
+        $report = $engine->openWindow('O0', [$this->orbitStart()]);
+
+        $this->assertSame([self::P1], $report->playersNeedingInput, '任意の捨ては手札 1 枚でも問う');
+        $this->assertSame([50], $f->game->hand[self::P1]);
     }
 
     public function testP087ZombieDiscardsTheJustDrawnCardAndSurvivesASnapshot(): void
