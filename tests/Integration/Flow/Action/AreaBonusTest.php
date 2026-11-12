@@ -102,17 +102,24 @@ final class AreaBonusTest extends ActionTestCase
         $this->assertSame(40, $this->maya(102));
     }
 
-    public function testSnowGivesOneMayaToEveryLinker(): void
+    public function testSnowGivesOneBudgetToEveryLinker(): void
     {
         $snow = $this->cellOf(AreaType::SNOW);
         $a = $this->place(101, 0, $snow);
         $b = $this->place(102, 0, $snow);
         $link = $this->phases->link();
-        $link->resolve(StepMode::Main, [101 => $this->link($snow, $a)]);
-        $this->assertSame(40 - 5 + 1, $this->maya(101));
+        $budget101 = $this->phases->services()->players->budget(101);
+        $budget102 = $this->phases->services()->players->budget(102);
+        $first = $link->resolve(StepMode::Main, [101 => $this->link($snow, $a)]);
+        // 雪原は予算 +1（マヤではない。作者の指摘 2026-11-12）
+        $this->assertSame(40 - 5, $this->maya(101));
+        $this->assertSame($budget101 + 1, $this->phases->services()->players->budget(101));
+        $this->assertSame(1, $first->outcomeOf(101)?->details['bonus']->budget);
+        $this->assertSame(0, $first->outcomeOf(101)?->details['bonus']->maya);
         $link->resolve(StepMode::Bonus, [102 => $this->link($snow, $b)]);
-        // 2 番目も +1 マヤ（順位を問わない）。先駆コスト 3 を払う
-        $this->assertSame(40 - 5 - 3 + 1, $this->maya(102));
+        // 2 番目も予算 +1（順位を問わない）。先駆コスト 3 を払う
+        $this->assertSame(40 - 5 - 3, $this->maya(102));
+        $this->assertSame($budget102 + 1, $this->phases->services()->players->budget(102));
     }
 
     public function testMountainDrawsOneCardForTheFirstLinkerOnly(): void

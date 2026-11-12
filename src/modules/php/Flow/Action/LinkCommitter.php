@@ -89,12 +89,14 @@ final class LinkCommitter
         $maya = 0;
         $drawn = [];
         $fuel = 0;
+        $budget = 0;
         switch ($type) {
             case AreaType::FOREST:
                 $maya = $first ? 5 : 0;
                 break;
             case AreaType::SNOW:
-                $maya = 1;
+                // 雪原は順位を問わず予算 +1（作者の指摘 2026-11-12。マヤではない）
+                $budget = 1;
                 break;
             case AreaType::MOUNTAIN:
                 $drawn = $first ? $this->services->cards->drawTop($request->playerId, 1) : [];
@@ -112,7 +114,8 @@ final class LinkCommitter
         if ($maya > 0) {
             $this->services->players->addMaya($request->playerId, $maya);
         }
-        return new AreaBonus($maya, $drawn, $fuel);
+        $budgetAfter = $budget > 0 ? $this->services->players->addBudget($request->playerId, $budget) : 0;
+        return new AreaBonus($maya, $drawn, $fuel, $budget, $budgetAfter);
     }
 
     /**

@@ -94,18 +94,26 @@ final class SatelliteCardsTest extends TestCase
         $r019 = SatelliteCards::get('R019');
         self::assertSame('concorde_europa', $r019->nameId);
         self::assertSame(EffectTiming::LaunchedOrTurned, $r019->timing);
-        self::assertSame([30, 10], [$r019->launchCost, $r019->fame]);
+        self::assertSame([25, 10], [$r019->launchCost, $r019->fame]);
 
         $r009 = SatelliteCards::get('R009');
         self::assertSame(EffectTiming::Anytime, $r009->timing);
 
         $r020 = SatelliteCards::get('R020');
-        self::assertSame([35, 10], [$r020->launchCost, $r020->fame]);
+        self::assertSame([25, 10], [$r020->launchCost, $r020->fame]);
 
         $r023 = SatelliteCards::get('R023');
         self::assertSame('scallop_ganymede', $r023->nameId);
         self::assertSame(EffectTiming::Linked, $r023->timing);
         self::assertSame(EffectKind::Activated, $r023->effectKind);
         self::assertSame([20, 10], [$r023->launchCost, $r023->fame]);
+
+        // 画像更新後の印刷物（作者の指摘 2026-11-12）: RETRO MOON は 20、EUROPA は 20〜25
+        foreach (['R002B', 'R002G', 'R002R', 'R002Y'] as $id) {
+            self::assertSame([20, 5], [SatelliteCards::get($id)->launchCost, SatelliteCards::get($id)->fame], $id);
+        }
+        self::assertSame(25, SatelliteCards::get('R010')->launchCost);
+        self::assertSame(20, SatelliteCards::get('R017')->launchCost);
+        self::assertSame(20, SatelliteCards::get('R018')->launchCost);
     }
 }
