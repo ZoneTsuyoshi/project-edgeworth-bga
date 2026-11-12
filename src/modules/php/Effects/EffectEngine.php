@@ -65,6 +65,12 @@ final class EffectEngine
     /** @var array<int, true> 新しい要素が加わり、まだ進めていないプレイヤー */
     private array $dirty = [];
 
+    /** `resolveImmediate()` の間だけ: 解決するプレイヤー（ほかのプレイヤーのプールには触れない） */
+    private ?int $only = null;
+
+    /** @var list<GameEvent>|null `resolveImmediate()` の間だけ: 積んだイベント（連鎖を含む） */
+    private ?array $collected = null;
+
     public function __construct(
         private readonly GameView $view,
         private readonly GameMutator $mutator,
@@ -95,6 +101,64 @@ final class EffectEngine
         $this->settleAll();
 
         return $this->report();
+    }
+
+    /**
+     * 窓の外で、1 人分のプールだけを解決する（II 配備の 1 枚目のステージ。009 追補 4、011 追補）。窓を開かず、状態も保存しない
+     * 使い捨ての窓の状態で、そのプレイヤーのイベントに反応する効果を積み、選択が要らない効果（強制で問いなし）だけを解決する。
+     * 選択が要る効果（任意・対象あり）と、順序の問いが要る組み合わせは解決せず、窓 DE に残す（`left`）。
+     * 結果の `events` を後の窓 DE に渡すと、解決済みの（イベント、効果）の組は飛ばされ、二重に発動しない。
+     * 窓が開いているときは呼べない。
+     *
+     * @param list<GameEvent> $events
+     */
+    public function resolveImmediate(int $playerId, array $events): ImmediateResult
+    {
+        if ($this->state !== null) {
+            throw new \LogicException('cannot resolve immediately while a window is open');
+        }
+        $this->state = new WindowState('DE');
+        $this->dirty = [];
+        $this->only = $playerId;
+        $this->collected = [];
+        try {
+            foreach ($events as $event) {
+                $this->collect($event);
+            }
+            $this->dirty = [$playerId => true];
+            $this->drain();
+            $state = $this->state;
+            $resolvedKeys = [];
+            $left = 0;
+            foreach ($state->items() as $item) {
+                if ($item->isPending()) {
+                    $left++;
+                    continue;
+                }
+                $resolvedKeys[spl_object_id($item->event)][] = $item->hostKey();
+            }
+            $out = [];
+            foreach ($this->collected ?? [] as $event) {
+                $keys = array_values(array_unique($resolvedKeys[spl_object_id($event)] ?? []));
+                $out[] = $keys === [] ? $event : new GameEvent(
+                    $event->hook,
+                    $event->playerId,
+                    $event->satelliteId,
+                    $event->cardId,
+                    $event->cardType,
+                    $event->cell,
+                    $event->generation,
+                    ['resolved' => $keys] + $event->data,
+                );
+            }
+
+            return new ImmediateResult($out, $state->logs(), $state->countResolved(), $left);
+        } finally {
+            $this->state = null;
+            $this->dirty = [];
+            $this->only = null;
+            $this->collected = null;
+        }
     }
 
     /**
@@ -184,6 +248,9 @@ final class EffectEngine
         $state = $this->requireState();
         if ($state->isAborted()) {
             return;
+        }
+        if ($this->collected !== null) {
+            $this->collected[] = $event;
         }
         foreach ($this->collector->collect($state, $event) as $item) {
             $this->dirty[$item->playerId] = true;
@@ -392,6 +459,9 @@ final class EffectEngine
         while ($this->dirty !== []) {
             $playerId = array_key_first($this->dirty);
             unset($this->dirty[$playerId]);
+            if ($this->only !== null && $playerId !== $this->only) {
+                continue;
+            }
             $this->advance($playerId);
         }
     }
