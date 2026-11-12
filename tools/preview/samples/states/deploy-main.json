@@ -309,7 +309,9 @@
      }
     ]
    },
-   "bonus": false
+   "bonus": false,
+   "stage": 0,
+   "canReset": false
   }
  },
  "steps": [
