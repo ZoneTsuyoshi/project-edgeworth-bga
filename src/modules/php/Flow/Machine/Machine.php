@@ -24,6 +24,7 @@ final class Machine
     private ?OrbitDriver $orbit = null;
     private ?EndFlow $end = null;
     private ?WindowFlow $windows = null;
+    private ?DeployStageFlow $deployStage = null;
 
     public function __construct(public readonly FlowContext $ctx)
     {
@@ -57,6 +58,14 @@ final class Machine
     public function windows(): WindowFlow
     {
         return $this->windows ??= new WindowFlow($this->ctx);
+    }
+
+    /**
+     * II 配備（61）の段階確定: [Deploy another card]（`actStageDeploy`）と [Reset]（`actResetStage`）。
+     */
+    public function deployStage(): DeployStageFlow
+    {
+        return $this->deployStage ??= new DeployStageFlow($this->ctx);
     }
 
     public function choice(int $stateId): ChoiceFlow
@@ -95,6 +104,14 @@ final class Machine
             }
             if (isset($own['card'])) {
                 $reserved[] = (int) $own['card'];
+            }
+            // 配備のステージ済み（S1）の 2 枚目（extra）の分
+            $extra = is_array($own['extra'] ?? null) ? $own['extra'] : [];
+            foreach ((array) ($extra['sell'] ?? []) as $id) {
+                $reserved[] = (int) $id;
+            }
+            if (isset($extra['card'])) {
+                $reserved[] = (int) $extra['card'];
             }
         }
         $ids = array_values(array_map('intval', $cardIds));

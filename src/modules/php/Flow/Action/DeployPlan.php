@@ -10,15 +10,15 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Action;
 
 /**
- * 1 人分の配備の選択（001 §7-3、作者回答 2026-10-20）: 通常の配備（任意）+ 追加の配備またはドロー（ボーナス保持者のみ）。
- * 支払い（売却の同梱を含む）は配備 1〜2 枚の合計コストに対して 1 回だけ行う。
+ * 配備の 1 回分の選択（001 §7-3、009 追補 2026-11-12）。未ステージ（S0）は通常の配備（任意）+ ドロー（ボーナス保持者のみ）、
+ * ステージ済み（S1）は 2 枚目（任意）。配備は 1 回に 0〜1 枚で、支払い（売却の同梱を含む）はその 1 枚のコストに対して行う。
  */
 final class DeployPlan
 {
     /**
-     * @param list<DeployStep> $steps 配備する順（通常の配備、追加の配備）。0〜2 件
-     * @param bool $draw 追加の行動として 1 枚引く
-     * @param list<int> $sell 同梱する売却
+     * @param list<DeployStep> $steps 配備するカード。0〜1 件
+     * @param bool $draw ボーナスの行動として 1 枚引く（S0 のみ）
+     * @param list<int> $sell 配備するカードのコストに同梱する売却
      */
     public function __construct(
         public readonly array $steps,

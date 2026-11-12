@@ -34,6 +34,12 @@ final class DeployChoiceDataTest extends TestCase
         ], $data);
     }
 
+    public function testSecondCardAfterStageCarriesItsOwnSale(): void
+    {
+        $data = ChoiceData::deploy('pass', 0, 0, null, null, ['op' => 'deploy', 'card' => '9', 'sat' => '12', 'sell' => ['7', 8], 'useMods' => ['P:20']]);
+        self::assertSame(['op' => 'pass', 'extra' => ['op' => 'deploy', 'card' => 9, 'sat' => 12, 'sell' => [7, 8], 'useMods' => ['P:20']]], $data);
+    }
+
     public function testExtraDrawAndPassWithAnExtra(): void
     {
         self::assertSame(['op' => 'pass', 'extra' => ['op' => 'draw']], ChoiceData::deploy('pass', 0, 0, null, null, ['op' => 'draw']));

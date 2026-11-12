@@ -32,7 +32,7 @@ final class StepMods
 
     /**
      * @param int $actionNo 2 = 配備、3 = 打ち上げ、4 = 通信確立
-     * @param array<mixed> $subject 配備: card・sat・pending（同じ選択で先に同じ衛星へ配備する枚数）、打ち上げ: sat、通信確立: cell・sat
+     * @param array<mixed> $subject 配備: card・sat、打ち上げ: sat、通信確立: cell・sat
      * @return list<array{hostKey: string, cardKey: string, reduction: int}>
      */
     public function options(int $actionNo, int $playerId, array $subject): array
@@ -47,7 +47,7 @@ final class StepMods
             return [];
         }
         $mods = $this->runtime->useMods;
-        $attached = $services->cards->countIn(CardLocation::Satellite, $sat->id) + ($actionNo === 2 ? (int) ($subject['pending'] ?? 0) : 0);
+        $attached = $services->cards->countIn(CardLocation::Satellite, $sat->id);
         if ($actionNo === 2) {
             $card = (int) ($subject['card'] ?? 0);
             if ($card < 1 || $card > 99) {
@@ -94,8 +94,9 @@ final class StepMods
     }
 
     /**
-     * 配備の確定内容（通常の配備と、ボーナス保持者の追加の配備）の `useMods` を、枚ごとに検証して全部の鍵を返す。
-     * 同じ鍵を 2 枚に使うことはできない（起動は各ラウンド 1 回）。追加の配備が同じ衛星のときは、先の 1 枚を付いている枚数に数える。
+     * 配備の確定内容の `useMods` を検証して全部の鍵を返す。未ステージ（S0）は外側の配備、ステージ済み（S1）は 2 枚目（extra）の分。
+     * 1 枚目の起動の修正はステージの時点で使用済みになっているので、2 枚目の候補には出ない（各ラウンド 1 回）。
+     * 2 枚目の候補は実際の盤面（1 枚目が衛星に付いた状態）で数える。
      *
      * @param array<mixed> $data
      * @return list<string>
@@ -106,8 +107,7 @@ final class StepMods
         $keys = $this->validate(2, $playerId, $data);
         $extra = $data['extra'] ?? null;
         if (is_array($extra) && ($extra['useMods'] ?? []) !== []) {
-            $same = ($data['op'] ?? null) === 'deploy' && ($data['sat'] ?? null) === ($extra['sat'] ?? false);
-            $more = $this->validate(2, $playerId, $extra + ['pending' => $same ? 1 : 0]);
+            $more = $this->validate(2, $playerId, $extra);
             if (array_intersect($keys, $more) !== []) {
                 throw new RuleViolation('invalid modifier to use');
             }

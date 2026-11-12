@@ -25,4 +25,12 @@ final class Notice
         public readonly ?int $to = null,
     ) {
     }
+
+    /**
+     * 同じ内容を、そのプレイヤーだけへ送る通知にする（II 配備のステージ。バリアまで他人に見せない。009 追補 6）。
+     */
+    public function forPlayer(int $playerId): self
+    {
+        return new self($this->name, $this->message, $this->args, $playerId);
+    }
 }

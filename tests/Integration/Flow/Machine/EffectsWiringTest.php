@@ -100,6 +100,15 @@ final class EffectsWiringTest extends MachineTestCase
         $this->playerValues->setMaya(102, 60);
     }
 
+    /** [Deploy another card]: 1 枚目を先に確定する（actStageDeploy）。通知は本人宛てだけ */
+    private function stage(int $playerId, array $choice): \Bga\Games\projectedgeworth\Flow\Machine\StageResult
+    {
+        $result = $this->machine->deployStage()->stage($playerId, $choice);
+        $this->walker->notices = array_merge($this->walker->notices, $result->notices);
+
+        return $result;
+    }
+
     private function rows(string $table): int
     {
         return (int) $this->db->value("SELECT COUNT(*) FROM `$table`");
@@ -274,13 +283,13 @@ final class EffectsWiringTest extends MachineTestCase
         self::assertSame([101, null], [$skipped[0]->to, $skipped[1]->to]);
     }
 
-    /** 配備のボーナス保持者の 61 の args: 追加の配備の候補（同じ衛星のときの next）と canDraw。保持者でない人には載らない */
+    /** 配備のボーナス保持者の 61 の args: canDraw と、ステージ後の段・2 枚目の候補（実盤面）・canReset。保持者でない人には載らない */
     public function testDeployArgsOfferTheBonusOnlyToHolders(): void
     {
         $this->startEffects();
         $sat = $this->satId(101, SatelliteShape::Hammer);
         $this->deployTo($sat, 5, 6, 7);
-        $this->toHand(101, 4, 9);
+        $this->toHand(101, 4, 1);
         $this->toHand(102, 4 + 30);
         $this->phase(FlowPhase::Deploy, 2, [101]);
 
@@ -290,18 +299,31 @@ final class EffectsWiringTest extends MachineTestCase
         $mine = $args['_private'][101];
         self::assertTrue($mine['bonus']);
         self::assertTrue($mine['canDraw']);
+        self::assertSame([0, false], [$mine['stage'], $mine['canReset']]);
         $entry = array_values(array_filter($mine['targets'][4], static fn(array $t): bool => $t['satId'] === $sat))[0];
         self::assertNull($entry['blocked'], '3 枚の衛星へ 1 枚は配備できる');
         self::assertSame(4, $entry['tier']);
-        self::assertSame('full', $entry['next']['blocked'], '先に 1 枚配備されると 4 枚で、もう配備できない');
-        self::assertSame(5, $entry['next']['tier']);
+        self::assertArrayNotHasKey('next', $entry);
         $other = $args['_private'][102];
         self::assertFalse($other['bonus']);
         self::assertArrayNotHasKey('canDraw', $other);
-        self::assertArrayNotHasKey('next', array_values($other['targets'])[0][0]);
+        self::assertSame(0, $other['stage']);
+
+        // 1 枚目をステージすると、2 枚目の候補は実際の盤面（4 枚）で出し直される
+        $this->stage(101, ['op' => 'deploy', 'card' => 4, 'sat' => $sat]);
+        $staged = $this->machine->choice($waiting)->args()['_private'][101];
+        self::assertSame(1, $staged['stage']);
+        self::assertSame(['card' => 4, 'satId' => $sat, 'tier' => 4, 'paid' => 3, 'sold' => []], $staged['stage1']);
+        self::assertTrue($staged['canReset']);
+        self::assertNull($staged['resetBlockedReason']);
+        self::assertFalse($staged['canDraw']);
+        self::assertArrayNotHasKey(4, $staged['targets'], '配備済みのカードは手札にない');
+        $entry = array_values(array_filter($staged['targets'][1], static fn(array $t): bool => $t['satId'] === $sat))[0];
+        self::assertSame('full', $entry['blocked']);
+        self::assertSame(5, $entry['tier']);
     }
 
-    /** 追加の配備は通常の配備と同時に確定し、一斉に処理する。起動の修正は 1 枚ごとに別の鍵を使い、同じ鍵を 2 枚には使えない */
+    /** 起動の修正は 1 枚ごとに別の鍵を使う。1 枚目に使った鍵はステージで使用済みになり、2 枚目には使えない */
     public function testBonusHolderDeploysTwoCardsWithUseModsPerCard(): void
     {
         $this->startEffects();
@@ -314,29 +336,58 @@ final class EffectsWiringTest extends MachineTestCase
         $cost = static fn(int $card): int => \Bga\Games\projectedgeworth\Flow\Action\ActionServices::project($card)->cost;
 
         $waiting = $this->walker->run(StateId::DEPLOY_DRIVER);
+        $this->stage(101, ['op' => 'deploy', 'card' => 9, 'sat' => $inactive, 'useMods' => ['P:19']]);
+        self::assertSame(60 - ($cost(9) - 2), $this->playerValues->maya(101), '1 枚目の支払いと起動の修正はステージの時点');
+        self::assertSame(1, $this->cards->activation(19), '起動の修正は使用済み');
+
         $flow = $this->machine->choice($waiting);
-        $deployed = ['op' => 'deploy', 'card' => 9, 'sat' => $inactive, 'useMods' => ['P:19']];
-        // 同じ鍵を 2 枚に使うことはできない
+        // 使用済みの鍵は 2 枚目には使えない
         try {
-            $flow->confirm(101, $deployed + ['extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $inactive, 'useMods' => ['P:19']]]);
+            $flow->confirm(101, ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $inactive, 'useMods' => ['P:19']]]);
             self::fail('the same activated modifier cannot be used twice');
         } catch (RuleViolation) {
             self::assertTrue(true);
         }
-        $mine = $deployed + ['extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $inactive]];
+        $mine = ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $inactive]];
         $flow->confirm(101, $mine);
         $this->walker->play($waiting, [StateId::DEPLOY_MAIN_CHOOSE => fn(int $p): array => $p === 101 ? $mine : ['op' => 'pass']], [StateId::PLANNING_PLOT]);
 
         self::assertSame([9, 4], $this->cards->deployedIds($inactive));
-        self::assertSame(60 - ($cost(9) - 2) - $cost(4), $this->playerValues->maya(101), '修正は通常の配備の 1 枚にだけ効く');
+        self::assertSame(60 - ($cost(9) - 2) - $cost(4), $this->playerValues->maya(101), '修正は 1 枚目にだけ効く');
         $used = array_filter($this->walker->noticesNamed('effectUsed'), static fn($n): bool => $n->args['source_name'] === 'Fleet Commander');
         self::assertCount(1, $used);
         $deployedNotices = $this->walker->noticesNamed('cardDeployed');
         self::assertSame([9, 4], array_map(static fn($n): int => $n->args['card'], $deployedNotices));
     }
 
-    /** 追加の配備のカードの配備時の効果も、同じ窓 DE で処理する（P009 が追加の配備なら 1 枚引く） */
-    public function testDeployTimeEffectsRunForTheExtraDeploymentToo(): void
+    /** 1 枚目（P009）の配備時の効果はステージで解決し（1 枚引く）、バリアのあとの窓 DE では二重に発動しない。2 枚目の効果は DE で解決する */
+    public function testDeployTimeEffectsRunAtStageForTheFirstCardAndAtTheWindowForTheSecond(): void
+    {
+        $this->startEffects();
+        $sat = $this->satId(101, SatelliteShape::Hammer);
+        $this->toHand(101, 9, 4);
+        $this->phase(FlowPhase::Deploy, 2, [101]);
+        $handBefore = count($this->hand(101));
+
+        $waiting = $this->walker->run(StateId::DEPLOY_DRIVER);
+        $this->stage(101, ['op' => 'deploy', 'card' => 9, 'sat' => $sat]);
+        self::assertCount($handBefore - 1 + 1, $this->hand(101), '1 枚目の P009 のドローはステージの時点');
+
+        $choice = ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $sat]];
+        $waiting = $this->walker->play(
+            $waiting,
+            [StateId::DEPLOY_MAIN_CHOOSE => fn(int $p): array => $p === 101 ? $choice : ['op' => 'pass']],
+            [StateId::PLANNING_PLOT],
+        );
+
+        self::assertSame(StateId::PLANNING_PLOT, $waiting);
+        self::assertSame([9, 4], $this->cards->deployedIds($sat));
+        self::assertCount($handBefore - 2 + 1, $this->hand(101), '2 枚配備し、P009 のドローは 1 回だけ');
+        self::assertSame(0, $this->rows('deploy_stage'), 'バリアのコミットのあとステージ記録は消える');
+    }
+
+    /** 2 枚目のカードの配備時の効果は、窓 DE で解決する（P009 が 2 枚目なら 1 枚引く） */
+    public function testDeployTimeEffectsRunForTheSecondDeploymentAtTheWindow(): void
     {
         $this->startEffects();
         $sat = $this->satId(101, SatelliteShape::Hammer);
@@ -344,9 +395,11 @@ final class EffectsWiringTest extends MachineTestCase
         $this->phase(FlowPhase::Deploy, 2, [101]);
         $handBefore = count($this->hand(101));
 
-        $choice = ['op' => 'deploy', 'card' => 4, 'sat' => $sat, 'extra' => ['op' => 'deploy', 'card' => 9, 'sat' => $sat]];
+        $waiting = $this->walker->run(StateId::DEPLOY_DRIVER);
+        $this->stage(101, ['op' => 'deploy', 'card' => 4, 'sat' => $sat]);
+        $choice = ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 9, 'sat' => $sat]];
         $waiting = $this->walker->play(
-            $this->walker->run(StateId::DEPLOY_DRIVER),
+            $waiting,
             [StateId::DEPLOY_MAIN_CHOOSE => fn(int $p): array => $p === 101 ? $choice : ['op' => 'pass']],
             [StateId::PLANNING_PLOT],
         );
@@ -373,14 +426,15 @@ final class EffectsWiringTest extends MachineTestCase
         $waiting = $this->walker->run(StateId::DEPLOY_DRIVER);
         self::assertSame(StateId::DEPLOY_MAIN_CHOOSE, $waiting);
         $flow = $this->machine->choice($waiting);
+        $this->stage(101, ['op' => 'deploy', 'card' => 4, 'sat' => $sat]);
         // 山札の一番上（R013 で引くカード）は、選ぶ時点で手札にないので配備に使えない
         try {
-            $flow->confirm(101, ['op' => 'deploy', 'card' => 4, 'sat' => $sat, 'extra' => ['op' => 'deploy', 'card' => $top, 'sat' => $sat]]);
+            $flow->confirm(101, ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => $top, 'sat' => $sat]]);
             self::fail('a card still in the deck cannot be deployed');
         } catch (RuleViolation) {
             self::assertTrue(true);
         }
-        $choice = ['op' => 'deploy', 'card' => 4, 'sat' => $sat, 'extra' => ['op' => 'deploy', 'card' => 5, 'sat' => $sat]];
+        $choice = ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => 5, 'sat' => $sat]];
         $waiting = $this->walker->play($waiting, [StateId::DEPLOY_MAIN_CHOOSE => fn(int $p): array => $p === 101 ? $choice : ['op' => 'pass']], [StateId::EFFECT_WINDOW_RESOLVE, StateId::PLANNING_PLOT]);
 
         if ($waiting === StateId::EFFECT_WINDOW_RESOLVE) {

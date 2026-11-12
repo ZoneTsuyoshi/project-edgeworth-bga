@@ -17,15 +17,18 @@ use Bga\Games\projectedgeworth\Data\Satellite;
  * II 配備（001 §7-3、008 §3-6、009 の 60・61）。セットアップ手順 16（round_no = 0）も同じルール。
  *
  * 配備のアクション選択ボーナス（追加の配備 / 1 枚引く）は通常の配備と同時に選ぶ（作者回答 2026-10-20）。
- * 1 人が 1 回の選択で、通常の配備と、ボーナス保持者なら追加の配備または 1 枚引くをまとめて決める。
+ * 追加の配備は、[Deploy another card] を押した時点で 1 枚目を先に確定（ステージ）してから 2 枚目を選ぶ（009 追補 2026-11-12）。
  *
  * choice_data（010 §9.3）:
- * - {"op": "deploy", "card": ID, "sat": sat_id, "sell": [ID, …], "useMods": [鍵, …], "extra": {…}} / {"op": "pass", "extra": {…}}
- * - extra（ボーナス保持者のみ）: {"op": "deploy", "card": ID, "sat": sat_id, "useMods": [鍵, …]} / {"op": "draw"}
- * - sell は 2 枚分の合計コストに対する売却。useMods は、その配備のカードのコストに使う分（外側が通常の配備、extra が追加の配備）
+ * - 未ステージ（S0）: {"op": "deploy", "card": ID, "sat": sat_id, "sell": [ID, …], "useMods": [鍵, …], "extra": {"op": "draw"}} /
+ *   {"op": "pass", "extra": {…}}。extra はボーナス保持者のみ: {"op": "draw"} / {"op": "pass"}（追加の配備は S0 では選べない）
+ * - ステージ済み（S1）: {"op": "staged", "extra": {"op": "deploy", "card": ID, "sat": sat_id, "sell": [ID, …], "useMods": [鍵, …]}}
+ *   または {"op": "staged"}（2 枚目なし）。1 枚目はステージで配備・支払い済みなので、外側の op と 1 枚目の引数は無視する
+ * - sell と useMods は、その配備のカードのコストに使う分（1 枚ごとに別々。合計コストへの売却は廃止）
  *
- * 配備コスト = カードのコスト + 稼働中の衛星なら 5（1 枚ごと）− 効果による修正、下限 0。1 機 4 枚まで（2 枚を合わせて数える）。
- * 引いたカードは同時処理なので、この選択の配備には使えない。
+ * 配備コスト = カードのコスト + 稼働中の衛星なら 5（1 枚ごと）− 効果による修正、下限 0。1 機 4 枚まで。
+ * コストは実際の盤面を見て出す（2 枚目は、ステージ済みの 1 枚目が衛星に付いた状態。P010・P012・P026 などが効く）。
+ * 通常の配備（S0）で引いたカードは同時処理なのでその選択には使えない。ステージ時の効果で引いたカードは 2 枚目に使える（Q-24）。
  * 配備時の効果（DEPLOYED イベント）は効果エンジンの役目で、ここでは配備の結果（outcome）を返すだけ。
  */
 final class DeployPhase implements ActionStep
@@ -54,12 +57,11 @@ final class DeployPhase implements ActionStep
     }
 
     /**
-     * @param int $pending 同じ選択で先に同じ衛星へ配備するカードの枚数（追加の配備の 2 枚目は 1）
      * @param list<string>|null $mods 使う起動の修正の鍵。null なら今の設定のまま（フックの状態を変えない）
      */
-    public function cost(int $playerId, int $cardNumber, Satellite $target, int $pending = 0, ?array $mods = null): DeployCost
+    public function cost(int $playerId, int $cardNumber, Satellite $target, ?array $mods = null): DeployCost
     {
-        $attached = $this->services->cards->countIn(CardLocation::Satellite, $target->id) + $pending;
+        $attached = $this->services->cards->countIn(CardLocation::Satellite, $target->id);
         $hooks = $this->services->hooks;
         if ($mods !== null && $hooks instanceof UseModsAware) {
             $hooks->useMods($mods);
@@ -79,17 +81,17 @@ final class DeployPhase implements ActionStep
     }
 
     /**
-     * そのカードを配備できる衛星の一覧（自分の衛星すべて。選べない衛星は blocked に理由が入る）。
-     * $pending = 1 は「同じ選択で先に 1 枚その衛星へ配備する」場合（追加の配備が同じ衛星のとき）。
+     * そのカードを配備できる衛星の一覧（自分の衛星すべて。選べない衛星は blocked に理由が入る）。実際の盤面を見る
+     * （ステージ済みの 1 枚目は衛星に付いているので、2 枚目の候補はそれを数える）。
      *
      * @return list<DeployTarget>
      */
-    public function targets(int $playerId, int $cardNumber, int $pending = 0): array
+    public function targets(int $playerId, int $cardNumber): array
     {
         $targets = [];
         foreach ($this->services->satellites->forPlayer($playerId) as $sat) {
-            $count = $this->services->cards->countIn(CardLocation::Satellite, $sat->id) + $pending;
-            $cost = $this->cost($playerId, $cardNumber, $sat, $pending);
+            $count = $this->services->cards->countIn(CardLocation::Satellite, $sat->id);
+            $cost = $this->cost($playerId, $cardNumber, $sat);
             $blocked = null;
             if ($count >= ProjectCardRepository::MAX_DEPLOYED) {
                 $blocked = DeployTarget::BLOCKED_FULL;
@@ -105,6 +107,12 @@ final class DeployPhase implements ActionStep
             );
         }
         return $targets;
+    }
+
+    /** 1 枚目をステージ済み（S1）か */
+    public function isStaged(int $playerId): bool
+    {
+        return $this->services->deployStages->isStaged($playerId);
     }
 
     public function participants(StepMode $mode): array
@@ -129,16 +137,39 @@ final class DeployPhase implements ActionStep
 
     public function validate(int $playerId, StepMode $mode, array $data): void
     {
+        if ($this->isStaged($playerId)) {
+            $plan = $this->planSecond($playerId, $data);
+            if ($plan->steps !== []) {
+                $this->services->selling->assertPayable($playerId, $plan->totalCost(), $plan->sell, $plan->cards());
+            }
+            return;
+        }
         $plan = $this->plan($playerId, $data);
         if ($plan->steps !== []) {
             $this->services->selling->assertPayable($playerId, $plan->totalCost(), $plan->sell, $plan->cards());
         }
     }
 
-    /** zombie: [Pass]（配備しない。ドローもしない。008 §3-6・§3-7） */
+    /** zombie: S0 なら [Pass]（配備しない。ドローもしない）。S1 ならステージ済みの 1 枚目を残して 2 枚目なしで確定（009 追補 8） */
     public function defaultChoice(int $playerId, StepMode $mode): array
     {
-        return ['op' => 'pass'];
+        return $this->isStaged($playerId) ? ['op' => 'staged'] : ['op' => 'pass'];
+    }
+
+    /**
+     * 確定内容の形を整える。ステージ済み（S1）の人は、外側の op と 1 枚目の引数を捨て、extra（2 枚目）だけを残す（009 追補 3）。
+     *
+     * @param array<mixed> $data
+     * @return array<mixed>
+     */
+    public function normalize(int $playerId, array $data): array
+    {
+        if (!$this->isStaged($playerId)) {
+            return $data;
+        }
+        $extra = $data['extra'] ?? null;
+
+        return is_array($extra) && $extra !== [] ? ['op' => 'staged', 'extra' => $extra] : ['op' => 'staged'];
     }
 
     public function resolve(StepMode $mode, array $choices): StepResult
@@ -151,17 +182,20 @@ final class DeployPhase implements ActionStep
     }
 
     /**
-     * 配備（0〜2 枚）→ ドローの順。配備は 2 枚の合計コストを 1 回で払う。払えなければ配備だけ取りやめる（ドローは行う）。
+     * S0: 配備（0〜1 枚）→ ドローの順。払えなければ配備だけ取りやめる（ドローは行う）。
+     * S1: ステージ済みの 1 枚目は飛ばし、2 枚目だけを処理する（再計算も再支払いもしない。払えなければ 2 枚目だけ取りやめる）。
      *
      * @param array<mixed> $data
      * @return list<StepOutcome>
      */
     private function resolveOne(int $playerId, array $data): array
     {
+        if ($this->isStaged($playerId)) {
+            return $this->resolveSecond($playerId, $data);
+        }
         $outcomes = [];
         $wantsDraw = $this->isBonusHolder($playerId) && is_array($data['extra'] ?? null) && ($data['extra']['op'] ?? null) === 'draw';
-        $wantsDeploy = ($data['op'] ?? null) === 'deploy' || (is_array($data['extra'] ?? null) && ($data['extra']['op'] ?? null) === 'deploy');
-        if ($wantsDeploy) {
+        if (($data['op'] ?? null) === 'deploy') {
             $outcomes = $this->deploy($playerId, $data);
         }
         if ($wantsDraw) {
@@ -170,6 +204,25 @@ final class DeployPhase implements ActionStep
             ]);
         }
         return $outcomes === [] ? [new StepOutcome($playerId, 'pass')] : $outcomes;
+    }
+
+    /**
+     * @param array<mixed> $data
+     * @return list<StepOutcome>
+     */
+    private function resolveSecond(int $playerId, array $data): array
+    {
+        try {
+            $plan = $this->planSecond($playerId, $data);
+        } catch (RuleViolation) {
+            return [];
+        }
+        if ($plan->steps === []) {
+            return [];
+        }
+        $outcome = $this->commitStep($playerId, $plan->steps[0], $plan->sell);
+
+        return $outcome === null ? [] : [$outcome];
     }
 
     /**
@@ -186,29 +239,63 @@ final class DeployPhase implements ActionStep
         if ($plan->steps === []) {
             return [];
         }
-        $payment = $this->services->selling->tryPay($playerId, $plan->totalCost(), $plan->sell, $plan->cards());
-        if ($payment === null) {
-            return [new StepOutcome($playerId, 'pass', true)];
-        }
-        $outcomes = [];
-        foreach ($plan->steps as $index => $step) {
-            $tier = $this->services->cards->deploy($playerId, $step->card, $step->target->satellite->id);
-            $outcomes[] = new StepOutcome($playerId, 'deploy', false, [
-                'card' => $step->card,
-                'sat' => $step->target->satellite->id,
-                'tier' => $tier,
-                'cost' => $step->target->cost->total(),
-                // 売却は合計コストに対して 1 回。最初の配備にだけ載せる
-                'sold' => $index === 0 ? $payment->soldCards : [],
-                'active' => $step->target->satellite->isActive(),
-                'mods' => $step->mods,
-            ]);
-        }
-        return $outcomes;
+        $outcome = $this->commitStep($playerId, $plan->steps[0], $plan->sell);
+
+        return [$outcome ?? new StepOutcome($playerId, 'pass', true)];
     }
 
     /**
-     * 選択の検証と、コストの見積もり。状態は変えない。
+     * 1 枚分の支払い（売却の同梱を含む）と配備。払えなければ何もせず null。
+     *
+     * @param list<int> $sell
+     */
+    private function commitStep(int $playerId, DeployStep $step, array $sell): ?StepOutcome
+    {
+        $payment = $this->services->selling->tryPay($playerId, $step->target->cost->total(), $sell, [$step->card]);
+        if ($payment === null) {
+            return null;
+        }
+        $tier = $this->services->cards->deploy($playerId, $step->card, $step->target->satellite->id);
+
+        return new StepOutcome($playerId, 'deploy', false, [
+            'card' => $step->card,
+            'sat' => $step->target->satellite->id,
+            'tier' => $tier,
+            'cost' => $step->target->cost->total(),
+            'sold' => $payment->soldCards,
+            'active' => $step->target->satellite->isActive(),
+            'mods' => $step->mods,
+        ]);
+    }
+
+    /**
+     * [Deploy another card]（`actStageDeploy`）: 1 枚目の検証 → 支払い（売却の同梱を含む）→ 配備。ボーナス保持者だけ。
+     * 失敗は `RuleViolation` で、状態を変えない。DEPLOYED イベントの記録・効果の解決・ステージ記録の保存は呼び出し側（`DeployStageFlow`）。
+     *
+     * @param array<mixed> $data {op: deploy, card, sat, sell?, useMods?}（extra は無視する）
+     * @throws RuleViolation
+     */
+    public function stageFirst(int $playerId, array $data): StepOutcome
+    {
+        if (!$this->isBonusHolder($playerId)) {
+            throw new RuleViolation('You do not have the Deploy action bonus');
+        }
+        if ($this->isStaged($playerId)) {
+            throw new RuleViolation('The first card is already deployed');
+        }
+        if (($data['op'] ?? null) !== 'deploy') {
+            throw new RuleViolation('Select a card and a satellite');
+        }
+        unset($data['extra']);
+        $plan = $this->plan($playerId, $data);
+        $this->services->selling->assertPayable($playerId, $plan->totalCost(), $plan->sell, $plan->cards());
+
+        return $this->commitStep($playerId, $plan->steps[0], $plan->sell) ?? throw new RuleViolation('Not enough Maya');
+    }
+
+    /**
+     * 未ステージ（S0）の選択の検証と、コストの見積もり。状態は変えない。追加の配備は S0 では選べない
+     * （[Deploy another card] で 1 枚目を先に確定する）。extra は [Draw 1 card] / [Pass] のみ。
      *
      * @param array<mixed> $data
      * @throws RuleViolation
@@ -221,7 +308,7 @@ final class DeployPhase implements ActionStep
         }
         $steps = [];
         if ($op === 'deploy') {
-            $steps[] = $this->stepFor($playerId, $data, []);
+            $steps[] = $this->stepFor($playerId, $data);
         }
         $draw = false;
         $extra = $data['extra'] ?? null;
@@ -236,7 +323,7 @@ final class DeployPhase implements ActionStep
             if ($extraOp === 'draw') {
                 $draw = true;
             } elseif ($extraOp === 'deploy') {
-                $steps[] = $this->stepFor($playerId, $extra, $steps);
+                throw new RuleViolation('Press [Deploy another card] to deploy the first card before choosing another');
             } elseif ($extraOp !== 'pass') {
                 throw new RuleViolation('Choose another deployment or drawing 1 card');
             }
@@ -246,39 +333,60 @@ final class DeployPhase implements ActionStep
     }
 
     /**
-     * @param array<mixed> $part
-     * @param list<DeployStep> $earlier 同じ選択で先に配備するカード
+     * ステージ済み（S1）の 2 枚目の検証と見積もり。`extra` が無い・{op: pass} なら 2 枚目なし。状態は変えない。
+     * 2 枚目は実際の盤面（ステージ済みの 1 枚目が衛星に付いた状態）で数え、コストは 2 枚目だけの額。売却も 2 枚目の分。
+     *
+     * @param array<mixed> $data 確定内容（外側の op と 1 枚目の引数は無視する）
      * @throws RuleViolation
      */
-    private function stepFor(int $playerId, array $part, array $earlier): DeployStep
+    public function planSecond(int $playerId, array $data): DeployPlan
+    {
+        $extra = $data['extra'] ?? null;
+        if ($extra === null || $extra === []) {
+            return new DeployPlan([], false, []);
+        }
+        if (!is_array($extra)) {
+            throw new RuleViolation('Invalid extra action');
+        }
+        $op = $extra['op'] ?? null;
+        if ($op === 'pass') {
+            return new DeployPlan([], false, []);
+        }
+        if ($op !== 'deploy') {
+            throw new RuleViolation('Choose another deployment, or confirm without one');
+        }
+        $step = $this->stepFor($playerId, $extra);
+
+        return new DeployPlan([$step], false, $this->sellList($extra));
+    }
+
+    /**
+     * @param array<mixed> $part
+     * @throws RuleViolation
+     */
+    private function stepFor(int $playerId, array $part): DeployStep
     {
         $card = $part['card'] ?? null;
         $satId = $part['sat'] ?? null;
         if (!is_int($card) || !is_int($satId)) {
             throw new RuleViolation('Select a card and a satellite');
         }
-        foreach ($earlier as $step) {
-            if ($step->card === $card) {
-                throw new RuleViolation("Card $card is already chosen");
-            }
-        }
         if (!in_array($card, $this->hand($playerId), true)) {
             throw new RuleViolation("Card $card is not in your hand");
         }
-        $pending = count(array_filter($earlier, static fn(DeployStep $s): bool => $s->target->satellite->id === $satId));
         $mods = array_values(array_map('strval', (array) ($part['useMods'] ?? [])));
         foreach ($this->services->satellites->forPlayer($playerId) as $sat) {
             if ($sat->id !== $satId) {
                 continue;
             }
-            $count = $this->services->cards->countIn(CardLocation::Satellite, $sat->id) + $pending;
+            $count = $this->services->cards->countIn(CardLocation::Satellite, $sat->id);
             if ($count >= ProjectCardRepository::MAX_DEPLOYED) {
                 throw new RuleViolation('This satellite already has 4 cards');
             }
             if ($this->services->hooks->isForbidden(ForbiddenAction::DeployTo, $sat)) {
                 throw new RuleViolation('Cards cannot be deployed to this satellite');
             }
-            $cost = $this->cost($playerId, $card, $sat, $pending, $mods);
+            $cost = $this->cost($playerId, $card, $sat, $mods);
             $target = new DeployTarget($sat, $count, $cost, $this->services->selling->assess($playerId, $cost->total(), [$card]), null);
             return new DeployStep($card, $target, $mods);
         }

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace ProjectEdgeworthTests\Integration\Flow\Action;
 
 use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\DeployStage;
 use Bga\Games\projectedgeworth\Flow\Action\ActionServices;
 use Bga\Games\projectedgeworth\Flow\Action\DeployTarget;
 use Bga\Games\projectedgeworth\Flow\Action\ForbiddenAction;
@@ -194,6 +195,30 @@ final class DeployPhaseTest extends ActionTestCase
         return ActionServices::project($card)->cost;
     }
 
+    /** @return array<string, mixed> ステージ済み（S1）の確定内容: 2 枚目を配備する */
+    private function second(int $card, int $satId, array $sell = []): array
+    {
+        return ['op' => 'staged', 'extra' => ['op' => 'deploy', 'card' => $card, 'sat' => $satId, 'sell' => $sell]];
+    }
+
+    /** 1 枚目をステージする（支払いと配備。通知・効果・スナップショットは状態機械側の役目なので、記録だけ最小限に作る） */
+    private function stage(int $playerId, array $choice): void
+    {
+        $outcome = $this->phases->deploy()->stageFirst($playerId, $choice);
+        $this->phases->services()->deployStages->save(new DeployStage(
+            $playerId,
+            (int) $outcome->details['card'],
+            (int) $outcome->details['sat'],
+            (int) $outcome->details['tier'],
+            (int) $outcome->details['cost'],
+            array_values($outcome->details['sold']),
+            false,
+            [],
+            [],
+            [],
+        ));
+    }
+
     public function testEveryoneParticipatesAndOnlyHoldersMayAddAnExtraAction(): void
     {
         $deploy = $this->phases->deploy();
@@ -207,29 +232,70 @@ final class DeployPhaseTest extends ActionTestCase
         $deploy->validate(102, StepMode::Main, $this->withExtra($this->deployChoice(34, $sat), ['op' => 'draw']));
     }
 
-    public function testNonHolderCannotDeployASecondCard(): void
+    public function testNonHolderCannotStageASecondCard(): void
     {
         $this->setHand(102, [34, 35]);
         $this->expectException(RuleViolation::class);
-        $this->phases->deploy()->validate(102, StepMode::Main, $this->withExtra(
-            $this->deployChoice(34, $this->sat(102, 0)->id),
-            ['op' => 'deploy', 'card' => 35, 'sat' => $this->sat(102, 1)->id],
+        $this->phases->deploy()->stageFirst(102, $this->deployChoice(34, $this->sat(102, 0)->id));
+    }
+
+    public function testExtraDeployIsNotAcceptedBeforeTheFirstCardIsStaged(): void
+    {
+        // 追加の配備は [Deploy another card] で 1 枚目を先に確定してから選ぶ（S0 の確定には含められない）
+        $this->expectException(RuleViolation::class);
+        $this->phases->deploy()->validate(101, StepMode::Main, $this->withExtra(
+            $this->deployChoice(1, $this->sat(101, 0)->id),
+            ['op' => 'deploy', 'card' => 4, 'sat' => $this->sat(101, 1)->id],
         ));
     }
 
-    public function testHolderDeploysTwoCardsAndPaysTheTotalOnce(): void
+    public function testStagePaysAndDeploysTheFirstCardAtOnceAndOnlyOnce(): void
+    {
+        $a = $this->sat(101, 0)->id;
+        $this->stage(101, $this->deployChoice(1, $a));
+        $cards = $this->phases->services()->cards;
+        $this->assertSame([1], $cards->deployedIds($a));
+        $this->assertSame(20 - $this->cost(1), $this->maya(101));
+        $this->assertSame([4, 10], $this->handOf(101));
+        $this->assertTrue($this->phases->deploy()->isStaged(101));
+
+        try {
+            $this->phases->deploy()->stageFirst(101, $this->deployChoice(4, $a));
+            $this->fail('staging twice is rejected');
+        } catch (RuleViolation) {
+            $this->addToAssertionCount(1);
+        }
+        $this->assertSame(20 - $this->cost(1), $this->maya(101), '拒否は状態を変えない');
+    }
+
+    public function testStageFailureLeavesTheStateUntouched(): void
+    {
+        $this->setMaya(101, 1);
+        try {
+            $this->phases->deploy()->stageFirst(101, $this->deployChoice(1, $this->sat(101, 0)->id));
+            $this->fail('expected RuleViolation');
+        } catch (RuleViolation) {
+            $this->addToAssertionCount(1);
+        }
+        $this->assertSame(1, $this->maya(101));
+        $this->assertSame([1, 4, 10], $this->handOf(101));
+        $this->assertFalse($this->phases->deploy()->isStaged(101));
+    }
+
+    public function testHolderDeploysASecondCardAfterTheFirstAndPaysEachCardSeparately(): void
     {
         $deploy = $this->phases->deploy();
         $a = $this->sat(101, 0)->id;
         $b = $this->sat(101, 1)->id;
-        $choice = $this->withExtra($this->deployChoice(1, $a), ['op' => 'deploy', 'card' => 4, 'sat' => $b]);
+        $this->stage(101, $this->deployChoice(1, $a));
+        $choice = $this->second(4, $b);
         $deploy->validate(101, StepMode::Main, $choice);
 
         $result = $deploy->resolve(StepMode::Main, [101 => $choice]);
         $outcomes = $result->outcomesOf(101);
-        $this->assertCount(2, $outcomes);
-        $this->assertSame([1, 4], array_map(static fn($o): int => $o->details['card'], $outcomes));
-        $this->assertSame([$this->cost(1), $this->cost(4)], array_map(static fn($o): int => $o->details['cost'], $outcomes));
+        $this->assertCount(1, $outcomes, '1 枚目はステージ済みなので、コミットは 2 枚目だけ');
+        $this->assertSame(4, $outcomes[0]->details['card']);
+        $this->assertSame($this->cost(4), $outcomes[0]->details['cost']);
         $this->assertSame(20 - $this->cost(1) - $this->cost(4), $this->maya(101));
         $this->assertSame([10], $this->handOf(101));
         $cards = $this->phases->services()->cards;
@@ -237,107 +303,162 @@ final class DeployPhaseTest extends ActionTestCase
         $this->assertSame([4], $cards->deployedIds($b));
     }
 
-    public function testTwoCardsMayGoToTheSameSatelliteInOrder(): void
+    public function testStagedPlayerWithoutASecondCardCommitsNothingMore(): void
+    {
+        $deploy = $this->phases->deploy();
+        $a = $this->sat(101, 0)->id;
+        $this->stage(101, $this->deployChoice(1, $a));
+        $mayaAfterStage = $this->maya(101);
+        $this->assertSame(['op' => 'staged'], $deploy->defaultChoice(101, StepMode::Main), 'zombie はステージを残して 2 枚目なしで確定');
+        foreach ([['op' => 'staged'], ['op' => 'staged', 'extra' => ['op' => 'pass']]] as $choice) {
+            $deploy->validate(101, StepMode::Main, $choice);
+            $this->assertSame([], $deploy->resolve(StepMode::Main, [101 => $choice])->outcomesOf(101));
+        }
+        $this->assertSame($mayaAfterStage, $this->maya(101), '再支払いしない');
+        $this->assertSame([1], $this->phases->services()->cards->deployedIds($a));
+    }
+
+    public function testNormalizeDropsTheOuterOpOfAStagedPlayer(): void
+    {
+        $deploy = $this->phases->deploy();
+        $a = $this->sat(101, 0)->id;
+        $choice = $this->withExtra($this->deployChoice(4, $a), ['op' => 'deploy', 'card' => 10, 'sat' => $a]);
+        $this->assertSame($choice, $deploy->normalize(101, $choice), '未ステージはそのまま');
+        $this->stage(101, $this->deployChoice(1, $a));
+        $this->assertSame(['op' => 'staged', 'extra' => $choice['extra']], $deploy->normalize(101, $choice));
+        $this->assertSame(['op' => 'staged'], $deploy->normalize(101, $this->deployChoice(4, $a)));
+    }
+
+    public function testSecondCardOnTheSameSatelliteStacksAboveTheFirst(): void
     {
         $sat = $this->sat(101, 0)->id;
-        $choice = $this->withExtra($this->deployChoice(1, $sat), ['op' => 'deploy', 'card' => 4, 'sat' => $sat]);
+        $this->stage(101, $this->deployChoice(1, $sat));
+        $choice = $this->second(4, $sat);
         $this->phases->deploy()->validate(101, StepMode::Main, $choice);
         $result = $this->phases->deploy()->resolve(StepMode::Main, [101 => $choice]);
 
-        $this->assertSame([1, 2], array_map(static fn($o): int => $o->details['tier'], $result->outcomesOf(101)));
+        $this->assertSame([2], array_map(static fn($o): int => $o->details['tier'], $result->outcomesOf(101)));
         $this->assertSame([1, 4], $this->phases->services()->cards->deployedIds($sat));
     }
 
-    public function testTwoCardsCountTowardTheFourCardLimit(): void
+    public function testStagedFirstCardCountsTowardTheFourCardLimitOfTheSecond(): void
     {
         $sat = $this->sat(101, 0)->id;
         $this->setHand(101, [1, 2, 3, 4, 5, 6]);
         $this->deployDirect(101, 5, $sat);
         $this->deployDirect(101, 6, $sat);
         // 2 枚付いている衛星へ 2 枚: ちょうど 4 枚
-        $ok = $this->withExtra($this->deployChoice(1, $sat), ['op' => 'deploy', 'card' => 2, 'sat' => $sat]);
-        $this->phases->deploy()->validate(101, StepMode::Main, $ok);
+        $this->stage(101, $this->deployChoice(1, $sat));
+        $this->phases->deploy()->validate(101, StepMode::Main, $this->second(2, $sat));
+        $this->assertSame(3, $this->phases->deploy()->targets(101, 2)[0]->deployedCount, '候補は実際の盤面（1 枚目を含む 3 枚）');
 
-        $this->deployDirect(101, 3, $sat);
-        // 3 枚付いている衛星へ 2 枚は 5 枚になるので不可。1 枚ずつなら可
-        $this->setHand(101, [1, 2, 4]);
-        $this->phases->deploy()->validate(101, StepMode::Main, $this->deployChoice(1, $sat));
+        // 3 枚付いている衛星なら、1 枚目のステージで 4 枚になり、2 枚目は同じ衛星に配備できない
+        $sat2 = $this->sat(101, 1)->id;
+        $this->deployDirect(101, 7, $sat2);
+        $this->deployDirect(101, 8, $sat2);
+        $this->deployDirect(101, 9, $sat2);
+        $this->setHand(101, [2, 3, 4, 10]);
+        $this->phases->services()->deployStages->remove(101);
+        $this->stage(101, $this->deployChoice(2, $sat2));
+        $this->assertSame(DeployTarget::BLOCKED_FULL, $this->phases->deploy()->targets(101, 3)[1]->blocked);
         $this->expectException(RuleViolation::class);
-        $this->phases->deploy()->validate(101, StepMode::Main, $this->withExtra($this->deployChoice(1, $sat), ['op' => 'deploy', 'card' => 2, 'sat' => $sat]));
+        $this->phases->deploy()->validate(101, StepMode::Main, $this->second(3, $sat2));
     }
 
-    public function testTargetsAfterOneMoreCardCountTheFirstOne(): void
+    public function testStageIsRejectedWhenTheSatelliteIsAlreadyFull(): void
+    {
+        $sat = $this->sat(101, 0);
+        $this->setHand(101, [1, 2, 3, 4, 5, 6]);
+        foreach ([1, 2, 3, 4] as $card) {
+            $this->deployDirect(101, $card, $sat->id);
+        }
+        $this->expectException(RuleViolation::class);
+        $this->phases->deploy()->stageFirst(101, $this->deployChoice(5, $sat->id));
+    }
+
+    public function testTargetsAfterStageCountTheFirstCardOnTheRealBoard(): void
     {
         $sat = $this->sat(101, 0)->id;
         $this->deployDirect(101, 5, $sat);
         $this->deployDirect(101, 6, $sat);
         $this->deployDirect(101, 7, $sat);
-        $this->setHand(101, [1]);
+        $this->setHand(101, [1, 4]);
         $deploy = $this->phases->deploy();
         $this->assertNull($deploy->targets(101, 1)[0]->blocked);
-        $this->assertSame(DeployTarget::BLOCKED_FULL, $deploy->targets(101, 1, 1)[0]->blocked);
-        $this->assertSame(4, $deploy->targets(101, 1, 1)[0]->deployedCount);
+        $this->assertSame(3, $deploy->targets(101, 1)[0]->deployedCount);
+        $this->stage(101, $this->deployChoice(1, $sat));
+        $this->assertSame(DeployTarget::BLOCKED_FULL, $deploy->targets(101, 4)[0]->blocked);
+        $this->assertSame(4, $deploy->targets(101, 4)[0]->deployedCount);
     }
 
     public function testActiveSurchargeIsPaidPerCard(): void
     {
         $sat = $this->sat(101, 0);
         $this->activate($sat->id, $this->cellOf(AreaType::SEA));
-        $choice = $this->withExtra($this->deployChoice(1, $sat->id), ['op' => 'deploy', 'card' => 4, 'sat' => $sat->id]);
         $deploy = $this->phases->deploy();
-        $plan = $deploy->plan(101, $choice);
-        $this->assertSame($this->cost(1) + 5 + $this->cost(4) + 5, $plan->totalCost());
+        $this->assertSame($this->cost(1) + 5, $deploy->plan(101, $this->deployChoice(1, $sat->id))->totalCost());
+        $this->stage(101, $this->deployChoice(1, $sat->id));
+        $this->assertSame(20 - $this->cost(1) - 5, $this->maya(101));
 
+        $choice = $this->second(4, $sat->id);
+        $this->assertSame($this->cost(4) + 5, $deploy->planSecond(101, $choice)->totalCost());
         $deploy->resolve(StepMode::Main, [101 => $choice]);
-        $this->assertSame(20 - $plan->totalCost(), $this->maya(101));
+        $this->assertSame(20 - $this->cost(1) - 5 - $this->cost(4) - 5, $this->maya(101));
     }
 
-    public function testPayabilityAndSalesAreJudgedOnTheTotalOfBothCards(): void
+    public function testPayabilityAndSalesAreJudgedPerCard(): void
     {
         $this->setHand(101, [1, 4, 10, 2, 3, 5, 6]);
-        $this->setMaya(101, 1);
-        $total = $this->cost(1) + $this->cost(4);
-        $need = (int) ceil(($total - 1) / 3);
-        $others = [10, 2, 3, 5, 6];
-        $choice = fn(array $sell): array => $this->withExtra(
-            $this->deployChoice(1, $this->sat(101, 0)->id, $sell),
-            ['op' => 'deploy', 'card' => 4, 'sat' => $this->sat(101, 1)->id],
-        );
+        $this->setMaya(101, $this->cost(1));
+        $a = $this->sat(101, 0)->id;
+        $b = $this->sat(101, 1)->id;
         $deploy = $this->phases->deploy();
+        $this->stage(101, $this->deployChoice(1, $a));
+        $this->assertSame(0, $this->maya(101));
 
-        $deploy->validate(101, StepMode::Main, $choice(array_slice($others, 0, $need)));
+        // 2 枚目のコストは 2 枚目の分だけ。売却も 2 枚目の分で判定する
+        $need = (int) ceil($this->cost(4) / 3);
+        $others = [10, 2, 3, 5, 6];
+        $deploy->validate(101, StepMode::Main, $this->second(4, $b, array_slice($others, 0, $need)));
         try {
-            $deploy->validate(101, StepMode::Main, $choice(array_slice($others, 0, $need - 1)));
+            $deploy->validate(101, StepMode::Main, $this->second(4, $b, array_slice($others, 0, $need - 1)));
             $this->fail('expected RuleViolation');
         } catch (RuleViolation) {
             $this->addToAssertionCount(1);
         }
-        // 配備する 2 枚は売れない
+        // 配備する 2 枚目自身は売れない
         try {
-            $deploy->validate(101, StepMode::Main, $choice([4, 10, 2, 3, 5, 6]));
+            $deploy->validate(101, StepMode::Main, $this->second(4, $b, [4, 10, 2, 3, 5, 6]));
             $this->fail('expected RuleViolation');
         } catch (RuleViolation) {
             $this->addToAssertionCount(1);
         }
 
         $sold = array_slice($others, 0, $need);
-        $result = $deploy->resolve(StepMode::Main, [101 => $choice($sold)]);
-        $outcomes = $result->outcomesOf(101);
-        $this->assertSame($sold, $outcomes[0]->details['sold']);
-        $this->assertSame([], $outcomes[1]->details['sold']);
-        $this->assertSame(1 + 3 * $need - $total, $this->maya(101));
+        $result = $deploy->resolve(StepMode::Main, [101 => $this->second(4, $b, $sold)]);
+        $this->assertSame($sold, $result->outcomesOf(101)[0]->details['sold']);
+        $this->assertSame(3 * $need - $this->cost(4), $this->maya(101));
     }
 
-    public function testUnaffordableTotalCancelsBothDeploymentsButKeepsTheDraw(): void
+    public function testStagePaymentCanIncludeSales(): void
     {
-        $this->setMaya(101, $this->cost(1));
-        $choice = $this->withExtra($this->deployChoice(1, $this->sat(101, 0)->id), ['op' => 'deploy', 'card' => 4, 'sat' => $this->sat(101, 1)->id]);
-        $outcomes = $this->phases->deploy()->resolve(StepMode::Main, [101 => $choice])->outcomesOf(101);
-        $this->assertCount(1, $outcomes);
-        $this->assertTrue($outcomes[0]->isPass());
-        $this->assertTrue($outcomes[0]->paymentFailed);
-        $this->assertSame([1, 4, 10], $this->handOf(101));
-        $this->assertSame($this->cost(1), $this->maya(101));
+        $this->setMaya(101, 1);
+        $a = $this->sat(101, 0)->id;
+        $this->stage(101, $this->deployChoice(1, $a, [4, 10]));
+        $this->assertSame(1 + 6 - $this->cost(1), $this->maya(101));
+        $this->assertSame([], $this->handOf(101));
+        $this->assertSame([4, 10], $this->phases->services()->deployStages->find(101)?->sold);
+    }
+
+    public function testUnaffordableSecondCardIsDroppedAndTheStagedFirstCardRemains(): void
+    {
+        $a = $this->sat(101, 0)->id;
+        $this->stage(101, $this->deployChoice(1, $a));
+        $this->setMaya(101, 0);
+        $outcomes = $this->phases->deploy()->resolve(StepMode::Main, [101 => $this->second(4, $a)])->outcomesOf(101);
+        $this->assertSame([], $outcomes);
+        $this->assertSame([4, 10], $this->handOf(101));
+        $this->assertSame([1], $this->phases->services()->cards->deployedIds($a));
     }
 
     public function testExtraDrawGivesACardThatCannotBeUsedInTheSameChoice(): void
@@ -352,7 +473,7 @@ final class DeployPhaseTest extends ActionTestCase
 
         // 選ぶ時点では手札にないので、引くカードを配備には使えない
         try {
-            $deploy->validate(101, StepMode::Main, $this->withExtra($this->deployChoice(4, $sat), ['op' => 'deploy', 'card' => $top, 'sat' => $sat]));
+            $deploy->validate(101, StepMode::Main, $this->withExtra($this->deployChoice($top, $sat), ['op' => 'pass']));
             $this->fail('expected RuleViolation');
         } catch (RuleViolation) {
             $this->addToAssertionCount(1);
@@ -367,28 +488,30 @@ final class DeployPhaseTest extends ActionTestCase
         $this->assertCount(3, $this->handOf(101), '3 - 1 + 1');
     }
 
-    public function testHolderMayPassTheMainDeploymentAndOnlyDrawOrOnlyDeployExtra(): void
+    public function testHolderMayPassTheMainDeploymentAndOnlyDraw(): void
     {
         $deploy = $this->phases->deploy();
         $cards = $this->phases->services()->cards;
         $deploy->validate(101, StepMode::Main, ['op' => 'pass', 'extra' => ['op' => 'draw']]);
-        $deploy->validate(101, StepMode::Main, ['op' => 'pass', 'extra' => ['op' => 'deploy', 'card' => 4, 'sat' => $this->sat(101, 0)->id]]);
+        $deploy->validate(101, StepMode::Main, ['op' => 'pass', 'extra' => ['op' => 'pass']]);
         $result = $deploy->resolve(StepMode::Main, [101 => ['op' => 'pass', 'extra' => ['op' => 'draw']]]);
         $this->assertSame(['draw'], array_map(static fn($o): string => $o->op, $result->outcomesOf(101)));
         $this->assertCount(4, $this->handOf(101));
         $this->assertSame([], $cards->deployedIds($this->sat(101, 0)->id));
     }
 
-    public function testTheSameCardCannotBeChosenTwiceAndDrawIsNotAMainOperation(): void
+    public function testDrawIsNotAllowedAfterStagingAndDrawIsNotAMainOperation(): void
     {
         $deploy = $this->phases->deploy();
         $sat = $this->sat(101, 0)->id;
+        $this->stage(101, $this->deployChoice(1, $sat));
         try {
-            $deploy->validate(101, StepMode::Main, $this->withExtra($this->deployChoice(4, $sat), ['op' => 'deploy', 'card' => 4, 'sat' => $this->sat(101, 1)->id]));
+            $deploy->validate(101, StepMode::Main, ['op' => 'staged', 'extra' => ['op' => 'draw']]);
             $this->fail('expected RuleViolation');
         } catch (RuleViolation) {
             $this->addToAssertionCount(1);
         }
+        $this->phases->services()->deployStages->remove(101);
         $this->assertSame(['op' => 'pass'], $deploy->defaultChoice(101, StepMode::Main));
         $this->expectException(RuleViolation::class);
         $deploy->validate(101, StepMode::Main, ['op' => 'draw']);
@@ -413,10 +536,9 @@ final class DeployPhaseTest extends ActionTestCase
         $this->assertSame(0, $deploy->cost(101, 1, $this->sat(101, 0))->activeSurcharge);
 
         $this->setHand(102, [34, 35]);
-        $deploy->validate(102, StepMode::Main, $this->withExtra(
-            $this->deployChoice(34, $this->sat(102, 0)->id),
-            ['op' => 'deploy', 'card' => 35, 'sat' => $this->sat(102, 0)->id],
-        ));
+        $this->setMaya(102, 20);
+        $this->stage(102, $this->deployChoice(34, $this->sat(102, 0)->id));
+        $deploy->validate(102, StepMode::Main, $this->second(35, $this->sat(102, 0)->id));
     }
 
     public function testMainStepConfirmsAllAtOnceThroughTheRunner(): void
@@ -425,13 +547,31 @@ final class DeployPhaseTest extends ActionTestCase
         $runner = $this->phases->runner();
         $entry = $runner->enter($deploy, self::MAIN_STATE);
         $this->assertSame([101, 102, 103], $entry->participants);
-        $runner->confirm($deploy, self::MAIN_STATE, 101, $this->withExtra($this->deployChoice(1, $this->sat(101, 0)->id), ['op' => 'draw']));
+        $this->stage(101, $this->deployChoice(1, $this->sat(101, 0)->id));
+        $runner->confirm($deploy, self::MAIN_STATE, 101, $this->second(4, $this->sat(101, 1)->id));
         $runner->confirm($deploy, self::MAIN_STATE, 102, ['op' => 'pass']);
         $runner->confirm($deploy, self::MAIN_STATE, 103, ['op' => 'pass', 'extra' => ['op' => 'draw']]);
         $result = $runner->resolve($deploy, self::MAIN_STATE);
 
-        $this->assertSame(['deploy', 'draw'], array_map(static fn($o): string => $o->op, $result->outcomesOf(101)));
+        $this->assertSame(['deploy'], array_map(static fn($o): string => $o->op, $result->outcomesOf(101)));
+        $this->assertSame(4, $result->outcomesOf(101)[0]->details['card']);
         $this->assertTrue($result->outcomeOf(102)?->isPass());
         $this->assertSame(['draw'], array_map(static fn($o): string => $o->op, $result->outcomesOf(103)));
+    }
+
+    public function testStagedPlayerWhoNeverConfirmedGetsTheDefaultAtResolution(): void
+    {
+        $deploy = $this->phases->deploy();
+        $runner = $this->phases->runner();
+        $runner->enter($deploy, self::MAIN_STATE);
+        $this->stage(101, $this->deployChoice(1, $this->sat(101, 0)->id));
+        $runner->zombie($deploy, self::MAIN_STATE, 101);
+        $runner->confirm($deploy, self::MAIN_STATE, 102, ['op' => 'pass']);
+        $runner->confirm($deploy, self::MAIN_STATE, 103, ['op' => 'pass']);
+        $result = $runner->resolve($deploy, self::MAIN_STATE);
+
+        $this->assertSame([], $result->outcomesOf(101), 'zombie の S1: ステージ済みの 1 枚目を残して 2 枚目なし');
+        $this->assertSame(20 - $this->cost(1), $this->maya(101));
+        $this->assertSame([1], $this->phases->services()->cards->deployedIds($this->sat(101, 0)->id));
     }
 }
