@@ -10,7 +10,9 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Data\DeployStage;
 use Bga\Games\projectedgeworth\Data\FlowPhase;
+use Bga\Games\projectedgeworth\Data\HeldNotificationRepository;
 use Bga\Games\projectedgeworth\Data\LinkRepository;
 use Bga\Games\projectedgeworth\Data\MissionRepository;
 use Bga\Games\projectedgeworth\Data\RegionRepository;
@@ -65,6 +67,11 @@ final class PublicView
             }
         }
 
+        if ($this->ctx->publicFame && $services->deployStages->all() !== []) {
+            $publicFame ??= $this->ctx->finalScoring()->publicFame();
+        }
+        [$deckCount, $discard, $playerData, $publicFame] = $this->withoutOthersStages($viewerId, $deckCount, $discard, $playerData, $publicFame);
+
         $view = [
             'round' => $globals->roundNo(),
             'phase' => $globals->flowPhase()->value,
@@ -88,6 +95,51 @@ final class PublicView
             $view['publicFame'] = $publicFame ?? $this->ctx->finalScoring()->publicFame();
         }
         return $view;
+    }
+
+    /**
+     * II 配備のステージ（009 追補 6）: 他のプレイヤーがバリアまで見せない 1 枚目の分を、閲覧者の見える値から差し引く。
+     * ステージした人の公開データはステージ前の値（`deploy_stage.ds_public_before`）に戻し、山札の枚数と捨て札は、ほかの人のステージによる
+     * 増減だけを戻す（閲覧者本人のステージ分は残す）。観戦者は全員のステージを差し引く。
+     *
+     * @param list<int> $discard
+     * @param array<int, array<string, mixed>> $playerData
+     * @param array<mixed>|null $publicFame
+     * @return array{0: int, 1: list<int>, 2: array<int, array<string, mixed>>, 3: array<mixed>|null}
+     */
+    private function withoutOthersStages(int $viewerId, int $deckCount, array $discard, array $playerData, ?array $publicFame): array
+    {
+        $stages = $this->ctx->services->deployStages->all();
+        if ($stages === []) {
+            return [$deckCount, $discard, $playerData, $publicFame];
+        }
+        // ステージした順（保留の最初の held_id）。山札・捨て札の増減を、次のステージ直前の値（なければ現在値）との差で求める
+        $first = (new HeldNotificationRepository($this->ctx->db))->firstIdByOrigin();
+        usort($stages, static fn(DeployStage $a, DeployStage $b): int => ($first[$a->playerId] ?? PHP_INT_MAX) <=> ($first[$b->playerId] ?? PHP_INT_MAX));
+        $currentDiscard = $discard;
+        foreach ($stages as $i => $stage) {
+            if ($stage->playerId === $viewerId) {
+                continue;
+            }
+            $before = $stage->publicBefore;
+            $after = $stages[$i + 1]->publicBefore ?? null;
+            $afterDeck = $after === null ? $this->ctx->deckCount() : (int) $after['deckCount'];
+            $afterDiscard = $after === null ? $currentDiscard : array_values(array_map('intval', (array) $after['discard']));
+            $beforeDiscard = array_values(array_map('intval', (array) ($before['discard'] ?? [])));
+            $deckCount -= $afterDeck - (int) ($before['deckCount'] ?? $afterDeck);
+            $added = array_diff($afterDiscard, $beforeDiscard);
+            $removed = array_diff($beforeDiscard, $afterDiscard);
+            $discard = [...array_values(array_diff($discard, $added)), ...array_values(array_diff($removed, $discard))];
+            $own = $before['playerData'][$stage->playerId] ?? null;
+            if ($own !== null) {
+                $playerData[$stage->playerId] = $own;
+            }
+            if ($publicFame !== null && isset($before['publicFame'][$stage->playerId])) {
+                $publicFame[$stage->playerId] = $before['publicFame'][$stage->playerId];
+            }
+        }
+
+        return [$deckCount, $discard, $playerData, $publicFame];
     }
 
     /**

@@ -599,6 +599,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | --- | --- | --- | --- | --- | --- |
 | N1 | `launchBasePlaced` | 全員 | `player_id`、`player_name`、`cell` | `${player_name} places their launch base` | 11。発射拠点のコマを区域に置く。次の人の配置へ |
 | N2 | `choiceMarked` | 全員 | `player_id`、`state_id` | `''` | 同時選択の確定（初回のみ。内容なし）。チェックマーク。変更では送らない |
+| N2b | `choiceUnmarked` | 全員 | `player_id`、`state_id` | `''` | 【提案】確定済みの人が II 配備のステージ / [Reset] をして確定が取り消されたとき（内容なし）。チェックマークを外す |
 | N3 | `choiceRecorded` | 本人 | `state_id`、`summary`（確定内容の要約） | `''` | 確定・再確定のたび。同じプレイヤーの別タブを同期（`getArgs` の `_private` と併用） |
 | N4 | `roundStarted` | 全員 | `round_no` | `Round ${round_no} begins` | 20。起動効果の使用済みマークを全員分外す。進行度の更新 |
 | N5 | `actionCardsCollected` | 全員 | `moves`（`{プレイヤー ID: {"toHand": [アクション番号], "toSideways": [アクション番号]}}`） | `''` | 21。アクションカードの回収をアニメーション（001 §6-1）。P001・P002 が縦向きのカードを手札に戻したとき（ジャーナル `actionKept`）も、同じ N5 で `toHand` を窓の保留の通知として送る |

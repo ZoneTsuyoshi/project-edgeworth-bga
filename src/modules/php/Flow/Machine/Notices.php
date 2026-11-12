@@ -58,6 +58,14 @@ final class Notices
     }
 
     /**
+     * 【提案】全員: 確定を取り消した（II 配備のステージ / [Reset] が確定済みの人の確定を削除したとき。内容なし）。チェックマークを外す。
+     */
+    public function choiceUnmarked(int $playerId, int $stateId): Notice
+    {
+        return new Notice('choiceUnmarked', '', ['player_id' => $playerId, 'state_id' => $stateId]);
+    }
+
+    /**
      * N3: 本人だけ。
      *
      * @param array<mixed> $summary

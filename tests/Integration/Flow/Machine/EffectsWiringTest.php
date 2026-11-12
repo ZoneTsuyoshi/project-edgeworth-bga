@@ -354,9 +354,9 @@ final class EffectsWiringTest extends MachineTestCase
 
         self::assertSame([9, 4], $this->cards->deployedIds($inactive));
         self::assertSame(60 - ($cost(9) - 2) - $cost(4), $this->playerValues->maya(101), '修正は 1 枚目にだけ効く');
-        $used = array_filter($this->walker->noticesNamed('effectUsed'), static fn($n): bool => $n->args['source_name'] === 'Fleet Commander');
+        $used = array_filter($this->walker->noticesNamed('effectUsed'), static fn($n): bool => $n->to === null && $n->args['source_name'] === 'Fleet Commander');
         self::assertCount(1, $used);
-        $deployedNotices = $this->walker->noticesNamed('cardDeployed');
+        $deployedNotices = array_values(array_filter($this->walker->noticesNamed('cardDeployed'), static fn($n): bool => $n->to === null));
         self::assertSame([9, 4], array_map(static fn($n): int => $n->args['card'], $deployedNotices));
     }
 

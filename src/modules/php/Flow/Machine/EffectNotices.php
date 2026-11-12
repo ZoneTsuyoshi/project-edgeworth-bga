@@ -164,12 +164,42 @@ final class EffectNotices
     }
 
     /**
+     * II 配備のステージ（009 追補 6）: 公開向けの通知を保留に積み、本人にだけ先送り（メッセージ空・`ev_id` 付き）を返す。
+     * 窓の `hold()` と違い、保留の起点（`held_origin`）は常にステージしたプレイヤー（通知の主語が別のプレイヤーでも）。
+     * [Reset] が `discardStaged()` でその人の分をまとめて捨てられるようにするため。先送りも常にステージした本人だけへ送る。
+     *
+     * @param list<Notice> $notices
+     * @return list<Notice>
+     */
+    public function holdStaged(int $stager, array $notices): array
+    {
+        $early = [];
+        foreach ($notices as $notice) {
+            $evId = $this->ctx->globals->incHeldSeq();
+            $args = $notice->args + ['ev_id' => $evId];
+            $this->held->push($stager, $notice->name, Notices::heldVariant($notice), $args);
+            $early[] = new Notice($notice->name, '', $args, $stager);
+        }
+
+        return $early;
+    }
+
+    /**
+     * [Reset]: そのプレイヤーのステージの保留を捨てる（窓は開いていないので、保留はステージの分だけ）。
+     */
+    public function discardStaged(int $stager): void
+    {
+        $this->held->clearOrigin($stager);
+    }
+
+    /**
      * バリア: 保留を全員へ流す（基準プレイヤーから時計回りの席順でプレイヤーごとにまとめ、同じプレイヤーの中は時系列）。
+     * `$chronological` が真なら席順でまとめず、`held_id` の昇順（ステージした順。II 配備のバリア。009 追補 7）。
      * 保留は空にする。流した `ev_id` は `flow_ctx` に溜め、窓を閉じるときの N26 に載せる（`closed()`）。
      *
      * @return list<Notice>
      */
-    public function release(): array
+    public function release(bool $chronological = false): array
     {
         $order = $this->ctx->services->players->playerIds();
         $base = array_search($this->ctx->globals->basePlayer(), $order, true);
@@ -178,7 +208,9 @@ final class EffectNotices
         }
         $rank = array_flip($order);
         $items = $this->held->all();
-        usort($items, static fn($a, $b): int => [$rank[$a->originPlayerId] ?? 99, $a->id] <=> [$rank[$b->originPlayerId] ?? 99, $b->id]);
+        if (!$chronological) {
+            usort($items, static fn($a, $b): int => [$rank[$a->originPlayerId] ?? 99, $a->id] <=> [$rank[$b->originPlayerId] ?? 99, $b->id]);
+        }
 
         $notices = [];
         $evIds = [];

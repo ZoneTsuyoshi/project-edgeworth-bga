@@ -25,7 +25,7 @@ use Bga\Games\projectedgeworth\Material\ProjectCards;
  *
  * ステージ: 1 枚目の検証 → 支払い（売却の同梱を含む）→ 配備 → `DEPLOYED` を起こして、そのプレイヤーのプールだけを窓の外で解決
  * （選択のない効果だけ。選択が要る効果と順番の問いは、バリアのあとの窓 DE に残す）→ ステージ記録（`deploy_stage`）の保存。
- * 通知はすべて本人宛て（Q-20: バリアまで他人に見せない。公開面の保留通知と PublicView の差し引きは別 PR）。
+ * 通知は本人にすぐ送り、他人向けの公開通知は保留（`held_notif`）に積んでバリアで流す（Q-20 案 A: バリアまで他人に見せない）。
  * [Reset]: ステージ前のスナップショットを復元する。山札から引いた（再シャッフルを含む）結果が出ていれば拒否（Q-22）。
  */
 final class DeployStageFlow
@@ -102,10 +102,14 @@ final class DeployStageFlow
         ));
         $wasConfirmed = $services->choices->remove($playerId, StateId::DEPLOY_MAIN_CHOOSE);
 
-        $notices = $this->toPlayer($playerId, $notices);
-        $notices[] = $n->deployStaged($playerId, $this->privateArgs($playerId));
+        // 公開の通知（配備・マヤ・売却・ドローの枚数・山札の枚数）は保留に積み、バリアで流す。本人には先送りの形（メッセージ空・ev_id 付き）
+        $out = $this->holdPublic($playerId, $notices);
+        $out[] = $n->deployStaged($playerId, $this->privateArgs($playerId));
+        if ($wasConfirmed) {
+            $out[] = $n->choiceUnmarked($playerId, StateId::DEPLOY_MAIN_CHOOSE);
+        }
 
-        return new StageResult($notices, $wasConfirmed);
+        return new StageResult($out, $wasConfirmed);
     }
 
     /**
@@ -125,6 +129,7 @@ final class DeployStageFlow
         }
         DeployStageSnapshot::restore($this->ctx->db, $playerId, $stage->snapshot);
         $services->deployStages->remove($playerId);
+        (new EffectNotices($this->ctx))->discardStaged($playerId);
         $wasConfirmed = $services->choices->remove($playerId, StateId::DEPLOY_MAIN_CHOOSE);
 
         $notice = $this->ctx->notices->deployStageReset(
@@ -134,7 +139,12 @@ final class DeployStageFlow
             $services->cards->idsIn(CardLocation::Hand, $playerId),
         );
 
-        return new StageResult([$notice], $wasConfirmed);
+        $out = [$notice];
+        if ($wasConfirmed) {
+            $out[] = $this->ctx->notices->choiceUnmarked($playerId, StateId::DEPLOY_MAIN_CHOOSE);
+        }
+
+        return new StageResult($out, $wasConfirmed);
     }
 
     /**
@@ -150,15 +160,23 @@ final class DeployStageFlow
     }
 
     /**
+     * 全員宛て（`to === null`）の通知は保留に積んで先送りに替え、本人宛て（手札の中身など）はそのまま本人に送る。順序は発生順を保つ。
+     *
      * @param list<Notice|null> $notices
      * @return list<Notice>
      */
-    private function toPlayer(int $playerId, array $notices): array
+    private function holdPublic(int $playerId, array $notices): array
     {
+        $effectNotices = new EffectNotices($this->ctx);
         $out = [];
         foreach ($notices as $notice) {
-            if ($notice !== null) {
-                $out[] = $notice->to === null ? $notice->forPlayer($playerId) : $notice;
+            if ($notice === null) {
+                continue;
+            }
+            if ($notice->to === null) {
+                array_push($out, ...$effectNotices->holdStaged($playerId, [$notice]));
+            } else {
+                $out[] = $notice;
             }
         }
 
