@@ -6,7 +6,7 @@ import {
   compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, sellableHand, sellsWholeHand, sideAvailability, soleOption,
 } from '../../src/modules/js/states/logic/common.js';
 import {
-  deployActionArgs, deployedCards, deployPairs, deployQuote, deploySelectionFrom, deployStage, extraPairs, extraVariant, parseTargets, passNeedsBonusChoice, validateDeploy, withoutMods,
+  deployActionArgs, deployedCards, deployPairs, deployQuote, deploySecondArgs, deploySecondFrom, deploySelectionFrom, deployStage, deployStageArgs, parseStage, parseTargets, passNeedsBonusChoice, validateDeploy,
 } from '../../src/modules/js/states/logic/deploy.js';
 import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from '../../src/modules/js/states/logic/launch.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, parseLinkable, validateLink } from '../../src/modules/js/states/logic/link.js';
@@ -127,76 +127,82 @@ test('配備: args の解釈、選べる組、送信する引数', () => {
   assert.equal(deploySelectionFrom(null).extra, null);
 });
 
-// 配備のボーナス（追加の配備 / 1 枚引く）は通常の配備と同時に選ぶ（作者回答 2026-10-20）
-const bonusTargetsRaw = {
-  3: [
-    { satId: 11, tier: 2, cost: 8, blocked: null, minSales: 0, selectable: true, next: { tier: 3, cost: 8, blocked: null } },
-    { satId: 12, tier: 4, cost: 5, blocked: null, minSales: 0, selectable: true, next: { tier: 5, cost: 5, blocked: 'full' } },
-  ],
+// 追加の配備は段階確定（009 追補 2026-11-12）。S1 の targets はサーバーが 1 枚目を衛星に付けた実際の盤面で出した候補
+const stagedTargetsRaw = {
   18: [
-    { satId: 11, tier: 2, cost: 9, blocked: null, minSales: 0, selectable: true, useMods: { options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }], all: 7 }, next: { tier: 3, cost: 9, blocked: null, useMods: { options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }], all: 7 } } },
-    { satId: 12, tier: 4, cost: 4, blocked: null, minSales: 0, selectable: true, next: { tier: 5, cost: 4, blocked: 'full' } },
+    // 1 枚目（P010 相当）が付いた衛星 11 は、2 段目のコストがサーバーで -2 されている（クライアントは足し引きしない）
+    { satId: 11, tier: 2, cost: 7, blocked: null, minSales: 0, selectable: true },
+    { satId: 12, tier: 5, cost: 4, blocked: 'full', minSales: 0, selectable: false },
   ],
-  44: [{ satId: 11, tier: 2, cost: 30, blocked: null, minSales: 0, selectable: true, next: { tier: 3, cost: 30, blocked: null } }],
+  44: [{ satId: 11, tier: 2, cost: 30, blocked: null, minSales: null, selectable: false }],
 };
 
-test('配備のボーナス: 追加の配備は同じ衛星なら next の値、合計コストで選べるかを見る', () => {
-  const targets = parseTargets(bonusTargetsRaw);
-  const t18 = targets.find((t) => t.cardId === 18 && t.satId === 12);
-  assert.equal(t18?.next?.blocked, 'full');
-  assert.equal(parseTargets(targetsRaw)[0].next, null, 'ボーナス保持者でなければ next は無い');
-  // 追加の配備が同じ衛星なら、段・コスト・選べない理由は next の値
-  assert.deepEqual(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 12), 12).blocked, 'full');
-  assert.equal(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 12), 11).blocked, null);
-  assert.equal(extraVariant(targets.find((t) => t.cardId === 3 && t.satId === 11), 11).tier, 3);
-
-  // 通常の配備: カード 3 を衛星 11（コスト 8）。所持 10、手札 [3, 18, 44, 51]、売却 3
-  const main = { cardId: 3, satId: 11, cost: 8, mods: [] };
-  const pairs = extraPairs(targets, [3, 18, 44, 51], main, 10, 3);
-  assert.equal(pairs.some((p) => p.a === 3), false, '通常の配備のカードは追加には選べない');
+test('配備のステージ: S1 の targets はそのまま使い、売却は 2 枚目のコストに対して判定する', () => {
+  const targets = parseTargets(stagedTargetsRaw);
+  assert.equal(targets.length, 3);
+  assert.equal('next' in targets[0], false, '従来の next は廃止');
+  // 手札 [18, 44, 51]、所持 4、売却 3: 2 枚目 18 を衛星 11 へ（コスト 7、不足 3 → 1 枚売る）
+  const pairs = deployPairs(targets, [18, 44, 51], 4, 3);
   const same = pairs.find((p) => p.a === 18 && p.b === 11);
-  assert.equal(same?.data.tier, 3, '同じ衛星なので 3 段目');
-  assert.equal(same?.data.total, 17);
-  assert.equal(same?.data.pay.kind, 'short', '合計 17 は所持 10 では不足 7 で 3 枚の売却が要るが、売れるのは 4 - 2 = 2 枚');
-  assert.equal(same?.usable, true, '起動の修正を使えば 8 + 7 = 15。不足 5 → 2 枚で届く');
-  assert.equal(pairs.find((p) => p.a === 44 && p.b === 11)?.usable, false, '合計 38 は売っても届かない');
-  assert.equal(pairs.find((p) => p.a === 18 && p.b === 12)?.usable, true, '別の衛星は next ではない');
-  // 売れる手札は配備する 2 枚を除く（手札 3 枚 [3, 18, 51] なら売れるのは 1 枚）
-  assert.equal(extraPairs(targets, [3, 18, 51], main, 4, 3).find((p) => p.a === 18 && p.b === 12)?.usable, false, '8 + 4 = 12、不足 8 は 3 枚要るが売れるのは 1 枚');
-  assert.equal(extraPairs(targets, [3, 18, 51, 52, 53], main, 4, 3).find((p) => p.a === 18 && p.b === 12)?.usable, true, '売れる手札が 3 枚なら届く');
+  assert.equal(same?.data.cost, 7, 'サーバーの値のまま');
+  assert.equal(same?.usable, true);
+  assert.equal(same?.data.pay.kind, 'sell');
+  assert.equal(same?.data.pay.need, 1);
+  assert.equal(pairs.find((p) => p.a === 18 && p.b === 12)?.usable, false, '4 枚上限');
+  assert.equal(pairs.find((p) => p.a === 44 && p.b === 11)?.usable, false, '売っても届かない');
+  // 売却は 2 枚目のコストだけに対して（1 枚目の分は含めない）
+  const sel = { cardId: 18, satId: 11, sell: [], useMods: [], extra: null };
+  const pay = same.data.pay;
+  assert.equal(validateDeploy(sel, { pay, canDraw: false, optional: true }).reason, 'needMoreSales');
+  assert.deepEqual(validateDeploy({ ...sel, sell: [51] }, { pay, canDraw: false, optional: true }), { ok: true });
+  assert.equal(validateDeploy({ ...sel, sell: [18] }, { pay, canDraw: false, optional: true }).reason, 'sellsDeployedCard');
+  assert.deepEqual(deployedCards(sel), [18]);
+  // 2 枚目なしで確定できる。途中まで選んだ状態は不可
+  const none = { cardId: null, satId: null, sell: [], useMods: [], extra: null };
+  assert.deepEqual(validateDeploy(none, { pay: null, canDraw: false, optional: true }), { ok: true });
+  assert.equal(validateDeploy(none, { pay: null, canDraw: false }).reason, 'incomplete', 'S0 は何も選ばないと確定できない');
+  assert.equal(validateDeploy({ ...none, cardId: 18 }, { pay: null, canDraw: false, optional: true }).reason, 'incomplete');
 });
 
-test('配備のボーナス: 同じ起動の修正は 2 枚に使えない、合計での売却、送信する引数と復元', () => {
-  const mods = parseMods({ options: [{ hostKey: 'P:19', cardKey: 'x', reduction: 2, cost: 7 }, { hostKey: 'P:20', cardKey: 'y', reduction: 1, cost: 8 }], all: 6 });
-  assert.equal(withoutMods(mods, [], 9), mods);
-  assert.deepEqual(withoutMods(mods, ['P:19'], 9), { options: [{ hostKey: 'P:20', cardKey: 'y', reduction: 1, cost: 8 }], all: 8 });
-  assert.equal(withoutMods(mods, ['P:19', 'P:20'], 9), null);
-
-  const sel = {
-    cardId: 3, satId: 11, sell: [51], useMods: ['P:19'], extra: { op: 'deploy', cardId: 18, satId: 12, useMods: [] },
-  };
-  assert.deepEqual(deployedCards(sel), [3, 18]);
-  const pay = { kind: 'sell', need: 1, short: 3, left: -3 };
-  assert.deepEqual(validateDeploy(sel, { pay, canDraw: false }), { ok: true });
-  assert.equal(validateDeploy({ ...sel, sell: [] }, { pay, canDraw: false }).reason, 'needMoreSales');
-  assert.equal(validateDeploy({ ...sel, sell: [18] }, { pay, canDraw: false }).reason, 'sellsDeployedCard', '追加の配備のカードも売れない');
-  assert.equal(validateDeploy({ ...sel, extra: { op: 'deploy', cardId: null, satId: null, useMods: [] } }, { pay, canDraw: false }).reason, 'incomplete');
+test('配備のステージ: 送る引数（ステージ / S1 の確定）と復元', () => {
+  // [Deploy another card]: 1 枚目をステージ
+  assert.deepEqual(deployStageArgs({ cardId: 3, satId: 11, sell: [], useMods: [] }), { cardId: 3, satId: 11 });
   assert.deepEqual(
-    deployActionArgs(sel),
-    { op: 'deploy', cardId: 3, satId: 11, sell: [51], useMods: '["P:19"]', extra: '{"op":"deploy","card":18,"sat":12}' },
+    deployStageArgs({ cardId: 3, satId: 11, sell: [51], useMods: ['P:19'] }),
+    { cardId: 3, satId: 11, sell: [51], useMods: '["P:19"]' },
   );
+  // S1 の確定は extra だけ（外側は pass）。S0 の extra.op=deploy は送らない
   assert.deepEqual(
-    deployActionArgs({ ...sel, extra: { op: 'deploy', cardId: 18, satId: 12, useMods: ['P:20'] } }).extra,
-    '{"op":"deploy","card":18,"sat":12,"useMods":["P:20"]}',
+    deploySecondArgs({ cardId: 18, satId: 11, sell: [51], useMods: ['P:20'] }),
+    { op: 'pass', extra: '{"op":"deploy","card":18,"sat":11,"sell":[51],"useMods":["P:20"]}' },
   );
+  assert.deepEqual(deploySecondArgs({ cardId: 18, satId: 11, sell: [], useMods: [] }), { op: 'pass', extra: '{"op":"deploy","card":18,"sat":11}' });
+  assert.deepEqual(deploySecondArgs({ cardId: null, satId: null, sell: [], useMods: [] }), { op: 'pass', extra: '{"op":"pass"}' });
+  // S0 の確定は 1 枚引くだけが extra
   assert.deepEqual(deployActionArgs({ cardId: 3, satId: 11, extra: { op: 'draw' } }), { op: 'deploy', cardId: 3, satId: 11, extra: '{"op":"draw"}' });
   assert.deepEqual(deployActionArgs({ extra: { op: 'draw' } }), { op: 'pass', extra: '{"op":"draw"}' });
-  // 確定済みの内容から選択を復元する
-  assert.deepEqual(
-    deploySelectionFrom({ op: 'deploy', card: 3, sat: 11, sell: [51], useMods: ['P:19'], extra: { op: 'deploy', card: 18, sat: 12, useMods: ['P:20'] } }),
-    { ...sel, extra: { op: 'deploy', cardId: 18, satId: 12, useMods: ['P:20'] } },
-  );
   assert.deepEqual(deploySelectionFrom({ op: 'pass', extra: { op: 'draw' } }).extra, { op: 'draw' });
+  assert.equal(deploySelectionFrom({ op: 'deploy', card: 3, sat: 11, extra: { op: 'deploy', card: 18, sat: 12 } }).extra, null, '追加の配備は S0 の選択ではない');
+  // S1 の確定済みの内容から 2 枚目を復元
+  assert.deepEqual(
+    deploySecondFrom({ op: 'staged', extra: { op: 'deploy', card: 18, sat: 11, sell: [51], useMods: ['P:20'] } }),
+    { cardId: 18, satId: 11, sell: [51], useMods: ['P:20'], extra: null },
+  );
+  assert.equal(deploySecondFrom({ op: 'staged', extra: { op: 'pass' } }).cardId, null);
+  assert.equal(deploySecondFrom({ op: 'staged' }).cardId, null);
+});
+
+test('配備のステージ: args の段（S0 / S1）、ステージ済みの 1 枚目、Reset の可否と理由', () => {
+  assert.deepEqual(parseStage({ stage: 0, canReset: false }), { staged: false, first: null, canReset: false, resetBlockedReason: null });
+  assert.equal(parseStage({}).staged, false);
+  const s1 = parseStage({ stage: 1, canReset: true, stage1: { card: 3, satId: 11, tier: 2, paid: 8, sold: [51] }, resetBlockedReason: null });
+  assert.deepEqual(s1, { staged: true, first: { card: 3, satId: 11, tier: 2, paid: 8, sold: [51] }, canReset: true, resetBlockedReason: null });
+  // 山札から引いた後は Reset 不可。理由がある
+  const drawn = parseStage({ stage: 1, canReset: false, stage1: { card: 3, satId: 11, tier: 2, paid: 8, sold: [] }, resetBlockedReason: 'You have drawn cards and cannot undo this deployment' });
+  assert.equal(drawn.canReset, false);
+  assert.equal(drawn.resetBlockedReason, 'You have drawn cards and cannot undo this deployment');
+  // S0 では canReset が真でも Reset は無い
+  assert.equal(parseStage({ stage: 0, canReset: true }).canReset, false);
 });
 
 test('打ち上げ / 転回: 候補、向き、送信する引数', () => {
@@ -422,7 +428,7 @@ test('名声の内訳（N32）', () => {
 test('配備のボーナス: 1 枚目を選んだら、ボーナスの使い方を選ぶまで確定に進まない', () => {
   const none = { cardId: null, satId: null, extra: null };
   const main = { cardId: 3, satId: 11, extra: null };
-  const ctx = { isBonus: true, canDraw: true, bonusDeclined: false, passing: false, extraStage: false };
+  const ctx = { isBonus: true, canDraw: true, bonusDeclined: false, passing: false };
   // ボーナスなし: 1 枚目が決まれば確定できる
   assert.equal(deployStage(none, { ...ctx, isBonus: false }), 'main');
   assert.equal(deployStage(main, { ...ctx, isBonus: false }), 'ready');
@@ -433,8 +439,6 @@ test('配備のボーナス: 1 枚目を選んだら、ボーナスの使い方�
   // 選び終わったら確定できる
   assert.equal(deployStage(main, { ...ctx, bonusDeclined: true }), 'ready');
   assert.equal(deployStage({ ...main, extra: { op: 'draw' } }, ctx), 'ready');
-  // 追加の配備を選んでいる間は extra
-  assert.equal(deployStage({ ...main, extra: { op: 'deploy', cardId: null, satId: null, useMods: [] } }, { ...ctx, extraStage: true }), 'extra');
   // [Pass] から: 1 枚引くか、何もしないかを選ぶ
   assert.equal(deployStage(none, { ...ctx, passing: true }), 'bonusOnly');
   assert.equal(deployStage({ ...none, extra: { op: 'draw' } }, { ...ctx, passing: true }), 'ready');

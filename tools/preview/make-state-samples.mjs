@@ -51,7 +51,7 @@ sample('planning', {
 });
 
 // ---- 61 配備（ボーナス保持者は同じ確定で追加の配備か 1 枚引くも選ぶ。62 は欠番）----
-const deployTargets = (bonus = false) => {
+const deployTargets = () => {
   const sats = [
     { satId: 11, tier: 4, active: true, blocked: null },
     { satId: 12, tier: 2, active: true, blocked: null },
@@ -64,10 +64,6 @@ const deployTargets = (bonus = false) => {
     targets[card] = sats.map((s) => {
       const cost = baseCost(card) + (s.active ? 5 : 0);
       const entry = { satId: s.satId, tier: s.tier, cost, blocked: s.blocked, minSales: 0, selectable: s.blocked === null };
-      if (bonus) {
-        // 先に同じ衛星へ 1 枚配備された後（段が 1 つ進む。4 枚目の次は配備できない）
-        entry.next = { tier: s.tier + 1, cost, blocked: s.blocked ?? (s.tier >= 4 ? 'full' : null) };
-      }
       if (card === 3 && s.active && s.blocked === null) {
         entry.useMods = { options: [{ hostKey: 'P:19', cardKey: 'fleet_commander', reduction: 2, cost: Math.max(0, cost - 2) }], all: Math.max(0, cost - 2) };
       }
@@ -79,23 +75,23 @@ const deployTargets = (bonus = false) => {
 sample('deploy-main', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false, stage: 0, canReset: false }),
   steps: [{ click: '.pe-hand-card[data-id="3"]' }, { click: '.pe-sat[data-sat-id="11"]' }, { click: '.pe-mod input' }],
 });
 sample('deploy-main-sell', {
   state: 'DeployMainChoose',
   active: true,
   maya: 8,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false, stage: 0, canReset: false }),
   steps: [{ click: '.pe-hand-card[data-id="51"]' }, { click: '.pe-sat[data-sat-id="12"]' }, { click: '.pe-picker-slot:nth-child(1) .pe-picker-card' }],
 });
 sample('deploy-main-sat-first', {
   state: 'DeployMainChoose',
   active: true,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false, stage: 0, canReset: false }),
   steps: [{ click: '.pe-sat[data-sat-id="13"]' }],
 });
-const bonusArgs = () => choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), bonus: true, canDraw: true });
+const bonusArgs = () => choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: true, canDraw: true, stage: 0, canReset: false });
 // ボーナス保持者: 1 枚目を選ぶと、[Confirm] ではなくボーナスの選択（もう 1 枚 / 1 枚引く / ボーナスなし）に進む
 sample('deploy-bonus-stage', {
   state: 'DeployMainChoose',
@@ -115,40 +111,56 @@ sample('deploy-bonus-none', {
   args: bonusArgs(),
   steps: [{ click: '.pe-hand-card[data-id="44"]' }, { click: '.pe-sat[data-sat-id="13"]' }, { clickText: 'No bonus' }],
 });
-sample('deploy-bonus-extra', {
-  state: 'DeployMainChoose',
-  active: true,
-  args: bonusArgs(),
-  steps: [
-    { click: '.pe-hand-card[data-id="44"]' },
-    { click: '.pe-sat[data-sat-id="13"]' },
-    { clickText: 'Deploy another card' },
-  ],
+// S1（ステージ済み）: 1 枚目（カード 44 を衛星 13 へ）は配備済み。targets は 1 枚目が付いた盤面での 2 枚目の候補（衛星 13 は 2 段目になり、P010 相当の -2 が反映済み）
+const stagedTargets = () => {
+  const targets = deployTargets();
+  delete targets[44];
+  for (const list of Object.values(targets)) {
+    for (const t of list) {
+      if (t.satId === 13) {
+        t.tier = 2;
+        t.cost = Math.max(0, t.cost - 2);
+      }
+    }
+  }
+  return targets;
+};
+const stagedArgs = (over = {}) => choice({
+  hand: HAND.filter((id) => id !== 44),
+  sellValue: 3,
+  targets: stagedTargets(),
+  bonus: true,
+  canDraw: false,
+  stage: 1,
+  canReset: true,
+  stage1: { card: 44, satId: 13, tier: 1, paid: 8, sold: [] },
+  resetBlockedReason: null,
+  ...over,
 });
-sample('deploy-bonus-extra-done', {
+sample('deploy-staged', {
   state: 'DeployMainChoose',
   active: true,
-  args: bonusArgs(),
-  steps: [
-    { click: '.pe-hand-card[data-id="44"]' },
-    { click: '.pe-sat[data-sat-id="13"]' },
-    { clickText: 'Deploy another card' },
-    { click: '.pe-hand-card[data-id="18"]' },
-    { click: '.pe-sat[data-sat-id="13"]' },
-  ],
+  args: stagedArgs(),
+  steps: [],
 });
-sample('deploy-bonus-extra-confirmed', {
+sample('deploy-staged-pick', {
   state: 'DeployMainChoose',
   active: true,
-  args: bonusArgs(),
-  steps: [
-    { click: '.pe-hand-card[data-id="44"]' },
-    { click: '.pe-sat[data-sat-id="13"]' },
-    { clickText: 'Deploy another card' },
-    { click: '.pe-hand-card[data-id="18"]' },
-    { click: '.pe-sat[data-sat-id="13"]' },
-    { clickText: 'Confirm' },
-  ],
+  args: stagedArgs(),
+  steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-sat[data-sat-id="13"]' }],
+});
+sample('deploy-staged-confirmed', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: stagedArgs(),
+  steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-sat[data-sat-id="13"]' }, { clickText: 'Confirm' }],
+});
+// 山札から引いた後: [Reset] を押せず、理由を出す
+sample('deploy-staged-drawn', {
+  state: 'DeployMainChoose',
+  active: true,
+  args: stagedArgs({ canReset: false, resetBlockedReason: 'You have drawn cards and cannot undo this deployment' }),
+  steps: [],
 });
 // ボーナスだけ使う（[Pass] → 1 枚引く）
 sample('deploy-bonus-pass', {
@@ -166,7 +178,7 @@ sample('deploy-bonus-pass-draw', {
 sample('deploy-confirmed', {
   state: 'DeployMainChoose',
   active: false,
-  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(true), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [], extra: { op: 'deploy', card: 18, sat: 13 } }, bonus: true, canDraw: true }),
+  args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), myChoice: { op: 'deploy', card: 44, sat: 13, sell: [], extra: { op: 'draw' } }, bonus: true, canDraw: true, stage: 0, canReset: false }),
   steps: [],
 });
 

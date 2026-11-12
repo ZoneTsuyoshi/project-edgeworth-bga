@@ -97,6 +97,8 @@ export class GameView {
         this.modelListeners = new Set();
         /** @type {{ update: (a: Record<string, any>) => void, setWaiting: (w: unknown) => void, close: () => void } | null} 効果の窓（状態 31）の UI。窓の通知を渡す */
         this.effectUi = null;
+        /** @type {{ applyStage: (priv: Record<string, any>, wasReset: boolean) => void } | null} 配備（状態 61）の UI。ステージ / Reset の通知を渡す */
+        this.deployUi = null;
         this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12);
         boardHead.append(this.layout.renderTools());
         this.stateFrame = new StateFrame(this);

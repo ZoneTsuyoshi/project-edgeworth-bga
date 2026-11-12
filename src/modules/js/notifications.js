@@ -79,6 +79,15 @@ export const HANDLERS = {
     }
   },
 
+  // N2b: 同時選択の確定の取り消し（配備のステージ / Reset で確定が消えたとき。009 追補 2026-11-12）。チェックマークを外す
+  choiceUnmarked(view, a) {
+    const p = view.m.players[int(a.player_id)];
+    if (p !== undefined) {
+      p.confirmed = false;
+      view.refreshMarks();
+    }
+  },
+
   // N3（本人）: 確定内容の要約。別タブの同期。計画フェイズなら選んだアクションが分かる
   choiceRecorded(view, a) {
     const m = view.m;
@@ -284,6 +293,43 @@ export const HANDLERS = {
     m.discard = m.discard.filter((id) => id !== card);
     refreshPiles(view);
     refreshOne(view, pid);
+  },
+
+  // 本人だけ: 1 枚目をステージした（[Deploy another card]。009 追補 2026-11-12）。
+  // 配備・支払い・売却・引いたカードなどは、この前に届く本人宛ての通知で反映済み。ここで状態 61 の段・2 枚目の候補・[Reset] の可否を差し替える
+  deployStaged(view, a) {
+    view.deployUi?.applyStage(a.private ?? {}, false);
+  },
+
+  // 本人だけ: ステージを取り消した（[Reset]）。本人の手札・マヤ・予算・衛星をサーバーの値に戻し、状態 61 を S0 に戻す
+  deployStageReset(view, a) {
+    const m = view.m;
+    const p = m.me === null ? undefined : m.players[m.me];
+    if (p !== undefined) {
+      const s = a.state ?? {};
+      p.maya = int(s.maya, p.maya);
+      p.budget = int(s.budget, p.budget);
+      for (const raw of s.satellites ?? []) {
+        const sat = p.satellites.find((x) => x.satId === int(raw.satId));
+        if (sat === undefined) {
+          continue;
+        }
+        sat.cell = raw.cell === null || raw.cell === undefined ? null : int(raw.cell);
+        sat.dir = raw.dir === null || raw.dir === undefined ? null : String(raw.dir);
+        sat.fuelUsed = int(raw.fuelUsed);
+        sat.fuelCapacity = int(raw.fuelCapacity, sat.fuelCapacity);
+        sat.activation = int(raw.activation);
+        sat.cards = (raw.cards ?? []).map((/** @type {any} */ c) => ({ id: int(c.id), activation: int(c.activation) }));
+      }
+      m.myHand = (a.hand ?? []).map((/** @type {unknown} */ v) => int(v));
+      p.handCount = m.myHand.length;
+      // 売って捨て札に移したカードは手札に戻る
+      m.discard = m.discard.filter((id) => !m.myHand.includes(id));
+      refreshPiles(view);
+      view.syncPieces();
+      refreshOne(view, p.id);
+    }
+    view.deployUi?.applyStage(a.private ?? {}, true);
   },
 
   // N16: 打ち上げ。衛星コマが発射拠点の区域に向きつきで現れる
