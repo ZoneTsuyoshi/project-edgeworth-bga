@@ -34,19 +34,19 @@ final class SatelliteCards
         ],
         'R002B' => [
             'MOON', 'BLUE', 'RETRO', 'retro_moon',
-            15, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
+            20, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
         ],
         'R002G' => [
             'MOON', 'GREEN', 'RETRO', 'retro_moon',
-            15, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
+            20, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
         ],
         'R002R' => [
             'MOON', 'RED', 'RETRO', 'retro_moon',
-            15, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
+            20, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
         ],
         'R002Y' => [
             'MOON', 'YELLOW', 'RETRO', 'retro_moon',
-            15, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
+            20, 5, 2, 'LAUNCHED', 'ON_LAUNCH', 'ANY',
         ],
         'R003B' => [
             'MOON', 'BLUE', 'SCALLOP', 'scallop_moon',
@@ -114,7 +114,7 @@ final class SatelliteCards
         ],
         'R010' => [
             'PHOBOS', 'BLUE', 'STEALTH', 'stealth_phobos',
-            30, 10, 2, 'BUDGET_PHASE', 'ACTIVATED', 'ACTIVE_ONLY',
+            25, 10, 2, 'BUDGET_PHASE', 'ACTIVATED', 'ACTIVE_ONLY',
         ],
         'R011' => [
             'DEIMOS', 'GREEN', 'HAMMER', 'hammer_deimos',
@@ -142,19 +142,19 @@ final class SatelliteCards
         ],
         'R017' => [
             'EUROPA', 'RED', 'RETRO', 'retro_europa',
-            25, 10, 2, 'DEPLOYED', 'ACTIVATED', 'ACTIVE_ONLY',
+            20, 10, 2, 'DEPLOYED', 'ACTIVATED', 'ACTIVE_ONLY',
         ],
         'R018' => [
             'EUROPA', 'RED', 'SCALLOP', 'scallop_europa',
-            30, 10, 2, 'LINKED', 'ACTIVATED', 'ACTIVE_ONLY',
+            20, 10, 2, 'LINKED', 'ACTIVATED', 'ACTIVE_ONLY',
         ],
         'R019' => [
             'EUROPA', 'RED', 'CONCORDE', 'concorde_europa',
-            30, 10, 2, 'LAUNCHED_OR_TURNED', 'ACTIVATED', 'ACTIVE_ONLY',
+            25, 10, 2, 'LAUNCHED_OR_TURNED', 'ACTIVATED', 'ACTIVE_ONLY',
         ],
         'R020' => [
             'EUROPA', 'RED', 'STEALTH', 'stealth_europa',
-            35, 10, 2, 'BUDGET_PHASE', 'ACTIVATED', 'ACTIVE_ONLY',
+            25, 10, 2, 'BUDGET_PHASE', 'ACTIVATED', 'ACTIVE_ONLY',
         ],
         'R021' => [
             'GANYMEDE', 'YELLOW', 'HAMMER', 'hammer_ganymede',

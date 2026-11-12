@@ -218,6 +218,9 @@ final class OutcomeNotices
             );
             $bonus = $entry->bonus;
             $notices[] = $tracker->change($pid, $bonus->maya, 'areaBonus');
+            if ($bonus->budget > 0) {
+                $notices[] = $n->budgetChanged($pid, $bonus->budget, $bonus->budgetAfter, 'areaBonus');
+            }
             $notices = array_merge($notices, $this->draw($pid, $bonus->drawn, 'hand', 'areaBonus'));
             if ($bonus->fuelRecovered > 0) {
                 $sat = $services->satellites->get($entry->request->satelliteId);

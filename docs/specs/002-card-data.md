@@ -408,7 +408,7 @@ PROJECT EDGEWORTH の全カード（プロジェクトカード 99 枚、衛星�
 | 番号 | 形状 | `name_id` | 打ち上げコスト | 名声 | 燃料庫 | タイミング | 効果タイプ | 稼働条件 | 効果文（印刷） | 英語文案 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | R001B / G / R / Y | HAMMER | `hammer_moon` | 10 | 5 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、プロジェクトカードを1枚引く | When launched, draw 1 Project card. |
-| R002B / G / R / Y | RETRO | `retro_moon` | 15 | 5 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+2 | When launched, +2 [Budget]. |
+| R002B / G / R / Y | RETRO | `retro_moon` | 20 | 5 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+2 | When launched, +2 [Budget]. |
 | R003B / G / R / Y | SCALLOP | `scallop_moon` | 20 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、プロジェクトカードを2枚引く | When launched, draw 2 Project cards. |
 | R004B / G / R / Y | CONCORDE | `concorde_moon` | 30 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+4 | When launched, +4 [Budget]. |
 | R005B / G / R / Y | STEALTH | `stealth_moon` | 30 | 15 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、手札からプロジェクトカードを2枚まで選んで配備コストを支払ってこの衛星に配備してもよい。配備したカードの配備時・打ち上げ時効果は発動する | When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The "On Deploy" and "On Launch" effects of the deployed cards are triggered. |
@@ -430,17 +430,17 @@ PROJECT EDGEWORTH の全カード（プロジェクトカード 99 枚、衛星�
 | R007 | PHOBOS | BLUE | RETRO | `retro_phobos` | 20 | 10 | `DEPLOYED` | `CONSTANT` | 自分の全ての衛星への配備コスト-1 | Deployment cost for all your satellites -1. |
 | R008 | PHOBOS | BLUE | SCALLOP | `scallop_phobos` | 20 | 10 | `LINKED` | `CONSTANT` | 自分の全ての衛星の通信確立コスト-1 | Link cost of all your satellites -1. |
 | R009 | PHOBOS | BLUE | CONCORDE | `concorde_phobos` | 20 | 10 | `ANYTIME` | `CONSTANT` | プロジェクトカードを捨てたときに得られる[マヤ]+2 | The [Maya] you receive when you discard a Project card is +2. |
-| R010 | PHOBOS | BLUE | STEALTH | `stealth_phobos` | 30 | 10 | `BUDGET_PHASE` | `ACTIVATED` | 予算発行フェイズ開始時、[マヤ]+2 | At the start of the Budget Phase, +2 [Maya]. |
+| R010 | PHOBOS | BLUE | STEALTH | `stealth_phobos` | 25 | 10 | `BUDGET_PHASE` | `ACTIVATED` | 予算発行フェイズ開始時、[マヤ]+2 | At the start of the Budget Phase, +2 [Maya]. |
 | R011 | DEIMOS | GREEN | HAMMER | `hammer_deimos` | 15 | 5 | `PROPOSAL_PHASE` | `ACTIVATED` | 企画のアクション選択ボーナスは「6枚引いて3枚を手札に残す」になる | The Proposal Action Selection Bonus becomes "draw 6 cards and keep 3 in hand". |
 | R012 | DEIMOS | GREEN | RETRO | `retro_deimos` | 20 | 10 | `LAUNCHED` | `ACTIVATED` | 打ち上げのアクション選択ボーナスとして、[予算]+1 | As the Launch Action Selection Bonus, +1 [Budget]. |
 | R013 | DEIMOS | GREEN | SCALLOP | `scallop_deimos` | 20 | 10 | `DEPLOYED` | `ACTIVATED` | 配備のアクション選択ボーナスとして、プロジェクトカードをもう1枚追加で引く | As the Deploy Action Selection Bonus, draw 1 additional Project card. |
 | R014 | DEIMOS | GREEN | CONCORDE | `concorde_deimos` | 20 | 10 | `LINKED` | `ACTIVATED` | 通信確立のアクション選択ボーナスで選択できる区域は、進行方向上下に加え、隣接する全区域を含める | For the Establish Link Action Selection Bonus, the areas you can choose include all adjacent areas, in addition to the areas ahead of and behind the heading. |
 | R015 | DEIMOS | GREEN | STEALTH | `stealth_deimos` | 30 | 10 | `BUDGET_PHASE` | `ACTIVATED` | 予算発行のアクション選択ボーナスで得られる[マヤ]+3 | The [Maya] gained from the Budget Action Selection Bonus is +3. |
 | R016 | EUROPA | RED | HAMMER | `hammer_europa` | 15 | 5 | `PROPOSAL_PHASE` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で企画アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Proposal action yourself. |
-| R017 | EUROPA | RED | RETRO | `retro_europa` | 25 | 10 | `DEPLOYED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で配備アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Deploy action yourself. |
-| R018 | EUROPA | RED | SCALLOP | `scallop_europa` | 30 | 10 | `LINKED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で通信確立アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Establish Link action yourself. |
-| R019 | EUROPA | RED | CONCORDE | `concorde_europa` | 30 | 10 | `LAUNCHED_OR_TURNED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で打ち上げ/転回アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Launch/Turn action yourself. |
-| R020 | EUROPA | RED | STEALTH | `stealth_europa` | 35 | 10 | `BUDGET_PHASE` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で予算発行アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Budget action yourself. |
+| R017 | EUROPA | RED | RETRO | `retro_europa` | 20 | 10 | `DEPLOYED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で配備アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Deploy action yourself. |
+| R018 | EUROPA | RED | SCALLOP | `scallop_europa` | 20 | 10 | `LINKED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で通信確立アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Establish Link action yourself. |
+| R019 | EUROPA | RED | CONCORDE | `concorde_europa` | 25 | 10 | `LAUNCHED_OR_TURNED` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で打ち上げ/転回アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Launch/Turn action yourself. |
+| R020 | EUROPA | RED | STEALTH | `stealth_europa` | 25 | 10 | `BUDGET_PHASE` | `ACTIVATED` | この衛星に[CREW][DEVICE][SOFTWARE]が配備されているならば、3[マヤ]支払えば自分で予算発行アクションを選択していなくてもアクション選択ボーナスを得られる | If [CREW], [DEVICE] and [SOFTWARE] are deployed to this satellite, you can gain the Action Selection Bonus by paying 3 [Maya], even if you did not choose the Budget action yourself. |
 | R021 | GANYMEDE | YELLOW | HAMMER | `hammer_ganymede` | 15 | 5 | `LINKED` | `ACTIVATED` | この衛星が地域[A][C][E][G]の通信確立する際、通信確立コスト-2 | When this satellite establishes a link in region [A][C][E][G], link cost -2. |
 | R022 | GANYMEDE | YELLOW | RETRO | `retro_ganymede` | 15 | 5 | `LINKED` | `ACTIVATED` | この衛星が地域[B][D][F][H]の通信確立する際、通信確立コスト-2 | When this satellite establishes a link in region [B][D][F][H], link cost -2. |
 | R023 | GANYMEDE | YELLOW | SCALLOP | `scallop_ganymede` | 20 | 10 | `LINKED` | `ACTIVATED` | この衛星が[陸]区域の通信確立する際、通信確立コスト-3 | When this satellite establishes a link on a [Land] area, link cost -3. |
@@ -452,6 +452,7 @@ PROJECT EDGEWORTH の全カード（プロジェクトカード 99 枚、衛星�
 - R019 のタイミング欄は、打ち上げと転回の 2 つのアイコンを斜線で結合した 1 つのアイコン（`LAUNCHED_OR_TURNED`）。
 - R009 のタイミング欄は印刷では空欄だったが、ALL アイコンの掲載漏れ（作者回答、2026-10-19）。作者が `data/cards/rockets/R009@4x.png` を ALL アイコン入りに差し替えた（PR #4）。
 - R002 / R004 の「[予算]」は角の丸い四角のアイコンで印刷されている（円形の `[マヤ]` ではない）。R012・A003 の `[予算]` も同様。
+- 作者の指摘 2026-11-12（画像更新後の印刷物と照合）: 打ち上げコストを R002（RETRO MOON）15 → 20、R010 30 → 25、R017 25 → 20、R018 30 → 20、R019 30 → 25、R020 35 → 25 に直した。
 - マスターとの差分は 12 節に一覧した（MOON 面の RETRO・SCALLOP・CONCORDE など）。
 
 ### 7. 褒賞カード（24 面）
@@ -735,7 +736,7 @@ FAQ 上のカード ID は、P048 と P049 が印刷と逆だったため、2026
 | | P079 / P080 | 起動(特定地域上空) → 常時 |
 | 効果発動タイミング | P033・P043〜P047・P056・P057・P062〜P066・P077 | マスターの `phase` は 7（常時）。印刷ではそれぞれ配備 / 転回 / 通信確立 / 通信確立 / 「ALL」のアイコンが付く |
 | | P098 | 印刷は企画フェイズ（巻物）だがエラッタで循環フェイズ中が正（マスターも循環） |
-| 衛星 MOON 面 | R002（RETRO） | 打ち上げコスト 20 → 15 |
+| 衛星 MOON 面 | R002（RETRO） | 打ち上げコスト 20 → 15 →（作者の指摘 2026-11-12、画像更新後の印刷物）20 |
 | | R005（STEALTH） | マスター `moon` シート: 配備は「1枚」→ 印刷版: 「2枚まで」、「配備したカードの配備時・打ち上げ時効果は発動する」を追記（`satellite` シートの「最大2枚」とは一致。`data/` の画像は旧版で「1枚」） |
 | | R003（SCALLOP） | 打ち上げ時、プロジェクトカードを3枚引く → 2枚引く |
 | | R004（CONCORDE） | 打ち上げ時、予算+3 → +4 |
