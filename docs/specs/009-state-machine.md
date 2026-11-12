@@ -760,7 +760,7 @@ public function onEnteringState(): string|int
 
 - 実行できる行動がない（通信確立では、売却を使っても払える区域がない）プレイヤーは、従来どおり入場時に [Pass] 相当を自動で確定して参加者のまま非アクティブにし、残りの人の確定で進む。全員がそうなら状態に入った直後に遷移する。「払えないなら無い（売却で払えるなら有る）」。
 - 入場前の `getArgs`（BGA は `onEnteringState` の前に呼ぶ）でも、自動 [Pass] の人の `_private.myChoice` に [Pass] を載せ、入場後と同じ args にする。
-- `setPlayersMultiactive` に空配列を渡してもフレームワークが遷移しなかったとき（戻り値が false）は、自分で `allConfirmed` へ遷移する。
+- 選べる人がいないときは `setPlayersMultiactive([])` を呼ばず、`onEnteringState` の戻り値で `allConfirmed` を返して遷移する（GAME 状態と同じ書き方）。入場中の `setPlayersMultiactive([])` による遷移が Studio で効かず、全員待機で止まったと推定したため（参加者が候補なしの 1 人だけの状態、例: ボーナス 82）。
 - サーバー側の流れは結合テストで再現できなかった。Studio で再現するときは、ゲームログの「has no area to link」相当の自動 Pass の通知と、状態の `getArgs` の `participants` / `confirmed` を確認する。
 
 ## Studio で検証する点
