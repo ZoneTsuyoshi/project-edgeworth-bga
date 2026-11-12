@@ -4,7 +4,7 @@
  * 層（下から）: 区域タイル、地域アイコン、地域の外周（SVG）、コマ（PieceLayer）、ハイライト（Highlights）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { boardHeightUnits, cellOriginUnits, cellRowCol, ghostCells, regionBorderSegments, regionCenterCell, ROWS } from './geometry.js';
+import { boardHeightUnits, cellOriginUnits, cellRowCol, ghostCells, outlineSegments, regionBorderSegments, regionCenterCell, ROWS } from './geometry.js';
 import { applySprite, pieceSprite, tileSprite } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
 
@@ -52,10 +52,11 @@ export class BoardView {
         this.board = el('div', { class: 'pe-board', id: 'pe-board' });
         this.tilesLayer = el('div', { class: 'pe-tiles' });
         this.bordersSvg = svgEl('svg', { class: 'pe-borders', 'aria-hidden': 'true' });
+        this.outlinesSvg = svgEl('svg', { class: 'pe-outlines', 'aria-hidden': 'true' });
         this.piecesLayer = el('div', { class: 'pe-pieces' });
         this.highlightLayer = el('div', { class: 'pe-highlights' });
         this.arrowsLayer = el('div', { class: 'pe-arrows' });
-        this.board.append(this.tilesLayer, this.bordersSvg, this.piecesLayer, this.highlightLayer, this.arrowsLayer);
+        this.board.append(this.tilesLayer, this.bordersSvg, this.outlinesSvg, this.piecesLayer, this.highlightLayer, this.arrowsLayer);
         // 上下は接続せず反射する。薄い帯にシェブロンを敷く（012 §3.7）。枠は盤面より狭いとき中央、広いとき横スクロール
         this.frame = el('div', { class: 'pe-board-frame' }, [
             el('div', { class: 'pe-reflect pe-reflect-top', 'aria-hidden': 'true', title: _('Satellites bounce back here') }),
@@ -182,6 +183,28 @@ export class BoardView {
         for (const s of regionBorderSegments(regionOfCell, data.cols, data.rowShift, rows)) {
             svg.append(svgEl('line', { x1: String(s.x1), y1: String(s.y1), x2: String(s.x2), y2: String(s.y2), class: 'pe-border-line' }));
         }
+    }
+
+    /**
+     * 終了時のミッション達成区域の枠を描く（001 §12-3 追補 2026-11-12）。空の配列で消す。
+     * 1 枚目は実線、2 枚目は破線（色も変える）。
+     * @param {{ cells: number[] }[]} groups ミッションごとの区域（V の内訳の順）
+     */
+    setMissionOutlines(groups) {
+        const svg = this.outlinesSvg;
+        svg.replaceChildren();
+        const data = this.data;
+        if (data === null || groups.length === 0) {
+            return;
+        }
+        const rows = data.rows ?? ROWS;
+        svg.setAttribute('viewBox', `0 0 ${data.cols + 0.5} ${boardHeightUnits(rows)}`);
+        svg.setAttribute('preserveAspectRatio', 'none');
+        groups.forEach((g, i) => {
+            for (const s of outlineSegments(g.cells, data.cols, data.rowShift, i === 0 ? 0.9 : 0.8)) {
+                svg.append(svgEl('line', { x1: String(s.x1), y1: String(s.y1), x2: String(s.x2), y2: String(s.y2), class: `pe-outline-line pe-outline-${i % 2}` }));
+            }
+        });
     }
 
     /**

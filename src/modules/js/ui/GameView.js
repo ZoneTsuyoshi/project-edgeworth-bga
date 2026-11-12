@@ -94,6 +94,13 @@ export class GameView {
         this.sheet = new BottomSheet(this.sheetBox);
         this.panel = new ChoicePanel(this.panelBox);
         this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
+        /** 見出しで枠を出す人を選んだか（選んだら自動の切り替えをやめる） */
+        this.outlineChosen = false;
+        this.score.onSelect = (playerId) => {
+            this.outlineChosen = true;
+            this.score.select(playerId);
+            this.refreshMissionOutlines();
+        };
         /** @type {Set<(name: string) => void>} 手札・マヤ・衛星などのモデルが通知で変わったときに呼ぶ（操作中の状態が表示を直す） */
         this.modelListeners = new Set();
         /** @type {{ update: (a: Record<string, any>) => void, setWaiting: (w: unknown) => void, close: () => void } | null} 効果の窓（状態 31）の UI。窓の通知を渡す */
@@ -149,11 +156,38 @@ export class GameView {
         this.refreshMarks();
         this.syncPieces();
         this.score.setAll(scoresFromGamedatas(model.finalScores, model.playerOrder));
+        this.refreshMissionOutlines();
         // スマホの横スクロールの初期位置は自分の発射拠点の区域が中央に来る位置（012 §3.8）
         const pad = model.me === null ? null : model.players[model.me]?.padCell;
         if (pad !== null && pad !== undefined && cols > 0) {
             requestAnimationFrame(() => this.board.scrollToCell(pad));
         }
+    }
+
+    /**
+     * @param {import('../states/logic/score.js').PlayerScore[]} scores
+     * @returns {number} 自分、いなければ最終得点が最高の人
+     */
+    preferredOutlinePlayer(scores) {
+        const mine = this.m.me === null ? undefined : scores.find((s) => s.playerId === this.m.me);
+        return (mine ?? [...scores].sort((a, b) => b.total - a.total)[0]).playerId;
+    }
+
+    /**
+     * 終了時、ミッションの達成区域を盤面で枠で囲む（001 §12-3 追補 2026-11-12）。
+     * 出すのは自分のもの（観戦者は最終得点が最高の人）。得点表の列の見出しで他のプレイヤーに切り替えられる。
+     * 内訳は終了後は全員に公開される（010 §11.2）。
+     */
+    refreshMissionOutlines() {
+        const scores = [...this.score.scores.values()];
+        if (scores.length === 0) {
+            this.board.setMissionOutlines([]);
+            return;
+        }
+        if (!this.outlineChosen && this.score.selected !== this.preferredOutlinePlayer(scores)) {
+            this.score.select(this.preferredOutlinePlayer(scores));
+        }
+        this.board.setMissionOutlines(this.score.selectedScore()?.outlines ?? []);
     }
 
     /**

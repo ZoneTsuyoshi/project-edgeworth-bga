@@ -548,3 +548,16 @@ test('衛星の表示名は形状とプラン', () => {
   assert.equal(satelliteLabel('HAMMER', undefined, '#1'), 'Hammer');
   assert.equal(satelliteLabel(undefined, 'MOON', '#7'), '#7');
 });
+
+test('名声の内訳: ミッションの採用区域（枠の描画用）を V の順に取り出す', () => {
+  const detail = {
+    total: 30,
+    V: { points: 23, missions: [{ mission: 3, tier: 'EXTRA', points: 18, cells: [1, 2, 3] }, { mission: 9, tier: 'EASY', points: 5, cells: [40, 41] }] },
+  };
+  const s = playerScore(1, detail, [3, 9]);
+  assert.deepEqual(s.outlines, [
+    { mission: 3, tier: 'extra', points: 18, cells: [1, 2, 3] },
+    { mission: 9, tier: 'easy', points: 5, cells: [40, 41] },
+  ]);
+  assert.deepEqual(playerScore(1, { total: 0 }, []).outlines, []);
+});

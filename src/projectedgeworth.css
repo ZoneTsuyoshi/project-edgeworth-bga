@@ -509,6 +509,59 @@ html[data-theme="dark"] .pe-modal-body {
     stroke-linejoin: round;
 }
 
+/* 終了時のミッション達成区域の枠（001 §12-3 追補 2026-11-12）。1 枚目は実線の金、2 枚目は破線のシアン */
+.pe-outlines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.pe-outline-line {
+    stroke-width: 0.045;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.pe-outline-0,
+.pe-mission-swatch.pe-mission-0 {
+    stroke: #ffd23f;
+    border-color: #ffd23f;
+}
+
+.pe-outline-1,
+.pe-mission-swatch.pe-mission-1 {
+    stroke: #3fe0ff;
+    border-color: #3fe0ff;
+}
+
+.pe-outline-1 {
+    stroke-dasharray: 0.09 0.06;
+}
+
+.pe-mission-swatch {
+    display: inline-block;
+    width: 1.2em;
+    height: 0;
+    margin-right: 0.4em;
+    vertical-align: middle;
+    border-top: 3px solid;
+}
+
+.pe-mission-swatch.pe-mission-1 {
+    border-top-style: dashed;
+}
+
+.pe-score-table thead th.pe-score-selectable {
+    cursor: pointer;
+}
+
+.pe-score-table thead th.pe-score-selected {
+    box-shadow: inset 0 -3px 0 #ffd23f;
+}
+
 /* ---- 6 コマ ---- */
 
 .pe-pieces,

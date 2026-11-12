@@ -35,6 +35,10 @@ export class ScoreSheet {
         this.satName = satName;
         /** @type {Map<number, import('../states/logic/score.js').PlayerScore>} */
         this.scores = new Map();
+        /** @type {number | null} 盤面にミッションの枠を出しているプレイヤー（列の見出しで切り替える） */
+        this.selected = null;
+        /** @type {(playerId: number) => void} 見出しが選ばれたとき */
+        this.onSelect = () => {};
         root.classList.add('pe-scoresheet');
         root.hidden = true;
     }
@@ -46,6 +50,22 @@ export class ScoreSheet {
     add(score) {
         this.scores.set(score.playerId, score);
         this.render();
+    }
+
+    /**
+     * 席順で並べた、ミッションの枠を出す対象（自分。観戦者は 1 位）。
+     * @param {number | null} playerId
+     */
+    select(playerId) {
+        this.selected = playerId;
+        this.render();
+    }
+
+    /**
+     * @returns {import('../states/logic/score.js').PlayerScore | undefined} 枠を出している人の得点
+     */
+    selectedScore() {
+        return this.selected === null ? undefined : this.scores.get(this.selected);
     }
 
     /**
@@ -111,17 +131,29 @@ export class ScoreSheet {
         }
         this.root.hidden = false;
         const labels = sectionLabels();
-        const head = el('tr', {}, [el('th', { scope: 'col' }, [_('Fame')]), ...ranked.map((s) => el('th', { scope: 'col', class: 'pe-score-player', dataset: { player: s.playerId } }, [
-            model.players[s.playerId]?.name ?? String(s.playerId),
-            el('span', { class: 'pe-score-rank' }, [`#${s.rank}`]),
-        ]))]);
+        const head = el('tr', {}, [el('th', { scope: 'col' }, [_('Fame')]), ...ranked.map((s) => {
+            const th = el('th', {
+                scope: 'col',
+                class: `pe-score-player pe-score-selectable${s.playerId === this.selected ? ' pe-score-selected' : ''}`,
+                dataset: { player: s.playerId },
+                title: _('Show this player\'s mission areas on the board'),
+            }, [
+                model.players[s.playerId]?.name ?? String(s.playerId),
+                el('span', { class: 'pe-score-rank' }, [`#${s.rank}`]),
+            ]);
+            th.addEventListener('click', () => this.onSelect(s.playerId));
+            return th;
+        })]);
         const body = Object.keys(labels).map((section) => el('tr', { dataset: { section } }, [
             el('th', { scope: 'row' }, [labels[section]]),
             ...ranked.map((s) => {
                 const row = s.rows.find((r) => r.section === section);
                 return el('td', {}, [
                     el('span', { class: 'pe-score-points' }, [String(row?.points ?? 0)]),
-                    ...(row?.parts ?? []).map((p) => el('span', { class: 'pe-score-part' }, [this.partText(p)])),
+                    ...(row?.parts ?? []).map((p, i) => el('span', { class: 'pe-score-part' }, [
+                        ...(section === 'V' ? [el('span', { class: `pe-mission-swatch pe-mission-${i % 2}`, 'aria-hidden': 'true' })] : []),
+                        this.partText(p),
+                    ])),
                 ]);
             }),
         ]));
