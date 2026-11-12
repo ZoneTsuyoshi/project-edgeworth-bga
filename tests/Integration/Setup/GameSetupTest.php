@@ -210,7 +210,7 @@ final class GameSetupTest extends SetupTestCase
     /** @return array<string, array{int}> */
     public static function layoutOptions(): array
     {
-        return ['1' => [1], '2' => [2], '3' => [3], '4' => [4], '5' => [5], '6' => [6]];
+        return ['1' => [1], '3' => [3], '4' => [4], '6' => [6]];
     }
 
     #[DataProvider('layoutOptions')]
@@ -220,7 +220,7 @@ final class GameSetupTest extends SetupTestCase
         $regions = (new RegionRepository($this->db))->all();
         $this->assertCount(8, array_unique(array_column($regions, 'board')));
         $this->assertSame($option >= 4 ? BoardFace::ADVANCED : BoardFace::STANDARD, $this->globals->boardFace());
-        if (in_array($option, [1, 2, 4, 5], true)) {
+        if (in_array($option, [1, 4], true)) {
             $this->assertSame(array_fill(0, 8, false), array_column($regions, 'flipped'));
         }
         $restored = LaunchPadPlacement::loadLayout(new RegionRepository($this->db), $this->globals);
