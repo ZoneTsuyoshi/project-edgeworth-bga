@@ -677,3 +677,14 @@ BGA 標準のパネル（名前・色・時計）に、次のカウンターを�
 - **効果の窓（状態 31）の `SATELLITE` フィールド**（P024 など）: 候補の衛星の衛星カードを直接押して選べる。候補は実線の枠（`pe-sat-selectable`）、選んでいる衛星は太い黄色の枠（`pe-sat-selected`）で、状態 71・72 の衛星の選択と同じ仕組み（`setSatPicks` と `view.satelliteHandler`）を使う。稼働中の候補は、盤面のコマを押しても選べ、そのコマのいる区域に枠が付く（`AREA` フィールドが盤面を使っているときは、区域の枠は足さない）。名前のチップは補助として残し、選んだ衛星の表示を兼ねる。選び直すと入れ替わる（選択の解除はない。サーバーの検証が必須の選択のため）。
 - **`CARDS` フィールド**（S005 など）: 候補がすべて自分の手札にあるときは、一覧（`CardPicker`）を出さず、手札のカードを直接押して選ぶ（`HandView.setSelectable`。選べる札は枠、選んだ札は選択済みの印）。min / max はフィールドの値に従い、max = 1 は入れ替え、2 枚以上は上限を超える追加を無視する（`clampSelection`）。窓には「Choose from your hand (n of max selected)」と選んだカード名を出す。候補に手札にないカード（配備済み・山札・捨て札）が 1 枚でも混ざるときは、従来どおり `CardPicker` に全候補を出す。
 - 判定と上限の処理は `states/logic/effects.js`（`cardsInHand` / `clampSelection` / `satellitePicks`）に置き、`tests/js/state-logic.test.mjs` で検証する。複数の問いが同時に並ぶときは、`AREA` と同じく最初の該当フィールドだけを直接選択にする。選択の表示は、窓の描き直し（`refresh`）と終了（`close`）で外す。
+
+## 画面の要望への対応（作者要望 2026-11-12）
+
+009 の追補（II 配備で 1 枚目を先に確定する）に対応する UI。ユーザー向けの文言は英語を原文とし、翻訳で日本語化する。
+
+- **状態 61 の段**: [Deploy another card] を押すと、サーバーが 1 枚目を確定し（ステージ）、ステータスバーは 2 枚目の選択に切り替わる。1 枚目は手札から外し、衛星の上に実際の配備として描画する（「Planned」の半透明の札ではなく、確定した状態）。タイトルの例: 「${you} have deployed ${card}. Choose another card to deploy, or confirm」。
+- **2 枚目の候補とコスト**: 候補・コスト・売却の要否・4 枚上限は、サーバーの args（`_private`）の値だけを使う。クライアントの `deployQuote` / `extraPairs` で自前に 1 枚目の効果を加味しない。P010 -2 などは候補のコスト表示に反映される。
+- **ボタン**: [Confirm]（2 枚目なしでも、2 枚目を選んでも）、[Reset]、[Cancel the bonus]（2 枚目を選ぶのをやめる）。[Reset] は 1 枚目の配備を取り消して S0 に戻る。山札から引いた後は [Reset] を押せない状態で出し、ツールチップに理由（「You have drawn cards and cannot undo this deployment」）を出す。
+- **ステージ中のログ・通知**: 本人にはすぐ「You deploy ${card} to ${sat}」「You draw ${n} card(s)」を出す。ほかの人には（案 A のとき）バリアまで何も出ない。待機中の表示は従来どおり「確定済みの人の ID」だけ。
+- **再読み込み**: ステージ済みの状態は `args._private` から復元する。ほかの人の画面には、案 A のとき、ステージ済みのカードが出ない（009 追補 6）。
+- **`DeployState.js` / `logic/deploy.js`**: 段（S0 / S1）の管理、[Deploy another card] のサーバー呼び出し（`actStageDeploy`）、`extraStage` / `extraPairs` / `deployQuote` の `pending` 計算をサーバー値に置き換える。`tests/js/state-logic.test.mjs` を更新する。
