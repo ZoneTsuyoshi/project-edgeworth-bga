@@ -79,6 +79,15 @@ export const HANDLERS = {
     }
   },
 
+  // N2b: 同時選択の確定の取り消し（配備のステージ / Reset で確定が消えたとき。009 追補 2026-11-12）。チェックマークを外す
+  choiceUnmarked(view, a) {
+    const p = view.m.players[int(a.player_id)];
+    if (p !== undefined) {
+      p.confirmed = false;
+      view.refreshMarks();
+    }
+  },
+
   // N3（本人）: 確定内容の要約。別タブの同期。計画フェイズなら選んだアクションが分かる
   choiceRecorded(view, a) {
     const m = view.m;
