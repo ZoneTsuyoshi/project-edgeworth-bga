@@ -67,6 +67,30 @@ final class Notices
         return new Notice('choiceRecorded', '', ['state_id' => $stateId, 'summary' => $summary], $playerId);
     }
 
+    /**
+     * 【提案】本人だけ: II 配備の 1 枚目をステージした（[Deploy another card]。009 追補 3）。クライアントが状態 61 の
+     * 本人分の args（段・ステージ済みの 1 枚目・2 枚目の候補とコスト・[Reset] の可否）を更新するための、`_private` と同じ形。
+     *
+     * @param array<string, mixed> $private
+     */
+    public function deployStaged(int $playerId, array $private): Notice
+    {
+        return new Notice('deployStaged', '', ['private' => $private], $playerId);
+    }
+
+    /**
+     * 【提案】本人だけ: ステージを取り消した（[Reset]。009 追補 5）。画面を戻すため、取り消し後の本人分の args と、
+     * 本人の手札・マヤ・予算・衛星の絶対値を載せる。
+     *
+     * @param array<string, mixed> $private
+     * @param array<string, mixed> $state `PublicView::playerState()` と同じ形（maya・budget・satellites ほか）
+     * @param list<int> $hand
+     */
+    public function deployStageReset(int $playerId, array $private, array $state, array $hand): Notice
+    {
+        return new Notice('deployStageReset', '', ['private' => $private, 'state' => $state, 'hand' => $hand], $playerId);
+    }
+
     /** N4 */
     public function roundStarted(int $round): Notice
     {

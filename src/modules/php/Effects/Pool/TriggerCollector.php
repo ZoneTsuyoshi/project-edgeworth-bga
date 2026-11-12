@@ -34,17 +34,22 @@ final class TriggerCollector
 
     /**
      * イベントに反応する効果をプールに積む。積んだ要素を返す。
+     * `data.resolved`（II 配備のステージで解決済みの宿主の鍵。009 追補 4）に載っている宿主は、二重に発動しないよう飛ばす。
      *
      * @return list<PoolItem>
      */
     public function collect(WindowState $state, GameEvent $event): array
     {
         $players = $event->playerId === null ? $this->view->playerIds() : [$event->playerId];
+        $resolved = array_map('strval', (array) ($event->data['resolved'] ?? []));
         $added = [];
         foreach ($players as $playerId) {
             foreach ($this->view->hosts($playerId) as $host) {
                 $spec = $this->catalog->specFor($host->cardKey);
                 if ($spec === null || !$spec->isTriggered() || $spec->hook !== $event->hook) {
+                    continue;
+                }
+                if ($resolved !== [] && in_array($host->key(), $resolved, true)) {
                     continue;
                 }
                 if (!$this->reacts($spec, $host, $event)) {

@@ -91,6 +91,16 @@ final class PublicView
     }
 
     /**
+     * 1 人分の公開データ（マヤ・予算・手札の枚数・衛星・通信確立など）。[Reset] で本人の画面を戻すときに使う。
+     *
+     * @return array<string, mixed>
+     */
+    public function playerState(int $playerId): array
+    {
+        return $this->playerData([$playerId])[$playerId];
+    }
+
+    /**
      * 窓を開いた時点の公開情報（`window_snapshot`。010 §9.4）。山札の枚数・捨て札・全員の公開データ。
      *
      * @return array<string, mixed>

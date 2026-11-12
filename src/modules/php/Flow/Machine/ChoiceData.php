@@ -20,9 +20,13 @@ final class ChoiceData
     }
 
     /**
+     * 配備の確定内容。未ステージ（S0）は op / card / sat / sell / useMods と、ボーナス保持者の extra（{op: draw}）。
+     * ステージ済み（S1）は extra（2 枚目 {op: deploy, card, sat, sell, useMods}、または {op: pass}）だけが意味を持つ
+     * （外側は `DeployPhase::normalize()` が捨てる）。
+     *
      * @param list<int>|null $sell
-     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（通常の配備の分）
-     * @param array<mixed>|null $extra ボーナス保持者の追加の行動（配備か 1 枚引く）
+     * @param list<string>|null $useMods 使う起動の修正の宿主の鍵（1 枚目の分）
+     * @param array<mixed>|null $extra ボーナス保持者の追加の行動（S0: 1 枚引く、S1: 2 枚目の配備）
      * @return array<string, mixed>
      */
     public static function deploy(string $op, int $cardId, int $satId, ?array $sell, ?array $useMods = null, ?array $extra = null): array
@@ -50,6 +54,7 @@ final class ChoiceData
         $op = (string) ($extra['op'] ?? '');
         if ($op === 'deploy') {
             return ['op' => 'deploy', 'card' => (int) ($extra['card'] ?? 0), 'sat' => (int) ($extra['sat'] ?? 0)]
+                + self::sell(is_array($extra['sell'] ?? null) ? $extra['sell'] : null)
                 + self::mods(is_array($extra['useMods'] ?? null) ? $extra['useMods'] : null);
         }
 

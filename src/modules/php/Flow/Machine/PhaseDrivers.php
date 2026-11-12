@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
+use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
 use Bga\Games\projectedgeworth\Effects\Runtime\ActionEvents;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
@@ -66,7 +67,17 @@ final class PhaseDrivers
                 return 'main';
             }
             $holders = $this->ctx->services->bonusHolders(2);
+            // ステージ済みの 1 枚目（[Deploy another card] で先に確定した分）は、再計算も再支払いもしない。ステージで起こした
+            // DEPLOYED イベント（解決済みの宿主の鍵つき）を台帳に移し、窓 DE が二重に発動しないようにする（009 追補 4・7）
+            $staged = $this->ctx->services->deployStages->all();
+            foreach ($staged as $stage) {
+                $this->ctx->record(...array_map(
+                    static fn(array $row): GameEvent => GameEvent::fromArray($row),
+                    $stage->resolved,
+                ));
+            }
             $notes->addAll($this->commit(2, StepMode::Main, StateId::DEPLOY_MAIN_CHOOSE));
+            $this->ctx->services->deployStages->clear();
             $this->ctx->record(...ActionEvents::bonusStep(2, $holders));
             return null;
         });

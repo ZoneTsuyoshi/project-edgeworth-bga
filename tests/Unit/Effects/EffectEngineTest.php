@@ -116,6 +116,54 @@ final class EffectEngineTest extends EffectsTestCase
         $this->assertTrue($engine->barrier()->canClose());
     }
 
+    // ---- 窓の外での即時解決（II 配備のステージ。009 追補 4） ----
+
+    public function testResolveImmediateResolvesForcedEffectsOutsideAWindowAndRecordsThem(): void
+    {
+        $game = (new FakeGame())->player(1, 3);
+        $game->satellite(1, SatelliteShape::Stealth, true, 'stealth_phobos');
+        $engine = $this->engine($game);
+
+        $result = $engine->resolveImmediate(1, [$this->budgetStart()]);
+
+        $this->assertSame(5, $game->maya[1], 'R010 は強制で選択がないので窓の外で解決する');
+        $this->assertSame(1, $result->resolved);
+        $this->assertSame(0, $result->left);
+        $this->assertFalse($engine->isOpen(), '窓は開かない・状態は残らない');
+        $this->assertCount(1, $result->events);
+        $this->assertSame(['S:1'], $result->events[0]->data['resolved']);
+
+        // 後の窓は、解決済みの（イベント、効果）の組を飛ばす（二重に発動しない）
+        $report = $engine->openWindow('B0', $result->events);
+        $this->assertFalse($report->hadEffects);
+        $this->assertSame(5, $game->maya[1]);
+    }
+
+    public function testResolveImmediateLeavesChoicesAndOrderQuestionsForTheWindow(): void
+    {
+        $game = $this->budgetGame(3);
+        $engine = $this->engine($game);
+
+        // P006（任意）と R010（強制）は M− と M+ で衝突する → 順序の問いが要るので、どちらも解決せず窓に残す
+        $result = $engine->resolveImmediate(1, [$this->budgetStart()]);
+
+        $this->assertSame(3, $game->maya[1]);
+        $this->assertSame([0, 2], [$result->resolved, $result->left]);
+        $this->assertArrayNotHasKey('resolved', $result->events[0]->data);
+        $report = $engine->openWindow('B0', $result->events);
+        $this->assertSame([1], $report->playersNeedingInput, '窓では普通に聞く');
+    }
+
+    public function testResolveImmediateRefusesToRunWhileAWindowIsOpen(): void
+    {
+        $game = $this->budgetGame(3);
+        $engine = $this->engine($game);
+        $engine->openWindow('B0', [$this->budgetStart()]);
+
+        $this->expectException(\LogicException::class);
+        $engine->resolveImmediate(1, [$this->budgetStart()]);
+    }
+
     public function testS06SinglePoolEntryAsksUseOrSkipWithoutOrder(): void
     {
         $game = (new FakeGame())->player(1, 10);

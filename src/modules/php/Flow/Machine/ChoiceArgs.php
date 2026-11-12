@@ -59,11 +59,21 @@ final class ChoiceArgs
         }
         $private = [];
         foreach ($participants as $playerId) {
-            $private[$playerId] = ['myChoice' => $services->choices->ownChoice($playerId, $flow->stateId)]
-                + $this->detail($flow, $playerId);
+            $private[$playerId] = $this->privateFor($flow, $playerId);
         }
         $args['_private'] = $private;
         return $args;
+    }
+
+    /**
+     * 1 人分の `_private`（本人の確定内容と候補）。II 配備のステージ・[Reset] の通知にも同じ形で載せる。
+     *
+     * @return array<string, mixed>
+     */
+    public function privateFor(ChoiceFlow $flow, int $playerId): array
+    {
+        return ['myChoice' => $this->ctx->services->choices->ownChoice($playerId, $flow->stateId)]
+            + $this->detail($flow, $playerId);
     }
 
     /**
@@ -98,20 +108,21 @@ final class ChoiceArgs
     }
 
     /**
-     * 配備の候補。ボーナス保持者（`bonus` = true）は、通常の配備と同時に追加の配備か 1 枚引くも選ぶ（作者回答 2026-10-20）。
-     * 追加の配備の候補は `targets` と同じ（引いたカードは使えない）。通常の配備と同じ衛星へ追加で配備するときは、
-     * 各候補の `next`（その衛星に先に 1 枚配備された後の段・コスト・選べない理由・起動の修正）を使う。
+     * 配備の候補。ボーナス保持者（`bonus` = true）は、[Deploy another card] で 1 枚目を先に確定（ステージ）してから 2 枚目を選ぶ
+     * （009 追補 2026-11-12）。`stage` は 0 = 未ステージ（S0）、1 = ステージ済み（S1）。`targets` は実際の盤面を見た候補で、
+     * S1 ではステージ済みの 1 枚目が衛星に付いた状態の 2 枚目の候補（段・コスト・選べない理由・起動の修正）になる。
+     * クライアントは見積もりを自前で計算しない。ステージ済みなら `stage1`（1 枚目の内容）、`canReset` / `resetBlockedReason` も載せる。
      *
      * @return array<string, mixed>
      */
     private function deploy(int $playerId): array
     {
         $deploy = $this->ctx->phases->deploy();
+        $stage = $this->ctx->services->deployStages->find($playerId);
         $bonus = $deploy->isBonusHolder($playerId);
         $targets = [];
         foreach ($deploy->hand($playerId) as $cardNumber) {
-            $after = $bonus ? $deploy->targets($playerId, $cardNumber, 1) : [];
-            foreach ($deploy->targets($playerId, $cardNumber) as $index => $target) {
+            foreach ($deploy->targets($playerId, $cardNumber) as $target) {
                 $entry = [
                     'satId' => $target->satellite->id,
                     'tier' => $target->deployedCount + 1,
@@ -121,20 +132,23 @@ final class ChoiceArgs
                     'selectable' => $target->isSelectable(),
                 ];
                 $entry += $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $target->satellite->id], $target->cost->total());
-                if ($bonus) {
-                    $next = $after[$index];
-                    $entry['next'] = [
-                        'tier' => $next->deployedCount + 1,
-                        'cost' => $next->cost->total(),
-                        'blocked' => $next->blocked,
-                    ] + $this->mods(2, $playerId, ['card' => $cardNumber, 'sat' => $next->satellite->id, 'pending' => 1], $next->cost->total());
-                }
                 $targets[$cardNumber][] = $entry;
             }
         }
-        $args = ['targets' => $targets, 'bonus' => $bonus];
+        $args = ['targets' => $targets, 'bonus' => $bonus, 'stage' => $stage === null ? 0 : 1, 'canReset' => false];
         if ($bonus) {
-            $args['canDraw'] = $this->ctx->deckCount() + $this->ctx->discardCount() > 0;
+            $args['canDraw'] = $stage === null && $this->ctx->deckCount() + $this->ctx->discardCount() > 0;
+        }
+        if ($stage !== null) {
+            $args['stage1'] = [
+                'card' => $stage->card,
+                'satId' => $stage->satId,
+                'tier' => $stage->tier,
+                'paid' => $stage->paid,
+                'sold' => $stage->sold,
+            ];
+            $args['canReset'] = !$stage->irreversible;
+            $args['resetBlockedReason'] = $stage->irreversible ? DeployStageFlow::REASON_IRREVERSIBLE : null;
         }
         return $args;
     }

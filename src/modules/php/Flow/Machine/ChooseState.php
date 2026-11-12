@@ -88,6 +88,26 @@ abstract class ChooseState extends GameState
     }
 
     /**
+     * II 配備の段階確定（actStageDeploy / actResetStage から呼ぶ。009 追補 3）。通知は本人宛て。確定済みだった人は確定を取り消されるので、
+     * アクティブに戻す（案 B では確定すると非アクティブになる）。
+     *
+     * @param \Closure(): StageResult $operation
+     */
+    protected function peStage(int $playerId, \Closure $operation): void
+    {
+        try {
+            $result = $operation();
+        } catch (RuleViolation $violation) {
+            throw new UserException($this->game->_($violation->getMessage()));
+        }
+        $this->game->giveExtraTime($playerId);
+        $this->game->peSend($result->notices);
+        if ($result->wasConfirmed) {
+            $this->game->gamestate->setPlayersMultiactive([$playerId], 'allConfirmed');
+        }
+    }
+
+    /**
      * 売却（actSell から呼ぶ。009 §8）。
      *
      * @param list<int>|null $cardIds

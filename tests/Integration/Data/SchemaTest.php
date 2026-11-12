@@ -22,7 +22,7 @@ final class SchemaTest extends DatabaseTestCase
         );
         foreach (
             ['project_card', 'satellite', 'link', 'staged_link', 'region', 'action_card', 'mission_card', 'choice', 'pool',
-                'held_notif', 'player'] as $table
+                'held_notif', 'deploy_stage', 'player'] as $table
         ) {
             $this->assertContains($table, $tables);
         }
@@ -39,7 +39,7 @@ final class SchemaTest extends DatabaseTestCase
     public function testEveryTableHasPrimaryKeyAndNoColumnNamedAfterTable(): void
     {
         $tables = ['project_card', 'satellite', 'link', 'staged_link', 'region', 'action_card', 'mission_card', 'choice', 'pool',
-            'held_notif'];
+            'held_notif', 'deploy_stage'];
         foreach ($tables as $table) {
             $keys = $this->db->rows("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
             $this->assertNotSame([], $keys, "$table needs a primary key");

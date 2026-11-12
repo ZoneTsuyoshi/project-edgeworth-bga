@@ -83,6 +83,10 @@ final class ChoiceFlow
     public function confirm(int $playerId, array $data): ConfirmResult
     {
         $first = !$this->ctx->services->choices->isConfirmed($playerId, $this->stateId);
+        if ($this->actionNo === 2) {
+            // ステージ済み（S1）の人は、外側の op と 1 枚目の引数を捨て、2 枚目（extra）だけを検証・保存する（009 追補 3）
+            $data = $this->ctx->phases->deploy()->normalize($playerId, $data);
+        }
         // 起動の修正（USE_MODS）は、使う鍵を検証してから、この確定の検証の間だけコストの問い合わせに効かせる（011 §6-3）
         $effects = $this->ctx->effects;
         $keys = [];

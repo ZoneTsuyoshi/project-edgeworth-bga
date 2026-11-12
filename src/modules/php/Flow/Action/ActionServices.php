@@ -14,6 +14,7 @@ use Bga\Games\projectedgeworth\Board\RandomSource;
 use Bga\Games\projectedgeworth\Data\ActionCardRepository;
 use Bga\Games\projectedgeworth\Data\ChoiceRepository;
 use Bga\Games\projectedgeworth\Data\Database;
+use Bga\Games\projectedgeworth\Data\DeployStageRepository;
 use Bga\Games\projectedgeworth\Data\GlobalValues;
 use Bga\Games\projectedgeworth\Data\LinkRepository;
 use Bga\Games\projectedgeworth\Data\PlayerValues;
@@ -43,6 +44,7 @@ final class ActionServices
         public readonly ChoiceRepository $choices,
         public readonly BoardLayout $layout,
         public readonly ActionHooks $hooks,
+        public readonly DeployStageRepository $deployStages,
     ) {
         $this->selling = new SellRules($cards, $players, $hooks);
     }
@@ -67,6 +69,7 @@ final class ActionServices
             new ChoiceRepository($db),
             $layout ?? LaunchPadPlacement::loadLayout(new RegionRepository($db), $globals),
             $hooks ?? new NoActionHooks(),
+            new DeployStageRepository($db),
         );
     }
 
