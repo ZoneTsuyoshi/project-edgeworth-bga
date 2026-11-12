@@ -40,8 +40,8 @@ final class E2MaterialTest extends TestCase
         return [
             'R001' => ['hammer_moon', 'LE', 'LAUNCHED', PartId::DrawCards, ['count' => 1], ['H+']],
             'R002' => ['retro_moon', 'LE', 'LAUNCHED', PartId::ChangeBudget, ['amount' => 2], ['B+']],
-            'R003' => ['scallop_moon', 'LE', 'LAUNCHED', PartId::DrawCards, ['count' => 2], ['H+']],
-            'R004' => ['concorde_moon', 'LE', 'LAUNCHED', PartId::ChangeBudget, ['amount' => 4], ['B+']],
+            'R003' => ['scallop_moon', 'LE', 'LAUNCHED', PartId::DrawCards, ['count' => 3], ['H+']],
+            'R004' => ['concorde_moon', 'LE', 'LAUNCHED', PartId::ChangeBudget, ['amount' => 3], ['B+']],
             'R010' => ['stealth_phobos', 'B0', 'BUDGET_START', PartId::GainMaya, ['amount' => 2], ['M+']],
             'R012' => ['retro_deimos', '', 'ACTION_BONUS_STEP', PartId::ChangeBudget, ['amount' => 1, 'action' => 'LAUNCH_TURN'], ['B+']],
             'R013' => ['scallop_deimos', '', 'ACTION_BONUS_STEP', PartId::DrawCards, ['count' => 1, 'action' => 'DEPLOY'], ['H+']],

@@ -122,8 +122,8 @@ final class CardTexts
     public const SATELLITE = [
         'hammer_moon' => ['ja' => '打ち上げ時、プロジェクトカードを1枚引く', 'en' => 'When launched, draw 1 Project card.'],
         'retro_moon' => ['ja' => '打ち上げ時、[予算]+2', 'en' => 'When launched, +2 [Budget].'],
-        'scallop_moon' => ['ja' => '打ち上げ時、プロジェクトカードを2枚引く', 'en' => 'When launched, draw 2 Project cards.'],
-        'concorde_moon' => ['ja' => '打ち上げ時、[予算]+4', 'en' => 'When launched, +4 [Budget].'],
+        'scallop_moon' => ['ja' => '打ち上げ時、プロジェクトカードを3枚引く', 'en' => 'When launched, draw 3 Project cards.'],
+        'concorde_moon' => ['ja' => '打ち上げ時、[予算]+3', 'en' => 'When launched, +3 [Budget].'],
         'stealth_moon' => ['ja' => '打ち上げ時、手札からプロジェクトカードを2枚まで選んで配備コストを支払ってこの衛星に配備してもよい。配備したカードの配備時・打ち上げ時効果は発動する', 'en' => 'When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The "On Deploy" and "On Launch" effects of the deployed cards are triggered.'],
         'hammer_phobos' => ['ja' => '自分の全ての衛星の打ち上げコスト-3', 'en' => 'Launch cost of all your satellites -3.'],
         'retro_phobos' => ['ja' => '自分の全ての衛星への配備コスト-1', 'en' => 'Deployment cost for all your satellites -1.'],

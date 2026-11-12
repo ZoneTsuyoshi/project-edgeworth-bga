@@ -654,8 +654,8 @@ MOON 面（R001〜R005）は 4 色とも効果が同一なので 1 行（002 §6
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | R001 HAMMER MOON | `LAUNCHED` | 打 | — | R03 | count = 1、selfOnly | 自 | ★1 | 再打ち上げでも発動（FAQ 行 68） |
 | R002 RETRO MOON | `LAUNCHED` | 打 | — | R02 | amount = 2、selfOnly | 自 | ★1 | |
-| R003 SCALLOP MOON | `LAUNCHED` | 打 | — | R03 | count = 2、selfOnly | 自 | ★1 | |
-| R004 CONCORDE MOON | `LAUNCHED` | 打 | — | R02 | amount = 4、selfOnly | 自 | ★1 | |
+| R003 SCALLOP MOON | `LAUNCHED` | 打 | — | R03 | count = 3、selfOnly | 自 | ★1 | |
+| R004 CONCORDE MOON | `LAUNCHED` | 打 | — | R02 | amount = 3、selfOnly | 自 | ★1 | |
 | R005 STEALTH MOON | `LAUNCHED` | 打 | — | R09 | maxCards = 2、targetScope = THIS、surcharge = 偽、selfOnly | 任・対(CARDS、USE_MODS) | ★4 | 追加配備コスト不要（FAQ 行 69）。配備したカードの `ON_DEPLOY`・`ON_LAUNCH` が発動し、他の配備反応も働く。4 枚上限 |
 | R006 HAMMER PHOBOS | `LAUNCH_COST` | 常 | ◎ | M02 | delta = -3、scope = ALL_OWN | — | ★1 | HAMMER 自身の打ち上げには効かない（FAQ 行 67） |
 | R007 RETRO PHOBOS | `DEPLOY_COST` | 常 | ◎ | M01 | delta = -1、scope = ALL_OWN | — | ★1 | |

@@ -394,8 +394,8 @@ final class E2EffectsTest extends TestCase
         return [
             'R001 HAMMER MOON' => ['hammer_moon', 'draw', 1, 0],
             'R002 RETRO MOON' => ['retro_moon', 'budget', 2, 1],
-            'R003 SCALLOP MOON' => ['scallop_moon', 'draw', 2, 2],
-            'R004 CONCORDE MOON' => ['concorde_moon', 'budget', 4, 3],
+            'R003 SCALLOP MOON' => ['scallop_moon', 'draw', 3, 2],
+            'R004 CONCORDE MOON' => ['concorde_moon', 'budget', 3, 3],
         ];
     }
 
@@ -660,11 +660,11 @@ final class E2EffectsTest extends TestCase
         $sat = $this->sat($game, self::P1, SatelliteShape::Hammer, true, 'scallop_moon');
         $game->deploy($sat, 'P075')->deploy($sat, 'P039')->deploy($sat, 'P040');
 
-        // 打ち上げ時: scallop_moon の 2 枚 + P039 の DEVICE 2 枚 = 4 枚。引いたたびに +枚数
+        // 打ち上げ時: scallop_moon の 3 枚 + P039 の DEVICE 2 枚 = 5 枚。引いたたびに +枚数
         $this->open($game, 'PB', [$this->launched($sat)]);
 
-        $this->assertCount(4, $game->hand[self::P1]);
-        $this->assertSame(14, $game->maya[self::P1]);
+        $this->assertCount(5, $game->hand[self::P1]);
+        $this->assertSame(15, $game->maya[self::P1]);
     }
 
     public function testR012GivesBudgetOnlyForTheLaunchTurnBonusAndR013DrawsOnlyForTheDeployBonus(): void
@@ -703,8 +703,8 @@ final class E2EffectsTest extends TestCase
 
         $this->open($game, 'LE', [$this->launched($sat)]);
 
-        $this->assertSame([101, 201], $game->hand[self::P1]);
-        $this->assertSame([202], $game->deck);
+        $this->assertSame([101, 201, 202], $game->hand[self::P1]);
+        $this->assertSame([], $game->deck);
         $this->assertSame([], $game->discard);
     }
 

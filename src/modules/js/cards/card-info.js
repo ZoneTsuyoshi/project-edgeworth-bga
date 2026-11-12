@@ -1306,7 +1306,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, draw 2 Project cards."
+   "text": "When launched, draw 3 Project cards."
   },
   "R003G": {
    "nameId": "scallop_moon",
@@ -1319,7 +1319,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, draw 2 Project cards."
+   "text": "When launched, draw 3 Project cards."
   },
   "R003R": {
    "nameId": "scallop_moon",
@@ -1332,7 +1332,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, draw 2 Project cards."
+   "text": "When launched, draw 3 Project cards."
   },
   "R003Y": {
    "nameId": "scallop_moon",
@@ -1345,7 +1345,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, draw 2 Project cards."
+   "text": "When launched, draw 3 Project cards."
   },
   "R004B": {
    "nameId": "concorde_moon",
@@ -1358,7 +1358,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, +4 [Budget]."
+   "text": "When launched, +3 [Budget]."
   },
   "R004G": {
    "nameId": "concorde_moon",
@@ -1371,7 +1371,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, +4 [Budget]."
+   "text": "When launched, +3 [Budget]."
   },
   "R004R": {
    "nameId": "concorde_moon",
@@ -1384,7 +1384,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, +4 [Budget]."
+   "text": "When launched, +3 [Budget]."
   },
   "R004Y": {
    "nameId": "concorde_moon",
@@ -1397,7 +1397,7 @@ export const CARD_INFO = {
    "timing": "LAUNCHED",
    "kind": "ON_LAUNCH",
    "active": "ANY",
-   "text": "When launched, +4 [Budget]."
+   "text": "When launched, +3 [Budget]."
   },
   "R005B": {
    "nameId": "stealth_moon",
