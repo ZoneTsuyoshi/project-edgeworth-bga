@@ -409,8 +409,8 @@ PROJECT EDGEWORTH の全カード（プロジェクトカード 99 枚、衛星�
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | R001B / G / R / Y | HAMMER | `hammer_moon` | 10 | 5 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、プロジェクトカードを1枚引く | When launched, draw 1 Project card. |
 | R002B / G / R / Y | RETRO | `retro_moon` | 20 | 5 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+2 | When launched, +2 [Budget]. |
-| R003B / G / R / Y | SCALLOP | `scallop_moon` | 20 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、プロジェクトカードを2枚引く | When launched, draw 2 Project cards. |
-| R004B / G / R / Y | CONCORDE | `concorde_moon` | 30 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+4 | When launched, +4 [Budget]. |
+| R003B / G / R / Y | SCALLOP | `scallop_moon` | 20 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、プロジェクトカードを3枚引く | When launched, draw 3 Project cards. |
+| R004B / G / R / Y | CONCORDE | `concorde_moon` | 30 | 10 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、[予算]+3 | When launched, +3 [Budget]. |
 | R005B / G / R / Y | STEALTH | `stealth_moon` | 30 | 15 | 2 | `LAUNCHED` | `ON_LAUNCH` | `ANY` | 打ち上げ時、手札からプロジェクトカードを2枚まで選んで配備コストを支払ってこの衛星に配備してもよい。配備したカードの配備時・打ち上げ時効果は発動する | When launched, you may choose up to 2 Project cards from your hand and pay their deployment costs to deploy them to this satellite. The "On Deploy" and "On Launch" effects of the deployed cards are triggered. |
 
 色と画像の対応: `B` = 青（BLUE）、`G` = 緑（GREEN）、`R` = 赤（RED）、`Y` = 黄（YELLOW）。2 つのアイコンは「打ち上げ」と「打ち上げ時」で、稼働条件アイコン（◎）は無い。
@@ -738,8 +738,8 @@ FAQ 上のカード ID は、P048 と P049 が印刷と逆だったため、2026
 | | P098 | 印刷は企画フェイズ（巻物）だがエラッタで循環フェイズ中が正（マスターも循環） |
 | 衛星 MOON 面 | R002（RETRO） | 打ち上げコスト 20 → 15 →（作者の指摘 2026-11-12、画像更新後の印刷物）20 |
 | | R005（STEALTH） | マスター `moon` シート: 配備は「1枚」→ 印刷版: 「2枚まで」、「配備したカードの配備時・打ち上げ時効果は発動する」を追記（`satellite` シートの「最大2枚」とは一致。`data/` の画像は旧版で「1枚」） |
-| | R003（SCALLOP） | 打ち上げ時、プロジェクトカードを3枚引く → 2枚引く |
-| | R004（CONCORDE） | 打ち上げ時、予算+3 → +4 |
+| | R003（SCALLOP） | 打ち上げ時、プロジェクトカードを3枚引く → 2枚引く →（作者の確認 2026-11-12、画像更新後の印刷物）3枚引く（マスターと一致） |
+| | R004（CONCORDE） | 打ち上げ時、予算+3 → +4 →（作者の確認 2026-11-12、画像更新後の印刷物）+3（マスターと一致） |
 
 マスター側の `project` シートの `name_old` / `name2` など旧名の列は、印刷との突き合わせに使っていない。
 

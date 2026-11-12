@@ -87,11 +87,11 @@ final class CardEffectsE2
             self::spec('P093', Hook::OrbitEntered, EffectKind::Activated, true, false, PartId::GainMaya, ['amount' => 3], [$this_, new EffectCondition(ConditionId::EnteredOwnLinkedArea)], [new ResourceTouch($m)]),
 
             // ---- 衛星カード ----
-            // R001〜R004 MOON: 打ち上げ時（再打ち上げでも）、1 枚引く / 予算 +2 / 2 枚引く / 予算 +4
+            // R001〜R004 MOON: 打ち上げ時（再打ち上げでも）、1 枚引く / 予算 +2 / 3 枚引く / 予算 +3
             self::spec('hammer_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::DrawCards, ['count' => 1], [], [new ResourceTouch($h)]),
             self::spec('retro_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::ChangeBudget, ['amount' => 2], [], [new ResourceTouch($b)]),
-            self::spec('scallop_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::DrawCards, ['count' => 2], [], [new ResourceTouch($h)]),
-            self::spec('concorde_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::ChangeBudget, ['amount' => 4], [], [new ResourceTouch($b)]),
+            self::spec('scallop_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::DrawCards, ['count' => 3], [], [new ResourceTouch($h)]),
+            self::spec('concorde_moon', Hook::Launched, EffectKind::OnLaunch, false, true, PartId::ChangeBudget, ['amount' => 3], [], [new ResourceTouch($b)]),
             // R012 RETRO DEIMOS: III（打ち上げ / 転回）のボーナスのコミットで予算 +1（007 未確定 12、011 未確定 4）
             self::spec('retro_deimos', Hook::ActionBonusStep, EffectKind::Activated, true, false, PartId::ChangeBudget, ['amount' => 1, 'action' => 'LAUNCH_TURN'], [], [new ResourceTouch($b)]),
             // R013 SCALLOP DEIMOS: II（配備）のボーナスのコミットで 1 枚引く
