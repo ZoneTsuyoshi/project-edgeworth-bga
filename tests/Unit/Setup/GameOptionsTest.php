@@ -38,14 +38,12 @@ final class GameOptionsTest extends TestCase
         $this->assertSame(PublicFame::Hidden, $o->publicFame);
     }
 
-    public function testAllSixBoardLayouts(): void
+    public function testAllBoardLayouts(): void
     {
         $expected = [
             1 => [BoardFace::STANDARD, BoardPlacement::EARTH],
-            2 => [BoardFace::STANDARD, BoardPlacement::RANDOM_NO_FLIP],
             3 => [BoardFace::STANDARD, BoardPlacement::RANDOM_FLIP],
             4 => [BoardFace::ADVANCED, BoardPlacement::EARTH],
-            5 => [BoardFace::ADVANCED, BoardPlacement::RANDOM_NO_FLIP],
             6 => [BoardFace::ADVANCED, BoardPlacement::RANDOM_FLIP],
         ];
         foreach ($expected as $value => [$face, $placement]) {

@@ -25,13 +25,17 @@ final class BoardLayoutBuilderTest extends TestCase
     public function testOptionMapping(): void
     {
         self::assertSame([BoardFace::STANDARD, BoardPlacement::EARTH], BoardPlacement::fromOptionValue(1));
-        self::assertSame([BoardFace::STANDARD, BoardPlacement::RANDOM_NO_FLIP], BoardPlacement::fromOptionValue(2));
         self::assertSame([BoardFace::STANDARD, BoardPlacement::RANDOM_FLIP], BoardPlacement::fromOptionValue(3));
         self::assertSame([BoardFace::ADVANCED, BoardPlacement::EARTH], BoardPlacement::fromOptionValue(4));
-        self::assertSame([BoardFace::ADVANCED, BoardPlacement::RANDOM_NO_FLIP], BoardPlacement::fromOptionValue(5));
         self::assertSame([BoardFace::ADVANCED, BoardPlacement::RANDOM_FLIP], BoardPlacement::fromOptionValue(6));
-        $this->expectException(\InvalidArgumentException::class);
-        BoardPlacement::fromOptionValue(7);
+        // 2・5 は廃止した欠番、7 は未定義
+        foreach ([0, 2, 5, 7] as $retired) {
+            try {
+                BoardPlacement::fromOptionValue($retired);
+                self::fail("option {$retired} must be rejected");
+            } catch (\InvalidArgumentException) {
+            }
+        }
     }
 
     public function testEarth(): void
@@ -55,7 +59,7 @@ final class BoardLayoutBuilderTest extends TestCase
     /** @return iterable<string, array{int, int}> */
     public static function optionsAndSizes(): iterable
     {
-        foreach ([1, 2, 3, 4, 5, 6] as $opt) {
+        foreach ([1, 3, 4, 6] as $opt) {
             foreach ([4, 3, 2] as $b) {
                 yield "option {$opt} B={$b}" => [$opt, $b];
             }
@@ -85,7 +89,7 @@ final class BoardLayoutBuilderTest extends TestCase
                     $used[] = $p['boardId'];
                     $sawFlip = $sawFlip || $p['flip'];
                     $alpha = RegionBoards::isAlpha($p['boardId']);
-                    // flip はタイプの不一致で決まる。w/o Flip では不一致が起きない
+                    // flip はタイプの不一致で決まる
                     self::assertSame($alpha !== $needAlpha, $p['flip']);
                     if ($placement !== BoardPlacement::RANDOM_FLIP) {
                         self::assertFalse($p['flip']);
@@ -118,22 +122,6 @@ final class BoardLayoutBuilderTest extends TestCase
         }
         if ($placement === BoardPlacement::RANDOM_FLIP) {
             self::assertTrue($sawFlip, 'flip never occurred');
-        }
-    }
-
-    public function testRandomNoFlipGroupsFollowParity(): void
-    {
-        for ($seed = 1; $seed <= 30; $seed++) {
-            $layout = BoardLayoutBuilder::build(BoardFace::STANDARD, BoardPlacement::RANDOM_NO_FLIP, 4, new SeededRandom($seed));
-            $top = array_column($layout->placements()[0], 'boardId');
-            $bottom = array_column($layout->placements()[1], 'boardId');
-            if ($layout->geometry()->parity() === 0) {
-                self::assertEqualsCanonicalizing(['A', 'B', 'C', 'D'], $top);
-                self::assertEqualsCanonicalizing(['E', 'F', 'G', 'H'], $bottom);
-            } else {
-                self::assertEqualsCanonicalizing(['E', 'F', 'G', 'H'], $top);
-                self::assertEqualsCanonicalizing(['A', 'B', 'C', 'D'], $bottom);
-            }
         }
     }
 
