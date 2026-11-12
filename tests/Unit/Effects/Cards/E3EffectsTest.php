@@ -599,8 +599,18 @@ final class E3EffectsTest extends TestCase
         $f->game->hand[self::P1] = [50];
         $f->satellite(self::P1, [], true, 'opt_discard');
         $spec = new EffectSpec(
-            'opt_discard', Hook::OrbitStart, EffectKind::Activated, true, true, false, PartId::DiscardHand,
-            ['count' => 1], null, [], [], 1,
+            'opt_discard',
+            Hook::OrbitStart,
+            EffectKind::Activated,
+            true,
+            true,
+            false,
+            PartId::DiscardHand,
+            ['count' => 1],
+            null,
+            [],
+            [],
+            1,
         );
         $engine = new EffectEngine($f->game, $f->game, $f->parts, new ArrayCatalog([$spec]), $f->conditions);
 
