@@ -119,9 +119,9 @@
 | オプション | 使う面 | 並べ方 |
 | --- | --- | --- |
 | Standard (Earth) | 表面（A〜H） | ルールブックの推奨配置（下記） |
-| Standard (Random w/ Flip) | 表面 | ランダム、ボードを 180° 回転して置くことがある |
+| Standard (Random) | 表面 | ランダム、ボードを 180° 回転して置くことがある |
 | Advanced (Earth) | 裏面（RA〜RH） | Earth と同じ位置 |
-| Advanced (Random w/ Flip) | 裏面 | ランダム、180° 回転あり |
+| Advanced (Random) | 裏面 | ランダム、180° 回転あり |
 
 - Standard は表面、Advanced は裏面。1 ゲームの中で表裏を混ぜない
 - Earth（p.10 手順 1 の図、`board_face` と一致）: 上段 左から A B C D、下段 左から E F G H。`P = 0`、回転なし

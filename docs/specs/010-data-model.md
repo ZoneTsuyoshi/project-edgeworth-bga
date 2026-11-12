@@ -485,7 +485,8 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
         "cell": null, "dir": null, "fuelUsed": 0, "fuelCapacity": 2,
         "grace": false, "activation": 0, "cards": [{ "id": 5, "activation": 0 }]
       }],
-      "links": [{ "cell": 20, "slot": 0, "level": 0 }]
+      "links": [{ "cell": 20, "slot": 0, "level": 0 }],
+      "rewardValues": { "T001": 3, "T013": 15 }
     }
   },
   "bonusHolders": { "3": [2310001] },
@@ -502,6 +503,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | `myHand` / `myDrawn` / `myMissions` | 本人の分だけ。観戦者には空配列 | — |
 | `playerData[pid].satellites[].cards` | 配備されたカード（段の昇順）。`activation` は起動効果の使用済み（公開。008 §4） | — |
 | `playerData[pid].cubesLeft` | 残りキューブ（窓の外ではステージは空） | 窓の最中は §9.4 のスナップショットから |
+| `playerData[pid].rewardValues` | 使っている褒賞 2 面（`rewards`）の、その人の今の比較値（`{ "T001": 3, "T013": 15 }`）。全員分を公開する。サーバーが `RewardComparison`（002 §7）で計算し、手札は換金しない。パネルの「褒賞: 値」表示に使う（通知 N33 でも更新） | 送らないとパネルが「–」になる（2026-11-12 修正） |
 | `window` | 窓の最中だけ `{ "id": "DE" }`。プールの中身は含めない | — |
 | `publicFame` | ゲームオプション 105 が Visible のときだけ入れるキー（Hidden ではキー自体がない）。プレイヤー ID => `{ total, detail }`。`detail` は §11 の I〜IX から**ミッション V を除いた**もの（`fame_detail` と同じキー名。`total` を含む）。ゲーム中の途中の名声: 手札は換金せず所持金のまま、IX は終了判定で満たした人だけ、VIII は現在の比較値での順位。窓（状態 30〜32）の最中は全員に窓開始時の値（`window_snapshot` の `publicFame`）を返す。DB には保存せず、`FinalScoring` と同じ入口（DB から `PlayerState` を組み立てて `FameCalculator`）で毎回計算する | Hidden ではキーなし |
 | `finalScores` | ゲーム終了後（状態 121 以降）だけ、全員の `fame_detail`（§11）と全員のミッション（番号・達成状況） | それ以外は null |
@@ -630,7 +632,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N30 | `handCashedOut` | 全員 | `player_id`、`player_name`、`cards`（ID 配列）、`maya_gain`、`maya` | `${player_name}'s hand was sold for ${maya_gain} Maya at game end` | 120。換金するカードを公開し、捨て札へ（008 §2-10） |
 | N31 | `gameEndTriggered` | 全員 | `players`（終了条件を満たした ID 配列）、`reasons`（`satellites` / `links`） | `The game ends after this round` | 110 が終了と判定したとき。IX の +3 の対象は公開 |
 | N32 | `finalScore` | 全員 | `player_id`、`player_name`、`fame`、`detail`（§11.2 の JSON）、`missions`（そのプレイヤーのミッション番号と達成状況） | `${player_name} scores ${fame} fame` | 121。全員分を席順に 1 件ずつ。内訳の表（bga-score-sheet 候補。004）を出す。ミッションをここで公開 |
-| N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "drawnCount", "cubesLeft"}}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
+| N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "drawnCount", "cubesLeft", "rewardValues"}}`。`rewardValues` は使っている褒賞 2 面の今の比較値 `{"T001": 3, ...}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
 | N34 | `effectQuestions` | 本人 | 31 の args の `_private[playerId]` と同じ形（`windowId`、`pending`、`questions`、`hand`、`sellValue`）。答えた後で問いが無ければ `questions` は空 | `''` | 31 の `actUseEffect` / `actSkipEffect` / `actOrderEffects` の直後。31 の args は入場時のものなので、クライアントが残りの問い（ORDER の次の EFFECT、二段階の効果の二段目など）を知る。保留に積まず即時に送る（本人の問いは公開情報ではない） |
 | N35 | `effectWaiting` | 全員 | `waiting`（`[{ "player_id", "sources": [カードキー] }]`。31 の args の公開部分と同じ） | `''` | N34 と同時、および zombie の処理の後。待機表示「Waiting for X (CARD_NAME)」（008 §5-1）を更新する。カードは公開情報 |
 | N36 | `publicFameUpdated` | 全員 | `fame`（`{ID: {"total", "detail"}}`。`getAllDatas.publicFame` と同じ形。ミッション V を除く） | `''` | ゲームオプション 105 が Visible のときだけ。N33 を送る箇所（各 GAME 状態の処理の最後とアクションの最後、予算ボーナスの後）で、値が変わりうるとき N33 の直後に送る。窓の最中は送らず、バリアの公開（N26 windowClosed）の後の N33 と同時に最新値を送る。Hidden では送らない |

@@ -23,6 +23,7 @@ use Bga\Games\projectedgeworth\Scoring\FameCalculator;
 use Bga\Games\projectedgeworth\Scoring\FameResult;
 use Bga\Games\projectedgeworth\Scoring\LinkedCube;
 use Bga\Games\projectedgeworth\Scoring\PlayerState;
+use Bga\Games\projectedgeworth\Scoring\RewardComparison;
 use Bga\Games\projectedgeworth\Scoring\SatelliteState;
 use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 
@@ -75,6 +76,30 @@ final class FinalScoring
             $fame[$playerId] = ['total' => $result->total, 'detail' => $detail];
         }
         return $fame;
+    }
+
+    /**
+     * 使っている褒賞 2 面の、今の比較値（パネル表示用。手札は換金しない）。DB には保存しない。
+     *
+     * @return array<int, array<string, int>> プレイヤー ID => (褒賞カード ID => 比較値)
+     */
+    public function rewardValues(): array
+    {
+        $states = $this->playerStates(false);
+        $board = $this->scoringBoard();
+        $pads = [];
+        foreach ($states as $p) {
+            if ($p->launchPadCell !== null) {
+                $pads[] = $p->launchPadCell;
+            }
+        }
+        $values = [];
+        foreach ($states as $p) {
+            foreach ($this->globals->rewardCards() as $rewardId) {
+                $values[$p->playerId][$rewardId] = RewardComparison::value($rewardId, $p, $board, $pads);
+            }
+        }
+        return $values;
     }
 
     /**

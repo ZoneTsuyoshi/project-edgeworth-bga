@@ -227,6 +227,7 @@ final class PublicView
         $services = $this->ctx->services;
         $public = $services->players->publicValues();
         $actionCards = $services->actionCards->all();
+        $rewardValues = $this->ctx->finalScoring()->rewardValues();
         $data = [];
         foreach ($order as $playerId) {
             $links = [];
@@ -248,6 +249,7 @@ final class PublicView
                 'actionCards' => $cards,
                 'satellites' => array_map(fn(Satellite $sat): array => $this->satellite($sat), $services->satellites->forPlayer($playerId)),
                 'links' => $links,
+                'rewardValues' => $rewardValues[$playerId] ?? [],
             ];
         }
         return $data;

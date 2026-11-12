@@ -561,7 +561,7 @@ export const HANDLERS = {
       if (p === undefined) {
         continue;
       }
-      const counters = /** @type {{ handCount?: number, drawnCount?: number, cubesLeft?: number }} */ (c);
+      const counters = /** @type {{ handCount?: number, drawnCount?: number, cubesLeft?: number, rewardValues?: Record<string, number> }} */ (c);
       if (counters.handCount !== undefined && p.id !== m.me) {
         p.handCount = int(counters.handCount);
       }
@@ -570,6 +570,9 @@ export const HANDLERS = {
       }
       if (counters.cubesLeft !== undefined) {
         p.cubesLeft = int(counters.cubesLeft);
+      }
+      if (counters.rewardValues !== undefined) {
+        p.rewardValues = Object.fromEntries(Object.entries(counters.rewardValues).map(([k, v]) => [k, int(v)]));
       }
     }
     refreshPiles(view);

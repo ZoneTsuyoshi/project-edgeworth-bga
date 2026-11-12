@@ -97,13 +97,15 @@ final class FlowContext
     }
 
     /**
-     * N33: 山札・捨て札・手札・引いた直後・残りキューブの枚数の再同期。
+     * N33: 山札・捨て札・手札・引いた直後・残りキューブの枚数と、褒賞の現在値の再同期。
      */
     public function counters(): Notice
     {
         $players = [];
+        $rewardValues = $this->finalScoring()->rewardValues();
         foreach ($this->services->players->playerIds() as $playerId) {
             $players[$playerId] = [
+                'rewardValues' => $rewardValues[$playerId] ?? [],
                 'handCount' => $this->services->cards->countIn(CardLocation::Hand, $playerId),
                 'drawnCount' => $this->services->cards->countIn(CardLocation::Drawn, $playerId),
                 'cubesLeft' => LinkRepository::CUBES_PER_PLAYER - $this->services->links->countFor($playerId),
