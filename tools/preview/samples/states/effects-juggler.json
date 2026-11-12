@@ -1,0 +1,88 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "EFFECT",
+     "entryId": 40,
+     "cardKey": "juggler",
+     "mandatory": true,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "assignment",
+       "type": "ASSIGNMENT",
+       "min": 0,
+       "max": 0,
+       "candidates": [
+        {
+         "card": 5,
+         "sat": 13
+        },
+        {
+         "card": 6,
+         "sat": 13
+        }
+       ],
+       "default": {
+        "5": 13,
+        "6": 13
+       }
+      }
+     ],
+     "preview": {
+      "satellites": [
+       13,
+       15
+      ]
+     },
+     "hostSat": 13
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-assign-row .pe-chip-btn"
+  }
+ ]
+}

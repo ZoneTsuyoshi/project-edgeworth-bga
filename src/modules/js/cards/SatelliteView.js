@@ -7,10 +7,11 @@
  */
 import { createCard } from './CardView.js';
 import { applySprite, cardSprite, COLOR_LETTERS, pieceSprite, projectKey } from './sprite-layout.js';
-import { chipInfo } from './card-text.js';
+import { cardInfo, chipInfo } from './card-text.js';
 import { fuelSlotOrder, projectFuelSlots, SATELLITE_FUEL_SLOTS } from './fuel-slots.js';
 import { SATELLITE_ROTATION } from '../board/geometry.js';
 import { el } from '../ui/dom.js';
+import { satelliteLabel } from '../states/logic/common.js';
 
 /** 簡略表示で効果アイコンの帯を置く位置（衛星カードに対する割合。上の暗い枠の中に 2 × 2。012 §4.2） */
 const STRIP_BOX = { x: 0.3, y: 0.025, w: 0.555, h: 0.34, cols: 2, rows: 2, gap: 0.01 };
@@ -47,6 +48,16 @@ const SATELLITE_FUEL_COUNT = 2;
  * @property {string} text 札の文言（例: 配備予定: カード名）
  * @property {string} [cardKey] 配備予定のカード（P001 形式。半透明の小さなカードを添える）
  */
+
+/**
+ * 衛星の表示名（形状とプラン。例: Stealth (Phobos)）。衛星カードの見出し・プルダウン・メッセージで同じ表記を使う。
+ * @param {Pick<SatelliteData, 'satId' | 'card' | 'shape'>} sat
+ * @returns {string}
+ */
+export function satelliteName(sat) {
+  const info = cardInfo(sat.card);
+  return satelliteLabel(sat.shape ?? info?.shape, info?.plan, `#${sat.satId}`);
+}
 
 /**
  * 燃料の表示値。c = 消費、C = 容量。R = C - c。燃料切れは c > C（008 §7）。
@@ -100,6 +111,10 @@ export class SatelliteView {
         this.pick = null;
         /** @type {SatellitePlan[]} 自分の確定済み（または選択中）の予定。半透明の札で衛星の上に出す */
         this.plans = [];
+        /** 問いの対象の衛星として強調するか（効果の窓。効果を持つカードのある衛星） */
+        this.subject = false;
+        /** @type {{ cards: Map<number, 'selectable' | 'selected'>, onPick: (card: number) => void } | null} 配備カードを押して選ぶ（ジャグラーの付け替え） */
+        this.cardPicks = null;
         // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
         this.root.addEventListener('click', () => {
             if (this.pick === null || this.pick.state === 'blocked') {
@@ -129,6 +144,49 @@ export class SatelliteView {
         this.root.querySelector(':scope > .pe-sat-note')?.remove();
         if (pick?.note !== undefined && pick.note !== '') {
             this.root.prepend(el('div', { class: `pe-sat-note pe-sat-note-${pick.state}`, role: 'status' }, [pick.note]));
+        }
+    }
+
+    /**
+     * 問いの対象の衛星として強調する（枠と札）。
+     * @param {boolean} subject
+     */
+    setSubject(subject) {
+        this.subject = subject;
+        this.applySubject();
+    }
+
+    /** 問いの対象の強調を今の subject に合わせる */
+    applySubject() {
+        this.root.classList.toggle('pe-sat-subject', this.subject);
+        this.root.querySelector(':scope > .pe-sat-subject-tag')?.remove();
+        if (this.subject) {
+            this.root.prepend(el('div', { class: 'pe-sat-subject-tag', role: 'status' }, [_('This effect is for this satellite')]));
+        }
+    }
+
+    /**
+     * 配備カードを押して選べるようにする（map に無いカードは対象外）。null で解除。
+     * @param {{ cards: Map<number, 'selectable' | 'selected'>, onPick: (card: number) => void } | null} picks
+     */
+    setCardPicks(picks) {
+        this.cardPicks = picks;
+        this.applyCardPicks();
+    }
+
+    /** 配備カード（簡略表示のチップ・効果アイコン、詳細表示のカード）の押せる状態を今の cardPicks に合わせる */
+    applyCardPicks() {
+        const picks = this.cardPicks;
+        this.root.classList.toggle('pe-sat-card-picking', picks !== null && picks.cards.size > 0);
+        for (const node of /** @type {NodeListOf<HTMLElement>} */ (this.root.querySelectorAll('.pe-chip[data-key], .pe-strip[data-key], .pe-paper-card[data-key]'))) {
+            const card = Number.parseInt((node.dataset.key ?? '').slice(1), 10);
+            const state = picks?.cards.get(card);
+            node.classList.toggle('pe-card-pickable', state !== undefined);
+            node.classList.toggle('pe-card-picked', state === 'selected');
+            node.onclick = state === undefined ? null : (/** @type {MouseEvent} */ e) => {
+                e.stopPropagation();
+                picks?.onPick(card);
+            };
         }
     }
 
@@ -196,11 +254,14 @@ export class SatelliteView {
         this.root.classList.toggle('pe-sat-detail', this.detail);
         this.root.dataset.color = COLOR_LETTERS[sat.colorIndex] ?? 'b';
         this.root.replaceChildren(
+            el('div', { class: 'pe-sat-name' }, [satelliteName(sat)]),
             this.detail ? this.renderDetail() : this.renderSimple(),
             this.renderFuel(),
             this.renderFooter(),
         );
+        this.applyCardPicks();
         this.applyPick();
+        this.applySubject();
         this.applyPlans();
     }
 

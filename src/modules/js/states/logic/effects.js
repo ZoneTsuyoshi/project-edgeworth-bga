@@ -29,6 +29,7 @@ import { entriesOf, intList, jsonParam, payState } from './common.js';
  * @property {{ kind: string, amount?: number, tiers?: Record<string, number>, canPay?: boolean, shortfall?: number, canPayBySelling?: boolean }} cost
  * @property {Field[]} fields
  * @property {Record<string, any>} preview
+ * @property {number | null} hostSat 効果を持つカードのある衛星（なければ null）
  *
  * @typedef {OrderQuestion | EffectQuestion} Question
  */
@@ -71,6 +72,7 @@ export function parseWindow(mine) {
         cost: q.cost ?? { kind: 'NONE' },
         fields: (q.fields ?? []).map(parseField),
         preview: q.preview ?? {},
+        hostSat: q.hostSat === null || q.hostSat === undefined ? null : Number.parseInt(String(q.hostSat), 10),
       });
     }
   }
@@ -310,6 +312,78 @@ export function clampSelection(prev, next, max) {
  */
 export function satellitePicks(field, value) {
   return new Map(field.candidates.map((c) => [Number(c), value !== null && value !== undefined && String(value) === String(c) ? 'selected' : 'selectable']));
+}
+
+/**
+ * 問いの対象として強調する衛星（盤面のコマと衛星カード）。効果を持つカードのある衛星。
+ * 問い自身が衛星を選ぶ（SATELLITE）か付け替える（ASSIGNMENT）ときは、強調が選択の枠とまぎれるので null。
+ * @param {EffectQuestion} q
+ * @returns {number | null}
+ */
+export function subjectSatellite(q) {
+  if (q.hostSat === null || !Number.isInteger(q.hostSat) || q.fields.some((f) => f.type === 'SATELLITE' || f.type === 'ASSIGNMENT')) {
+    return null;
+  }
+  return q.hostSat;
+}
+
+// ---- 付け替え（ASSIGNMENT。P022 ジャグラー） ----
+
+/** 衛星 1 機に配備できるカードの枚数（サーバーの ProjectCardRepository::MAX_DEPLOYED と同じ。最終検証はサーバー） */
+export const MAX_DEPLOYED = 4;
+
+/**
+ * 今の割り当て（カード番号 → 衛星 ID）を、衛星ごとのカードの並び（番号順）にする。
+ * @param {Record<string, any>} assignment
+ * @param {number[]} sats
+ * @returns {Map<number, number[]>}
+ */
+export function assignmentLayout(assignment, sats) {
+  /** @type {Map<number, number[]>} */
+  const layout = new Map(sats.map((s) => [s, []]));
+  for (const [card, sat] of entriesOf(assignment)) {
+    layout.get(Number(sat))?.push(Number(card));
+  }
+  for (const list of layout.values()) {
+    list.sort((a, b) => a - b);
+  }
+  return layout;
+}
+
+/**
+ * カードを別の衛星へ付け替える（もとの割り当ては変えない）。置き先がいっぱい（4 枚）のとき、衛星の候補でないときは変えない。
+ * @param {Record<string, any>} assignment
+ * @param {number} card
+ * @param {number} sat
+ * @param {number[]} sats 置き先にできる衛星
+ * @returns {Record<string, any>}
+ */
+export function moveCard(assignment, card, sat, sats) {
+  if (!sats.includes(sat) || !(String(card) in assignment)) {
+    return assignment;
+  }
+  if (Number(assignment[card]) !== sat && assignmentLayout(assignment, sats).get(sat)?.length === MAX_DEPLOYED) {
+    return assignment;
+  }
+  return { ...assignment, [card]: sat };
+}
+
+/**
+ * カードを選んだあと、置き先として押せる衛星。いっぱい（4 枚）の衛星は選べない（今そこにある自分自身は選べる）。
+ * 配備できない衛星など、サーバーだけが知る制約は最終検証で弾かれる。
+ * @param {Record<string, any>} assignment
+ * @param {number} card
+ * @param {number[]} sats
+ * @returns {Map<number, 'selectable' | 'selected' | 'blocked'>}
+ */
+export function moveTargets(assignment, card, sats) {
+  const layout = assignmentLayout(assignment, sats);
+  return new Map(sats.map((sat) => {
+    if (Number(assignment[card]) === sat) {
+      return [sat, 'selected'];
+    }
+    return [sat, (layout.get(sat)?.length ?? 0) >= MAX_DEPLOYED ? 'blocked' : 'selectable'];
+  }));
 }
 
 // ---- 代価と売却 ----

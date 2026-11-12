@@ -575,6 +575,11 @@ html[data-theme="dark"] .pe-modal-body {
     cursor: pointer;
 }
 
+/* 効果の問いの対象の衛星コマ（金色の光。コマは回るので outline ではなく影で囲む） */
+.pe-sat-piece.pe-sat-piece-subject {
+    filter: drop-shadow(0 0 3px #ffc933) drop-shadow(0 0 3px #ffc933) drop-shadow(0 0 6px #ffc933);
+}
+
 .pe-pbox-sat.pe-bounce {
     animation: pe-bounce 0.2s ease-out;
 }
@@ -1830,6 +1835,40 @@ html[data-theme="dark"] .pe-zoom {
     color: #0a1224;
 }
 
+/* 衛星カードの見出し（形状とプラン） */
+.pe-sat-name {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--pe-text);
+}
+
+/* 効果の問いの対象の衛星（盤面のコマと同じ金色。選択の枠とは太さと札で区別する） */
+.pe-sat-subject {
+    outline: 4px double #ffc933;
+    outline-offset: 2px;
+}
+
+.pe-sat-subject-tag {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #ffc933;
+    font-size: 12px;
+    font-weight: bold;
+    color: #0a1224;
+}
+
+/* 付け替えの配備カード（押して選ぶ） */
+.pe-card-pickable {
+    cursor: pointer;
+    outline: 2px solid var(--pe-accent);
+    outline-offset: 1px;
+}
+
+.pe-card-picked {
+    outline: 4px solid #ffc933;
+    outline-offset: 1px;
+}
+
 .notouch-device .pe-sat-pickable:hover {
     outline-color: #ffc933;
 }
@@ -1915,6 +1954,12 @@ html[data-theme="dark"] .pe-zoom {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.pe-assign-hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--pe-text-dim, var(--pe-text));
 }
 
 .pe-assign-row {

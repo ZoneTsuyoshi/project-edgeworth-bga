@@ -118,6 +118,27 @@ export class PlayerArea {
     }
 
     /**
+     * 問いの対象の衛星を強調する（効果の窓）。null で全部消す。
+     * @param {Set<number> | null} satIds
+     */
+    setSubjects(satIds) {
+        for (const [satId, view] of this.sats) {
+            view.setSubject(satIds?.has(satId) === true);
+        }
+    }
+
+    /**
+     * 配備カードを押して選べるようにする（全衛星に同じ map を渡す。衛星に無いカードは無視される）。null で解除。
+     * @param {Map<number, 'selectable' | 'selected'> | null} cards
+     * @param {(card: number) => void} [onPick]
+     */
+    setCardPicks(cards, onPick = () => {}) {
+        for (const view of this.sats.values()) {
+            view.setCardPicks(cards === null ? null : { cards, onPick });
+        }
+    }
+
+    /**
      * 衛星の上に「予定」の札を出す（map に無い衛星は消す）。null で全部消す。
      * @param {Map<number, import('../cards/SatelliteView.js').SatellitePlan[]> | null} plans
      */

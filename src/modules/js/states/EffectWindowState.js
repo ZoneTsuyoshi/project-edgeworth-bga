@@ -16,14 +16,15 @@ import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format, privateOf } from './logic/common.js';
 import {
-  cardsInHand, clampSelection, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, useEffectArgs, validateQuestion,
+  assignmentLayout, cardsInHand, clampSelection, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateQuestion,
 } from './logic/effects.js';
 import { cardName, modName } from './texts.js';
 
 /**
  * 盤面・衛星カード・手札から直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。
  * @typedef {{ kind: 'satellite', field: import('./logic/effects.js').Field, value: any, pick: (satId: number) => void }
- *   | { kind: 'cards', field: import('./logic/effects.js').Field, value: number[], set: (ids: number[]) => void }} DirectDriver
+ *   | { kind: 'cards', field: import('./logic/effects.js').Field, value: number[], set: (ids: number[]) => void }
+ *   | { kind: 'assignment', assignment: Record<string, any>, sats: number[], picked: number | null, pickCard: (card: number) => void, pickSat: (satId: number) => void }} DirectDriver
  */
 
 export class EffectWindowState extends ActionState {
@@ -45,6 +46,8 @@ export class EffectWindowState extends ActionState {
         this.orders = new Map();
         /** @type {Set<number>} */
         this.busy = new Set();
+        /** @type {Map<number, number>} 付け替えで押して選んだカード（entryId → カード番号） */
+        this.pickedCards = new Map();
     }
 
     /**
@@ -61,6 +64,7 @@ export class EffectWindowState extends ActionState {
         this.sells.clear();
         this.orders.clear();
         this.busy.clear();
+        this.pickedCards.clear();
         this.waiting = parseWaiting(args.waiting, view.m.me);
         this.questions = parseWindow(privateOf(args, view.m.me)).questions;
         super.onEnteringState(args, isActive);
@@ -100,6 +104,27 @@ export class EffectWindowState extends ActionState {
         this.refresh();
     }
 
+    /** 付け替え・問いの対象の表示（衛星カードの予定の札、配備カードの選択、強調）を外す */
+    clearAssignUi() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null) {
+            return;
+        }
+        view.pieces.setSubjects(null);
+        if (me !== null) {
+            const area = view.areas.get(me);
+            area?.setCardPicks(null);
+            area?.setSatPlans(null);
+            area?.setSubjects(null);
+        }
+    }
+
+    clearUi() {
+        super.clearUi();
+        this.clearAssignUi();
+    }
+
     /** N26: 窓が終わった */
     close() {
         this.questions = [];
@@ -120,6 +145,7 @@ export class EffectWindowState extends ActionState {
         if (me !== null) {
             view.areas.get(me)?.hand.setSelectable(null);
             view.areas.get(me)?.setSatPicks(null);
+            this.clearAssignUi();
         }
         view.satelliteHandler = null;
         this.bga.statusBar.removeActionButtons();
@@ -161,6 +187,8 @@ export class EffectWindowState extends ActionState {
         let satDriver = null;
         /** @type {DirectDriver | null} */
         let cardsDriver = null;
+        /** @type {DirectDriver | null} */
+        let assignDriver = null;
         for (const q of this.questions) {
             if (q.type === 'ORDER') {
                 body.push(this.orderBlock(q));
@@ -170,6 +198,8 @@ export class EffectWindowState extends ActionState {
                 }, (driver) => {
                     if (driver.kind === 'satellite') {
                         satDriver ??= driver;
+                    } else if (driver.kind === 'assignment') {
+                        assignDriver ??= driver;
                     } else {
                         cardsDriver ??= driver;
                     }
@@ -184,7 +214,35 @@ export class EffectWindowState extends ActionState {
         if (driver !== null) {
             view.stateFrame.selectCells(driver.cells.map((cell) => ({ cell, kind: cell === driver.value ? 'selected' : 'selectable' })), driver.pick);
         }
-        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), /** @type {DirectDriver | null} */ (cardsDriver), driver !== null);
+        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), /** @type {DirectDriver | null} */ (cardsDriver), driver !== null, /** @type {DirectDriver | null} */ (assignDriver));
+        this.showSubjects(driver !== null || satDriver !== null);
+    }
+
+    /**
+     * 問いが特定の衛星に紐づく効果（P082 など）の、対象の衛星を強調する。盤面のコマ・区域の枠と、自分の衛星カード。
+     * @param {boolean} cellsInUse 盤面の区域の枠を、区域・衛星の選択がすでに使っているか
+     */
+    showSubjects(cellsInUse) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const me = view.m.me;
+        const ids = new Set(this.questions.flatMap((q) => {
+            const satId = q.type === 'EFFECT' ? subjectSatellite(q) : null;
+            return satId === null ? [] : [satId];
+        }));
+        if (me === null || ids.size === 0) {
+            return;
+        }
+        view.pieces.setSubjects(ids);
+        view.areas.get(me)?.setSubjects(ids);
+        if (!cellsInUse) {
+            const cells = [...ids].flatMap((satId) => {
+                const cell = view.pieces.satelliteCell(satId);
+                return cell === null ? [] : [{ cell, kind: /** @type {'selected'} */ ('selected') }];
+            });
+            if (cells.length > 0) {
+                view.stateFrame.selectCells(cells);
+            }
+        }
     }
 
     /**
@@ -193,8 +251,9 @@ export class EffectWindowState extends ActionState {
      * @param {DirectDriver | null} sat
      * @param {DirectDriver | null} cards
      * @param {boolean} hasArea 区域の選択が盤面を使っているか（そのときは衛星の区域の枠を足さない）
+     * @param {DirectDriver | null} [assign] 付け替え（配備カードを押して選び、置き先の衛星を押す）
      */
-    showDirect(sat, cards, hasArea) {
+    showDirect(sat, cards, hasArea, assign = null) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const me = view.m.me;
         if (me === null) {
@@ -222,10 +281,40 @@ export class EffectWindowState extends ActionState {
                 }
             }
         }
+        if (assign?.kind === 'assignment') {
+            this.showAssign(assign);
+        }
         if (cards?.kind === 'cards') {
             const hand = area?.hand;
             hand?.setSelectable(cards.field.candidates.map(Number), { multi: cards.field.max > 1, onChange: (ids) => cards.set(ids) });
             hand?.setChosen(cards.value);
+        }
+    }
+
+    /**
+     * 付け替え（P022）: 自分の衛星カードの配備カードを押して選び、置き先の衛星カードを押す。
+     * 配備カードは押せる枠、選んだら置き先の衛星が選べる（4 枚の衛星は選べない）。衛星の上に付け替え後の並びを予定の札で出す。
+     * @param {Extract<DirectDriver, { kind: 'assignment' }>} d
+     */
+    showAssign(d) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const area = view.areas.get(view.m.me ?? -1);
+        if (area === undefined) {
+            return;
+        }
+        const cards = Object.keys(d.assignment).map(Number);
+        area.setCardPicks(new Map(cards.map((c) => [c, c === d.picked ? 'selected' : 'selectable'])), d.pickCard);
+        const layout = assignmentLayout(d.assignment, d.sats);
+        area.setSatPlans(new Map(d.sats.map((satId) => {
+            const names = (layout.get(satId) ?? []).map(cardName);
+            return [satId, [{ text: names.length === 0 ? _('After rearranging: no cards') : format(_('After rearranging: ${cards}'), { cards: names.join(', ') }) }]];
+        })));
+        if (d.picked !== null) {
+            const targets = moveTargets(d.assignment, d.picked, d.sats);
+            area.setSatPicks(new Map([...targets].map(([satId, state]) => [satId, {
+                state,
+                note: state === 'blocked' ? _('A satellite holds up to 4 cards') : undefined,
+            }])), d.pickSat);
         }
     }
 
@@ -577,12 +666,55 @@ export class EffectWindowState extends ActionState {
             case 'ASSIGNMENT': {
                 const sats = (Array.isArray(q.preview.satellites) ? q.preview.satellites : []).map(Number);
                 const current = values[field.key] ?? {};
-                return wrap([el('div', { class: 'pe-assign' }, field.candidates.map((c) => el('label', { class: 'pe-assign-row' }, [
-                    el('span', {}, [cardName(Number(c.card))]),
-                    el('select', {
-                        onChange: (/** @type {Event} */ e) => set({ ...current, [c.card]: Number(/** @type {HTMLSelectElement} */ (e.target).value) }),
-                    }, sats.map((satId) => el('option', { value: satId, selected: Number(current[c.card]) === satId }, [view.satName(satId)]))),
-                ])))]);
+                const picked = this.pickedCards.get(q.entryId) ?? null;
+                const move = (/** @type {number} */ card, /** @type {number} */ satId) => {
+                    set(moveCard(current, card, satId, sats));
+                };
+                const pickCard = (/** @type {number} */ card) => {
+                    if (this.pickedCards.get(q.entryId) === card) {
+                        this.pickedCards.delete(q.entryId);
+                    } else {
+                        this.pickedCards.set(q.entryId, card);
+                    }
+                    changed();
+                };
+                // カード → 置き先の衛星の順に押す（押したカードは選んだ状態のままにしない）
+                onDirect({
+                    kind: 'assignment',
+                    assignment: current,
+                    sats,
+                    picked,
+                    pickCard,
+                    pickSat: (satId) => {
+                        const card = this.pickedCards.get(q.entryId);
+                        if (card === undefined) {
+                            return;
+                        }
+                        this.pickedCards.delete(q.entryId);
+                        move(card, satId);
+                    },
+                });
+                return wrap([
+                    el('p', { class: 'pe-assign-hint' }, [_('Click a card on your board, then the satellite to move it to. You can also use the lists below')]),
+                    el('div', { class: 'pe-assign' }, field.candidates.map((c) => {
+                        const card = Number(c.card);
+                        const targets = moveTargets(current, card, sats);
+                        return el('label', { class: 'pe-assign-row' }, [
+                            el('button', {
+                                type: 'button',
+                                class: `pe-chip-btn${picked === card ? ' pe-selected' : ''}`,
+                                'aria-pressed': picked === card ? 'true' : 'false',
+                                onClick: () => pickCard(card),
+                            }, [cardName(card)]),
+                            el('select', {
+                                onChange: (/** @type {Event} */ e) => {
+                                    this.pickedCards.delete(q.entryId);
+                                    move(card, Number(/** @type {HTMLSelectElement} */ (e.target).value));
+                                },
+                            }, sats.map((satId) => el('option', { value: satId, selected: Number(current[card]) === satId, disabled: targets.get(satId) === 'blocked' }, [view.satName(satId)]))),
+                        ]);
+                    })),
+                ]);
             }
             case 'USE_MODS': {
                 const list = Array.isArray(values[field.key]) ? values[field.key] : [];

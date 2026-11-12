@@ -736,7 +736,7 @@ final class EffectEngine
 
     private function effectQuestion(PoolItem $item): Question
     {
-        [$spec, , $part, $call] = $this->bind($item) ?? throw new \LogicException("pool item {$item->id} has no host");
+        [$spec, $host, $part, $call] = $this->bind($item) ?? throw new \LogicException("pool item {$item->id} has no host");
         $playerId = $item->playerId;
         $maya = $this->view->maya($playerId);
         $cost = ['kind' => 'NONE'];
@@ -764,7 +764,7 @@ final class EffectEngine
             }
         }
 
-        return Question::effect($item->id, $item->cardKey, !$spec->optional, $cost, $part->buildFields($call), $part->preview($call));
+        return Question::effect($item->id, $item->cardKey, !$spec->optional, $cost, $part->buildFields($call), $part->preview($call), $host->satelliteId);
     }
 
     /**

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { keyOfNameId, nameOfNameId, parseHostKey } from '../../src/modules/js/cards/name-id.js';
 import {
-  compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, sellableHand, sellsWholeHand, sideAvailability, soleOption,
+  compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, satelliteLabel, sellableHand, sellsWholeHand, sideAvailability, soleOption,
 } from '../../src/modules/js/states/logic/common.js';
 import {
   deployActionArgs, deployedCards, deployPairs, deployQuote, deploySecondArgs, deploySecondFrom, deploySelectionFrom, deployStage, deployStageArgs, parseStage, parseTargets, passNeedsBonusChoice, validateDeploy,
@@ -15,7 +15,7 @@ import {
   optionPayment, parseProposal, proposalActionArgs, proposalSelectionFrom, requiredKeep, reservedHand, validateProposal,
 } from '../../src/modules/js/states/logic/proposal.js';
 import {
-  answerFields, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveEntry, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, useEffectArgs, validateField, validateQuestion,
+  answerFields, assignmentLayout, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateField, validateQuestion,
 } from '../../src/modules/js/states/logic/effects.js';
 import { fameBreakdown, mergePublicFame, parsePublicFame, playerScore, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
 
@@ -505,4 +505,46 @@ test('効果の SATELLITE: 候補の衛星だけが選べ、選んだ衛星は s
   const field = { key: 'satellite', type: 'SATELLITE', min: 1, max: 1, candidates: [11, '12', 14], default: null };
   assert.deepEqual([...satellitePicks(field, 12)], [[11, 'selectable'], [12, 'selected'], [14, 'selectable']]);
   assert.deepEqual([...satellitePicks(field, null)].map(([, s]) => s), ['selectable', 'selectable', 'selectable']);
+});
+
+// ---- 問いの対象の衛星・付け替え・衛星名（2026-11-12 追補） ----
+
+const effectQuestion = (o = {}) => ({ type: 'EFFECT', entryId: 1, cardKey: 'triad_booster', mandatory: false, cost: { kind: 'NONE' }, fields: [], preview: {}, hostSat: null, ...o });
+
+test('parseWindow は問いの hostSat を読む（無ければ null）', () => {
+  const win = parseWindow({ questions: [{ type: 'EFFECT', entryId: 1, cardKey: 'triad_booster', fields: [], hostSat: '12' }, { type: 'EFFECT', entryId: 2, cardKey: 'juggler', fields: [] }] });
+  assert.equal(win.questions[0].hostSat, 12);
+  assert.equal(win.questions[1].hostSat, null);
+});
+
+test('subjectSatellite: 衛星に紐づく問いだけ。自分で衛星を選ぶ・付け替える問いは強調しない', () => {
+  assert.equal(subjectSatellite(effectQuestion({ hostSat: 12 })), 12);
+  assert.equal(subjectSatellite(effectQuestion({ hostSat: null })), null);
+  assert.equal(subjectSatellite(effectQuestion({ hostSat: 12, fields: [{ key: 'satellite', type: 'SATELLITE', min: 0, max: 0, candidates: [11], default: null }] })), null);
+  assert.equal(subjectSatellite(effectQuestion({ hostSat: 12, fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: [], default: {} }] })), null);
+  assert.equal(subjectSatellite(effectQuestion({ hostSat: 12, fields: [{ key: 'direction', type: 'DIRECTION', min: 0, max: 0, candidates: ['NE'], default: null }] })), 12);
+});
+
+test('付け替え: カードを別の衛星へ動かす。置き先が 4 枚なら動かせない', () => {
+  const sats = [13, 15, 16];
+  const now = { 5: 13, 6: 13, 7: 15, 8: 15, 9: 15, 10: 15 };
+  assert.deepEqual(moveCard(now, 5, 16, sats), { 5: 16, 6: 13, 7: 15, 8: 15, 9: 15, 10: 15 });
+  assert.equal(moveCard(now, 5, 15, sats), now);
+  assert.equal(moveCard(now, 5, 99, sats), now);
+  assert.equal(moveCard(now, 77, 16, sats), now);
+  assert.deepEqual(moveCard(now, 7, 15, sats), now);
+  assert.deepEqual(assignmentLayout(now, sats), new Map([[13, [5, 6]], [15, [7, 8, 9, 10]], [16, []]]));
+});
+
+test('付け替えの置き先: 4 枚の衛星は選べず、今の衛星は選択中', () => {
+  const sats = [13, 15, 16];
+  const now = { 5: 13, 6: 13, 7: 15, 8: 15, 9: 15, 10: 15 };
+  assert.deepEqual([...moveTargets(now, 5, sats)], [[13, 'selected'], [15, 'blocked'], [16, 'selectable']]);
+  assert.deepEqual([...moveTargets(now, 7, sats)], [[13, 'selectable'], [15, 'selected'], [16, 'selectable']]);
+});
+
+test('衛星の表示名は形状とプラン', () => {
+  assert.equal(satelliteLabel('STEALTH', 'PHOBOS', '#1'), 'Stealth (Phobos)');
+  assert.equal(satelliteLabel('HAMMER', undefined, '#1'), 'Hammer');
+  assert.equal(satelliteLabel(undefined, 'MOON', '#7'), '#7');
 });

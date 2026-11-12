@@ -8,6 +8,7 @@ import { BoardView } from '../board/BoardView.js';
 import { Highlights } from '../board/Highlights.js';
 import { PieceLayer } from '../board/PieceLayer.js';
 import { FieldView } from '../cards/FieldView.js';
+import { satelliteName } from '../cards/SatelliteView.js';
 import { Tooltip } from '../cards/Tooltip.js';
 import { BottomSheet } from './BottomSheet.js';
 import { ChoicePanel } from './ChoicePanel.js';
@@ -166,14 +167,13 @@ export class GameView {
     }
 
     /**
-     * 衛星の表示名（形状。例: HAMMER）。
+     * 衛星の表示名（形状とプラン。例: Hammer (Phobos)）。
      * @param {number} satId
      * @returns {string}
      */
     satName(satId) {
         const found = this.findSatellite(satId);
-        const shape = found?.sat.shape ?? `#${satId}`;
-        return shape.charAt(0) + shape.slice(1).toLowerCase();
+        return found === null ? `#${satId}` : satelliteName(found.sat);
     }
 
     /** @returns {import('./normalize.js').GameModel} */

@@ -285,3 +285,19 @@ export function format(template, vars) {
   }
   return out;
 }
+
+/**
+ * 衛星の表示名。形状とプラン（例: `Stealth (Phobos)`）。プルダウン・衛星カードの見出し・メッセージで同じ表記を使う。
+ * @param {string | undefined | null} shape HAMMER など
+ * @param {string | undefined | null} plan MOON・PHOBOS など
+ * @param {string} fallback 形状が分からないときの表示
+ * @returns {string}
+ */
+export function satelliteLabel(shape, plan, fallback) {
+  /** @param {string} w */
+  const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  if (shape === undefined || shape === null || shape === '') {
+    return fallback;
+  }
+  return plan === undefined || plan === null || plan === '' ? cap(shape) : `${cap(shape)} (${cap(plan)})`;
+}

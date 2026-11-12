@@ -387,6 +387,28 @@ sample('effects-fields', {
   ]),
   steps: [],
 });
+// 付け替え（P022）: 配備カード → 置き先の衛星の順に押す。衛星に紐づく問い（P082）: 対象の衛星を強調する
+sample('effects-juggler', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(40, 'juggler', {
+    mandatory: true,
+    fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: [{ card: 5, sat: 13 }, { card: 6, sat: 13 }], default: { 5: 13, 6: 13 } }],
+    preview: { satellites: [13, 15] },
+    hostSat: 13,
+  })]),
+  steps: [{ click: '.pe-assign-row .pe-chip-btn' }],
+});
+sample('effects-subject-satellite', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(41, 'triad_booster', {
+    fields: [],
+    preview: { areas: 1, fuel: 1 },
+    hostSat: 11,
+  })]),
+  steps: [],
+});
 // 衛星・手札を直接選ぶ（P024 の衛星、S005 の手札。衛星カード・盤面のコマ・手札を押して選ぶ）
 sample('effects-direct-satellite', {
   state: 'EffectWindowResolve',
