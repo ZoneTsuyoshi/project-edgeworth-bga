@@ -201,15 +201,15 @@ src/
 
 | ID | 名前（原文） | 値（キー: 名前） | 初期値 | 表示条件・開始条件 | 根拠 |
 | --- | --- | --- | --- | --- | --- |
-| 100 | Board layout | 1: Standard (Earth) / 3: Standard (Random w/ Flip) / 4: Advanced (Earth) / 6: Advanced (Random w/ Flip) | 1 | なし。`level: major` 候補（未確定事項 No.7） | 001 §3-1、Q-02・Q-03 |
-| 101 | Board size | 1: 2x4 / 2: 2x3 / 3: 2x2 | 1 | `displaycondition`: `maxplayers` 3。`startcondition`: 値 3（2x2）は `maxplayers` 2 | 001 §3-2、Q-06 |
+| 100 | Board layout | 1: Standard (Earth) / 3: Standard (Random) / 4: Advanced (Earth) / 6: Advanced (Random) | 1 | なし。`level: major` 候補（未確定事項 No.7） | 001 §3-1、Q-02・Q-03 |
+| 101 | Board size | 1: 2x4 / 2: 2x3 / 3: 2x2 | 1 | `displaycondition` は使わない。`startcondition`: 値 2（2x3）は `maxplayers` 3、値 3（2x2）は `maxplayers` 2（`message` 付き） | 001 §3-2、Q-06 |
 | 102 | Award cards | 1: Initial Game / 2: Random (1: Link, 1: Other) / 3: Random | 1 | なし | 001 §3-3、Q-04 |
 | 103 | Satellite plan | 1: MOON / 2: Player-variable | 1 | なし | 001 §3-4、Q-05 |
 | 104 | Starting hand | 1: None / 2: Mulligan / 3: Draft | 1 | 値 3（Draft）は実装するまで `values` に含めない（キーは予約） | 001 §3-5、Q-06 |
 | 105 | Public fame (except missions) | 1: Hidden / 2: Visible | 1 | なし。`level: additional`。Visible のときだけ、ゲーム中にミッション V を除く名声を公開する（`getAllDatas.publicFame`、通知 N36。010 未確定事項 No.2、作者回答 2026-10-20） | 010 未確定 2 |
 
-- 101 を 2 人または 3 人のときだけ表示するのは `displaycondition` の `maxplayers`（人数が 3 以下のとき表示）で表す。2x2 は 2 人だけなので、3 人のときに選べないよう `startcondition` を併用する（001 §3-2 の表）。人数の組み合わせの検証はサーバー側（`setupNewGame`）でも二重に行う。
-- 100 は 4 択（2・5 は旧 Random w/o Flip の欠番。2026-11-12 作者指示で廃止、キーは予約）を 1 つのオプションで持つ（作者が示した名称のとおり。Q-02）。面（Standard / Advanced）と並べ方（Earth / Random w/ Flip）を 2 つのオプションに分ける案もあるが、作者の回答の形を優先する。内部では `BoardFace`（STANDARD / ADVANCED）と `BoardPlacement`（EARTH / RANDOM_FLIP）の 2 つの enum に分解して扱う。
+- 101 の人数制限は `startcondition` だけで表す（2026-11-12 作者指示）。`displaycondition` の `maxplayers` は、テーブルの最大人数の設定によって選択肢そのものが消えて作者に見えなかったため使わない。4 人で 2x3・2x2、3 人で 2x2 を選んで開始しようとすると、`message` を出して開始が止まる。値の書き方は BGA の公式ドキュメント（Options and preferences: gameoptions.json）と Cookbook の `startcondition`（値のキー => 条件の配列。`type` / `value` / `message`）に従う。人数の組み合わせの検証はサーバー側（`GameOptions::fromTableOptions`）でも二重に行い、合わない組み合わせは例外にする。
+- 100 は 4 択（2・5 は旧 Random w/o Flip の欠番。2026-11-12 作者指示で廃止、キーは予約）を 1 つのオプションで持つ（作者が示した名称のとおり。Q-02）。面（Standard / Advanced）と並べ方（Earth / Random）を 2 つのオプションに分ける案もあるが、作者の回答の形を優先する。内部では `BoardFace`（STANDARD / ADVANCED）と `BoardPlacement`（EARTH / RANDOM_FLIP）の 2 つの enum に分解して扱う。
 - 褒賞の ✕ 印のカードが候補に入るのは Advanced のときだけ（001 §3-3）。この依存は PHP で処理し、オプション側では条件にしない。
 - ドラフト（104 の値 3）は後回し（Q-06）。**【確認】** 値に `alpha` / `beta` を付けると警告または開発者以外は訓練モードのみ、という挙動にできる（Options）ので、未完成の間に公開する場合に使える。初版ではそもそも値を載せない。
 - 値の `tmdisplay` は初期値以外に付け、ロビーのテーブル説明に出す。初期値の「None」などは空文字列にする。

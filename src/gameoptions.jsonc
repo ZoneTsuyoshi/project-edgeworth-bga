@@ -7,9 +7,9 @@
     "values": {
       "1": { "name": "Standard (Earth)" },
       // 2 と 5（旧 Random w/o Flip）は廃止した欠番（2026-11-12 作者指示）。キーは予約のまま載せない
-      "3": { "name": "Standard (Random w/ Flip)", "tmdisplay": "Standard (Random w/ Flip)" },
+      "3": { "name": "Standard (Random)", "tmdisplay": "Standard (Random)" },
       "4": { "name": "Advanced (Earth)", "tmdisplay": "Advanced (Earth)" },
-      "6": { "name": "Advanced (Random w/ Flip)", "tmdisplay": "Advanced (Random w/ Flip)" }
+      "6": { "name": "Advanced (Random)", "tmdisplay": "Advanced (Random)" }
     },
     "default": 1,
     "level": "base"
@@ -23,8 +23,15 @@
     },
     "default": 1,
     "level": "base",
-    "displaycondition": [{ "type": "maxplayers", "value": 3 }],
+    // displaycondition は使わない（テーブルの最大人数の設定で選択肢が消えるため）。人数に合わない値は startcondition で開始を止める（2026-11-12 作者指示）
     "startcondition": {
+      "2": [
+        {
+          "type": "maxplayers",
+          "value": 3,
+          "message": "The 2x3 board is available only for 2 or 3 players."
+        }
+      ],
       "3": [
         {
           "type": "maxplayers",

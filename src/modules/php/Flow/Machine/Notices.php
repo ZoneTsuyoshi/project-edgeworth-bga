@@ -497,7 +497,7 @@ final class Notices
     /**
      * N33
      *
-     * @param array<int, array{handCount: int, drawnCount: int, cubesLeft: int}> $players
+     * @param array<int, array{handCount: int, drawnCount: int, cubesLeft: int, rewardValues: array<string, int>}> $players
      */
     public function countersUpdate(int $deckCount, int $discardCount, array $players): Notice
     {
