@@ -41,13 +41,19 @@ abstract class ChooseState extends GameState
 
     /**
      * 参加者を決めて、選べる人だけをアクティブにする。行動できない人は [Pass] 相当を確定済みにする。
-     * 選べる人がいなければ、setPlayersMultiactive が即座に 'allConfirmed' で遷移する（B7）。
+     * 選べる人がいなければ、'allConfirmed' を戻り値で返して遷移する。
+     * 入場中の setPlayersMultiactive([]) による遷移には頼らず、GAME 状態と同じく戻り値で返す。Studio で、通信確立先のない人がいると
+     * 全員が「Waiting for other players」のまま止まった（2026-11-12）。参加者がその人だけの状態（ボーナス 82 など）で起きたと推定。
      */
-    public function onEnteringState(): void
+    public function onEnteringState(): ?string
     {
         [$entry, $notices] = $this->game->peMachine()->choice($this->id)->enter();
         $this->game->peSend($notices);
+        if ($entry->active === []) {
+            return 'allConfirmed';
+        }
         $this->game->gamestate->setPlayersMultiactive($entry->active, 'allConfirmed', true);
+        return null;
     }
 
     /**

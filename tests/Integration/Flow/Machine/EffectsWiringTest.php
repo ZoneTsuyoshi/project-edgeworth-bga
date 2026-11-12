@@ -522,6 +522,50 @@ final class EffectsWiringTest extends MachineTestCase
         self::assertLessThan(60, $this->playerValues->maya(101));
     }
 
+    /** 通信確立できる場所がないプレイヤーは自動で [Pass] になり、ほかの人の確定だけで進む（3 人中 1 人が候補なし。ボーナス保持者にも候補なしの人がいる） */
+    public function testLinkProceedsWhenSomePlayersHaveNoTarget(): void
+    {
+        $this->runSetup(3);
+        $this->boot();
+        $this->playerValues = new PlayerValues($this->db);
+        $this->cards = new ProjectCardRepository($this->db, new SeededRandom(1));
+        $this->globals->setRoundNo(1);
+        [$cell] = $this->linkCells();
+        $sat1 = $this->satId(101, SatelliteShape::Hammer);
+        $sat2 = $this->satId(102, SatelliteShape::Hammer);
+        $this->launch($sat1, $cell);
+        $this->launch($sat2, $cell);
+        $this->phase(FlowPhase::Link, 4, [101, 103]);
+        $this->playerValues->setMaya(103, 60);
+
+        $waiting = $this->walker->run(StateId::LINK_DRIVER);
+        self::assertSame(StateId::LINK_MAIN_CHOOSE, $waiting);
+        self::assertSame([101, 102], $this->walker->active, '候補のない 103 は参加者だが、アクティブにならない');
+        $args = $this->machine->choice($waiting)->args();
+        self::assertSame([103], $args['confirmed']);
+        self::assertSame(['op' => 'pass'], $args['_private'][103]['myChoice'], '入場前の args でも自動 Pass が確定内容として見える');
+
+        $link = fn(int $p): array => ['op' => 'link', 'cell' => $cell, 'sat' => $p === 101 ? $sat1 : $sat2];
+        $waiting = $this->walker->play($waiting, [StateId::LINK_MAIN_CHOOSE => $link, StateId::LINK_BONUS_CHOOSE => static fn(int $p): array => ['op' => 'pass']], [StateId::PLANNING_PLOT]);
+        self::assertSame(StateId::PLANNING_PLOT, $waiting);
+        self::assertSame([$cell], (new \Bga\Games\projectedgeworth\Data\LinkRepository($this->db))->cellsFor(101));
+        self::assertSame([], $this->walker->staleArgsStates);
+    }
+
+    /** 全員が通信確立できる場所のないとき、メインの選択を飛ばして先へ進む */
+    public function testLinkIsSkippedWhenNobodyHasATarget(): void
+    {
+        $this->runSetup(3);
+        $this->boot();
+        $this->playerValues = new PlayerValues($this->db);
+        $this->globals->setRoundNo(1);
+        $this->phase(FlowPhase::Link, 4, []);
+        $this->playerValues->setMaya(103, 60);
+        $waiting = $this->walker->run(StateId::LINK_DRIVER);
+        self::assertSame(StateId::PLANNING_PLOT, $waiting);
+        self::assertSame(3, count(array_filter($this->walker->noticesNamed('actionPassed'), static fn($n): bool => $n->args['auto'] === true)));
+    }
+
     /** EUROPA の宣言（R017）は XD の窓で聞き、払うとそのアクションのボーナスの参加者に加わる */
     public function testEuropaDeclarationAddsBonusHolder(): void
     {
