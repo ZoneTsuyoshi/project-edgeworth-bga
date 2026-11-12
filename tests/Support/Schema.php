@@ -16,7 +16,7 @@ final class Schema
 {
     private const TABLES = [
         'project_card', 'satellite', 'link', 'staged_link', 'region', 'action_card',
-        'mission_card', 'choice', 'pool', 'held_notif', 'player',
+        'mission_card', 'choice', 'pool', 'held_notif', 'deploy_stage', 'player',
     ];
 
     public static function reset(PdoDatabase $db): void

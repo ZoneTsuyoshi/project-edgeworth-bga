@@ -50,6 +50,19 @@ final class ChoiceRepository
     }
 
     /**
+     * 1 人分の確定を取り消す（[Deploy another card] の段階確定で、確定済みの人を未確定に戻す。009 追補 3）。
+     *
+     * @return bool 確定が存在したか
+     */
+    public function remove(int $playerId, int $state): bool
+    {
+        $existed = $this->isConfirmed($playerId, $state);
+        $this->db->execute("DELETE FROM `choice` WHERE `choice_player` = $playerId AND `choice_state` = $state");
+
+        return $existed;
+    }
+
+    /**
      * 確定済みのプレイヤー ID（昇順）。公開してよい。
      *
      * @return list<int>
