@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import {
-  BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
+  BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, outlineSegments, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
 import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
@@ -128,4 +128,13 @@ test('衛星の向きは 6 方向で、コマの回転角は 60° ずつ（003 �
   assert.deepEqual([...SATELLITE_DIRECTIONS].sort(), ['E', 'NE', 'NW', 'SE', 'SW', 'W']);
   // 原画は機首が左向き（W = 0°）。時計回りに W → NW → NE → E → SE → SW
   assert.deepEqual(['W', 'NW', 'NE', 'E', 'SE', 'SW'].map((d) => SATELLITE_ROTATION[d]), [0, 60, 120, 180, 240, 300]);
+});
+
+test('ミッションの枠: 集合の外に接する辺だけ（1 区域は 6 辺、隣り合う 2 区域は 10 辺）。左右をまたぐ形は間の辺を出さない', () => {
+  assert.equal(outlineSegments([cellId(2, 3, 12)], 12, 0).length, 6);
+  const east = neighbor(cellId(2, 3, 12), 'E', 12, 0);
+  assert.equal(outlineSegments([cellId(2, 3, 12), east], 12, 0).length, 10);
+  // 右端と左端はつながっている
+  assert.equal(outlineSegments([cellId(2, 11, 12), cellId(2, 0, 12)], 12, 0).length, 10);
+  assert.equal(outlineSegments([], 12, 0).length, 0);
 });

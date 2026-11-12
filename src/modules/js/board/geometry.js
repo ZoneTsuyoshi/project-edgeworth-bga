@@ -273,6 +273,41 @@ export function regionBorderSegments(regionOfCell, cols, rowShift, rows = ROWS) 
 }
 
 /**
+ * 区域の集合の外周の線分（終了時のミッション達成区域の枠。001 §12-3 追補 2026-11-12）。
+ * 集合の外に接する辺だけを集める。見た目のために、各区域の頂点を区域の中心へ inset 倍に縮めて描く
+ * （隣り合う 2 枚のミッションの枠が重ならない）。左右をまたぐ形は、またぐ辺を結ばず各区域の外周として描く。
+ * 座標は W を 1 とした単位。
+ * @param {number[]} cells 区域 ID
+ * @param {number} cols
+ * @param {number} rowShift
+ * @param {number} [inset] 0〜1
+ * @returns {{ x1: number, y1: number, x2: number, y2: number }[]}
+ */
+export function outlineSegments(cells, cols, rowShift, inset = 0.88) {
+  const set = new Set(cells);
+  const out = [];
+  const round = (/** @type {number} */ v) => Math.round(v * 1000) / 1000;
+  for (const cell of set) {
+    const { row, col } = cellRowCol(cell, cols);
+    const o = cellOriginUnits(row, col, rowShift);
+    const v = hexVertices(o.left, o.top, 1);
+    const cx = o.left + 0.5;
+    const cy = o.top + hexHeight(1) / 2;
+    const pt = (/** @type {{x: number, y: number}} */ q) => ({ x: round(cx + (q.x - cx) * inset), y: round(cy + (q.y - cy) * inset) });
+    for (const [dir, [a, b]] of Object.entries(EDGE_VERTICES)) {
+      const n = neighbor(cell, dir, cols, rowShift);
+      if (n !== null && set.has(n)) {
+        continue;
+      }
+      const p1 = pt(v[a]);
+      const p2 = pt(v[b]);
+      out.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+    }
+  }
+  return out;
+}
+
+/**
  * 地域の中央の区域（地域アイコンを置く (lr, lc) = (1, 1)。180° 回転しても動かない。003 §2.3）。
  * @param {number} br 段（0 = 上段）
  * @param {number} bc 段内の位置

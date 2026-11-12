@@ -18,6 +18,7 @@ export const SECTIONS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']
  * @property {number} total
  * @property {ScoreRow[]} rows
  * @property {{ mission: number, achieved: boolean | null }[]} missions
+ * @property {{ mission: number, tier: string, points: number, cells: number[] }[]} outlines 採用したミッションの達成区域（V の内訳の順。終了時の盤面の枠用）
  */
 
 /**
@@ -69,7 +70,13 @@ export function playerScore(playerId, detail, missions) {
     }
     return { mission: Number(m), achieved: achieved.has(Number(m)) };
   });
-  return { playerId, total, rows, missions: list };
+  const outlines = (Array.isArray(detail?.V?.missions) ? detail.V.missions : []).map((/** @type {any} */ m) => ({
+    mission: Number(m.mission),
+    tier: String(m.tier).toLowerCase(),
+    points: Number(m.points) || 0,
+    cells: (Array.isArray(m.cells) ? m.cells : []).map(Number),
+  }));
+  return { playerId, total, rows, missions: list, outlines };
 }
 
 /**

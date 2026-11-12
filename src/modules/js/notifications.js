@@ -539,6 +539,7 @@ export const HANDLERS = {
     view.areas.get(pid)?.setMarks({ isBase: view.m.basePlayer === pid, finalFame: int(a.fame) });
     view.band.set({ phase: 'END' });
     view.score.add(scoreFromNotification(a));
+    view.refreshMissionOutlines();
   },
 
   // N36: 途中の名声（ゲームオプション 105 が Visible のときだけ届く。ミッションを除く）。パネルと自分の領域に出す
