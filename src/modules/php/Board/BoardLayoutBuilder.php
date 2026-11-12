@@ -35,16 +35,6 @@ final class BoardLayoutBuilder
             $parity = 0;
             $ids = [array_slice(self::ALPHA, 0, $boardCount), array_slice(self::BETA, 0, $boardCount)];
             $flips = [array_fill(0, $boardCount, false), array_fill(0, $boardCount, false)];
-        } elseif ($placement === BoardPlacement::RANDOM_NO_FLIP) {
-            // 003 §2.4・未確定 No.2: 上段にするグループ（= P）を等確率で決め、各段にそのグループから B 枚
-            $parity = $rng->rand(0, 1);
-            $top = $parity === 0 ? self::ALPHA : self::BETA;
-            $bottom = $parity === 0 ? self::BETA : self::ALPHA;
-            $ids = [
-                array_slice(self::shuffle($top, $rng), 0, $boardCount),
-                array_slice(self::shuffle($bottom, $rng), 0, $boardCount),
-            ];
-            $flips = [array_fill(0, $boardCount, false), array_fill(0, $boardCount, false)];
         } else {
             // Random w/ Flip: P を等確率で決め、A〜H から 2B 枚を全区画へランダムに割り当てる
             $parity = $rng->rand(0, 1);

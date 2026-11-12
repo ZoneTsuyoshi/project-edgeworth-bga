@@ -1,15 +1,14 @@
 {
   // ゲームオプション（仕様書 004 §7、001 §3）。ID と値のキーは Material/OptionId と Setup/ の enum に一致させる。
-  // 値のキーは一度決めたら変えない。値 104=3（Draft）は実装するまで載せない（キーは予約）。
+  // 値のキーは一度決めたら変えない。値 104=3（Draft）は実装するまで載せない（キーは予約）。100 の 2・5（旧 Random w/o Flip）も廃止した欠番として予約。
   // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
   "100": {
     "name": "Board layout",
     "values": {
       "1": { "name": "Standard (Earth)" },
-      "2": { "name": "Standard (Random w/o Flip)", "tmdisplay": "Standard (Random w/o Flip)" },
+      // 2 と 5（旧 Random w/o Flip）は廃止した欠番（2026-11-12 作者指示）。キーは予約のまま載せない
       "3": { "name": "Standard (Random w/ Flip)", "tmdisplay": "Standard (Random w/ Flip)" },
       "4": { "name": "Advanced (Earth)", "tmdisplay": "Advanced (Earth)" },
-      "5": { "name": "Advanced (Random w/o Flip)", "tmdisplay": "Advanced (Random w/o Flip)" },
       "6": { "name": "Advanced (Random w/ Flip)", "tmdisplay": "Advanced (Random w/ Flip)" }
     },
     "default": 1,
@@ -39,7 +38,7 @@
     "name": "Award cards",
     "values": {
       "1": { "name": "Initial Game" },
-      "2": { "name": "Random (1: Cube, 1: Other)", "tmdisplay": "Awards: Random (1 Cube, 1 Other)" },
+      "2": { "name": "Random (1: Link, 1: Other)", "tmdisplay": "Awards: Random (1 Link, 1 Other)" },
       "3": { "name": "Random", "tmdisplay": "Awards: Random" }
     },
     "default": 1,
