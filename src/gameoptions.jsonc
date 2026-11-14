@@ -2,11 +2,12 @@
   // ゲームオプション（仕様書 004 §7、001 §3）。ID と値のキーは Material/OptionId と Setup/ の enum に一致させる。
   // 値のキーは一度決めたら変えない。値 104=3（Draft）は実装するまで載せない（キーは予約）。100 の 2・5（旧 Random w/o Flip）も廃止した欠番として予約。
   // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
+  // 101 は displaycondition を使わない（テーブルの最大人数の設定で選択肢が消えるため）。人数に合わない値は startcondition で開始を止める（2026-11-12 作者指示）。
+  // コメントは最上位のオブジェクトの中（キーの間）にだけ書く。入れ子のオブジェクトの中には書かない（Studio の commit で Syntax error になった疑い、2026-11-14）。
   "100": {
     "name": "Board layout",
     "values": {
       "1": { "name": "Standard (Earth)" },
-      // 2 と 5（旧 Random w/o Flip）は廃止した欠番（2026-11-12 作者指示）。キーは予約のまま載せない
       "3": { "name": "Standard (Random)", "tmdisplay": "Standard (Random)" },
       "4": { "name": "Advanced (Earth)", "tmdisplay": "Advanced (Earth)" },
       "6": { "name": "Advanced (Random)", "tmdisplay": "Advanced (Random)" }
@@ -23,7 +24,6 @@
     },
     "default": 1,
     "level": "base",
-    // displaycondition は使わない（テーブルの最大人数の設定で選択肢が消えるため）。人数に合わない値は startcondition で開始を止める（2026-11-12 作者指示）
     "startcondition": {
       "2": [
         {
