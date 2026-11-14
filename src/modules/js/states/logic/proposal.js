@@ -76,6 +76,49 @@ export function requiredKeep(plan, sel) {
 }
 
 /**
+ * 91 の画面の種類（011 追補 2026-11-14）。
+ * - `auto`: 選ぶ余地がなく、サーバーが全部残すと自動で確定した人（`_private.auto`）。待機の画面で [Change my choice] は出さない。
+ * - `decided`: 残す枚数 >= 引いた枚数で P070 を使える人。残すカードは決定済み（全部残す）で、P070 の欄だけを出す。
+ * - `choose`: 通常の 91（残す枚数 < 引いた枚数）。
+ * @param {Record<string, any> | null} mine `_private`
+ * @returns {'auto' | 'decided' | 'choose'}
+ */
+export function proposalMode(mine) {
+  const plan = parseProposal(mine);
+  if (plan.drawn.length > 0 && mine?.auto === true) {
+    return 'auto';
+  }
+  return plan.drawn.length > 0 && plan.keep >= plan.drawn.length && plan.options.some((o) => o.kind === EXTRA_DISCARD) ? 'decided' : 'choose';
+}
+
+/**
+ * 残すカードの選択が完了しているか（選んだ枚数 = 必要な枚数）。完了するまで P070 は選べない（011 追補 2026-11-14）。
+ * @param {ProposalPlan} plan
+ * @param {ProposalSelection} sel
+ * @returns {boolean}
+ */
+export function keepComplete(plan, sel) {
+  return sel.keep.length === requiredKeep(plan, sel);
+}
+
+/**
+ * 選択を整える。残すカードの選択が完了していなければ、P070 の選択を解除する。
+ * 完了していても、P070 で選んだカードが手札にも残すカードにも無ければ解除する（売却・選び直しで外れたとき）。
+ * @param {ProposalPlan} plan
+ * @param {ProposalSelection} sel
+ * @param {number[]} hand
+ */
+export function pruneExtraUses(plan, sel, hand) {
+  const complete = keepComplete(plan, sel);
+  for (const option of plan.options) {
+    const picked = sel.uses[option.hostKey];
+    if (option.kind === EXTRA_DISCARD && picked !== undefined && (!complete || (!hand.includes(picked) && !sel.keep.includes(picked)))) {
+      delete sel.uses[option.hostKey];
+    }
+  }
+}
+
+/**
  * オプションで払うマヤの合計（P072）。
  * @param {ProposalPlan} plan
  * @param {ProposalSelection} sel

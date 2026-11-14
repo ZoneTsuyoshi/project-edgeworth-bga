@@ -27,6 +27,11 @@ trait StandardProposalHooks
     {
     }
 
+    public function proposalHasChoice(int $playerId, bool $bonus, array $drawn): bool
+    {
+        return false;
+    }
+
     public function proposalExtras(int $playerId, bool $bonus, array $drawn): array
     {
         return [];

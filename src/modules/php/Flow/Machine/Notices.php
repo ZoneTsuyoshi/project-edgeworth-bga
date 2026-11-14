@@ -411,6 +411,14 @@ final class Notices
     }
 
     /**
+     * N24b: 企画で選ぶ余地がなく、引いたカードを全部残した人（公開。枚数は公開情報）。
+     */
+    public function proposalKeptAll(int $playerId, int $count): Notice
+    {
+        return new Notice('proposalKeptAll', clienttranslate('${player_name} keeps all ${n} drawn card(s)'), $this->player($playerId) + ['n' => $count]);
+    }
+
+    /**
      * N25: 本人だけ。
      *
      * @param list<int> $kept
