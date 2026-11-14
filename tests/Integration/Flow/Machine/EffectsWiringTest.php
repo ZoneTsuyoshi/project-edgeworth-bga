@@ -668,6 +668,113 @@ final class EffectsWiringTest extends MachineTestCase
     }
 
     /**
+     * 企画（V）を 91 まで進める。101 の衛星 2 機に、指定のカードを 1 枚ずつ配備して（P073 は 1 機目、P070・P072 は 2 機目）打ち上げ済みにする。
+     *
+     * @return int 入力待ちの状態
+     */
+    private function proposalUntilChoice(int ...$cardNos): int
+    {
+        $this->startEffects();
+        $this->phase(FlowPhase::Proposal, 5, []);
+        foreach ($cardNos as $i => $no) {
+            $sat = $this->satId(101, [SatelliteShape::Hammer, SatelliteShape::Retro, SatelliteShape::Scallop][$i]);
+            $this->launch($sat, 14 + $i);
+            $this->deployTo($sat, $no);
+        }
+
+        return $this->walker->run(StateId::PROPOSAL_DRIVER);
+    }
+
+    /** 企画: 残す枚数 >= 引いた枚数（P073 でメイン 2 枚引き 2 枚残し）の人は自動で全部残す。選ぶ人が混在しても進む */
+    public function testProposalAutoKeepsAllWhenKeepCountReachesDrawnCount(): void
+    {
+        $waiting = $this->proposalUntilChoice(73);
+        $handBefore = count($this->hand(101));
+
+        self::assertSame(StateId::PROPOSAL_KEEP_CHOOSE, $waiting);
+        self::assertSame([102], $this->walker->active, '101 は選ぶ余地がない');
+        $kept = $this->walker->noticesNamed('proposalKeptAll');
+        self::assertCount(1, $kept);
+        self::assertSame([101, 2], [$kept[0]->args['player_id'], $kept[0]->args['n']]);
+        self::assertNull($kept[0]->to);
+        self::assertSame([], array_filter($this->walker->noticesNamed('actionPassed'), static fn($n): bool => $n->args['auto'] === true));
+
+        $args = $this->machine->choice(StateId::PROPOSAL_KEEP_CHOOSE)->args();
+        self::assertTrue($args['_private'][101]['auto']);
+        self::assertNotNull($args['_private'][101]['myChoice']);
+        self::assertArrayNotHasKey('auto', $args['_private'][102]);
+        self::assertSame([101], $args['confirmed']);
+
+        $waiting = $this->walker->play($waiting, [], [StateId::PLANNING_PLOT]);
+        self::assertSame(StateId::PLANNING_PLOT, $waiting);
+        self::assertCount($handBefore + 2, $this->hand(101));
+        self::assertContains('drawnCardsKept', $this->walker->noticeNames());
+    }
+
+    /** 企画: P072 を持っていても残す枚数 >= 引いた枚数なら購入は出ず、マヤも払わない */
+    public function testProposalAutoKeepDoesNotChargeP072(): void
+    {
+        $waiting = $this->proposalUntilChoice(73, 72);
+        $mayaBefore = $this->playerValues->maya(101);
+
+        self::assertSame(StateId::PROPOSAL_KEEP_CHOOSE, $waiting);
+        self::assertSame([102], $this->walker->active);
+        $this->walker->play($waiting, [], [StateId::PLANNING_PLOT]);
+        self::assertSame($mayaBefore, $this->playerValues->maya(101));
+    }
+
+    /** 企画: 残す枚数 < 引いた枚数（P072 だけ）なら従来どおり選ぶ。P072 は問いに出る */
+    public function testProposalStillAsksWhenKeepCountIsBelowDrawnCount(): void
+    {
+        $waiting = $this->proposalUntilChoice(72);
+
+        self::assertSame(StateId::PROPOSAL_KEEP_CHOOSE, $waiting);
+        self::assertSame([101, 102], $this->walker->active);
+        self::assertSame([], $this->walker->noticesNamed('proposalKeptAll'));
+        $args = $this->machine->choice(StateId::PROPOSAL_KEEP_CHOOSE)->args();
+        self::assertSame('KEEP_PURCHASE', $args['_private'][101]['extra']['options'][0]['kind']);
+        self::assertArrayNotHasKey('auto', $args['_private'][101]);
+    }
+
+    /** 企画: 残す枚数 >= 引いた枚数で P070 を使える人は、P070 の問いだけが出る（P068・P072 は出ない）。使わずに確定すると全部残る */
+    public function testProposalWithP070AsksOnlyForP070AndKeepsAllWhenUnused(): void
+    {
+        $waiting = $this->proposalUntilChoice(73, 70);
+        $mayaBefore = $this->playerValues->maya(101);
+        $handBefore = count($this->hand(101));
+
+        self::assertSame([101, 102], $this->walker->active);
+        $private = $this->machine->choice(StateId::PROPOSAL_KEEP_CHOOSE)->args()['_private'][101];
+        self::assertArrayNotHasKey('auto', $private);
+        self::assertGreaterThanOrEqual(count($private['drawn']), $private['keep']);
+        self::assertFalse($private['extra']['handDiscard']);
+        self::assertSame(['EXTRA_DISCARD'], array_column($private['extra']['options'], 'kind'));
+        self::assertSame([], $this->walker->noticesNamed('proposalKeptAll'));
+
+        $this->walker->play($waiting, [StateId::PROPOSAL_KEEP_CHOOSE => fn(int $p): ?array => $p === 101 ? ['keep' => $private['drawn']] : null], [StateId::PLANNING_PLOT]);
+        self::assertCount($handBefore + 2, $this->hand(101));
+        self::assertSame($mayaBefore, $this->playerValues->maya(101));
+    }
+
+    /** 企画: P070 を使うと、手札 + 残したカードから 1 枚が捨てられて +7 マヤ */
+    public function testProposalP070DiscardsOneCardForSevenMaya(): void
+    {
+        $waiting = $this->proposalUntilChoice(73, 70);
+        $mayaBefore = $this->playerValues->maya(101);
+        $handBefore = count($this->hand(101));
+        $private = $this->machine->choice(StateId::PROPOSAL_KEEP_CHOOSE)->args()['_private'][101];
+        $hostKey = $private['extra']['options'][0]['hostKey'];
+        $discard = $private['drawn'][0];
+
+        $answer = fn(int $p): ?array => $p === 101 ? ['keep' => $private['drawn'], 'optionUses' => [$hostKey => $discard]] : null;
+        $this->walker->play($waiting, [StateId::PROPOSAL_KEEP_CHOOSE => $answer], [StateId::PLANNING_PLOT]);
+
+        self::assertCount($handBefore + 1, $this->hand(101));
+        self::assertNotContains($discard, $this->hand(101));
+        self::assertSame($mayaBefore + 7, $this->playerValues->maya(101));
+    }
+
+    /**
      * @return array{int, int} 通信確立に使える区域と、その進行方向（NE）前方の区域
      */
     private function linkCells(): array

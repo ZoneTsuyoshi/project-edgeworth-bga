@@ -10,7 +10,7 @@ import { nameOfNameId } from '../cards/name-id.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
 import {
-  EXTRA_DISCARD, KEEP_PURCHASE, optionPayment, parseProposal, proposalActionArgs, proposalSelectionFrom, requiredKeep, reservedHand, validateProposal,
+  EXTRA_DISCARD, KEEP_PURCHASE, keepComplete, optionPayment, parseProposal, proposalActionArgs, proposalMode, proposalSelectionFrom, pruneExtraUses, requiredKeep, reservedHand, validateProposal,
 } from './logic/proposal.js';
 import { cardName } from './texts.js';
 
@@ -89,16 +89,15 @@ export class ProposalState extends ActionState {
         const sel = this.sel;
         const hand = this.hand;
         // 選択を整える（売却などで手札が変わったとき、オプションで残す枚数が減ったとき）
-        sel.keep = sel.keep.filter((id) => plan.drawn.includes(id));
-        sel.handDiscard = plan.handDiscard ? sel.handDiscard.filter((id) => hand.includes(id)) : [];
-        for (const option of plan.options) {
-            if (option.kind === EXTRA_DISCARD && sel.uses[option.hostKey] !== undefined && !hand.includes(sel.uses[option.hostKey]) && !sel.keep.includes(sel.uses[option.hostKey])) {
-                delete sel.uses[option.hostKey];
-            }
-        }
+        const decided = proposalMode(this.mine) === 'decided';
+        sel.keep = decided ? [...plan.drawn] : sel.keep.filter((id) => plan.drawn.includes(id));
+        sel.handDiscard = plan.handDiscard && !decided ? sel.handDiscard.filter((id) => hand.includes(id)) : [];
         sel.sell = sel.sell.filter((id) => hand.includes(id));
         const required = requiredKeep(plan, sel);
         sel.keep = sel.keep.slice(0, required);
+        // P070 は残すカードの選択が完了してから（完了でなくなったら解除）
+        pruneExtraUses(plan, sel, hand);
+        const keepDone = keepComplete(plan, sel);
 
         const claimedExcept = (/** @type {'handDiscard' | 'extra' | 'sell'} */ role) => {
             const ids = new Set();
@@ -117,23 +116,25 @@ export class ProposalState extends ActionState {
         /** @type {HTMLElement[]} */
         const body = [];
 
-        // 引いたカード
-        const keepPicker = new CardPicker(view, {
-            ids: plan.drawn,
-            selected: sel.keep,
-            max: required,
-            onChange: (ids) => {
-                sel.keep = ids;
-                this.refresh();
-            },
-        });
-        body.push(el('div', { class: 'pe-choice-section' }, [
-            el('div', { class: 'pe-choice-label' }, [format(_('Cards you drew: keep ${n} of ${total} (${chosen} chosen). The rest are discarded'), { n: required, total: plan.drawn.length, chosen: sel.keep.length })]),
-            keepPicker.root,
-        ]));
+        // 引いたカード（決定済みの画面では出さない）
+        if (!decided) {
+            const keepPicker = new CardPicker(view, {
+                ids: plan.drawn,
+                selected: sel.keep,
+                max: required,
+                onChange: (ids) => {
+                    sel.keep = ids;
+                    this.refresh();
+                },
+            });
+            body.push(el('div', { class: 'pe-choice-section' }, [
+                el('div', { class: 'pe-choice-label' }, [format(_('Cards you drew: keep ${n} of ${total} (${chosen} chosen). The rest are discarded'), { n: required, total: plan.drawn.length, chosen: sel.keep.length })]),
+                keepPicker.root,
+            ]));
+        }
 
         // P068: 手札から捨てて、その枚数だけ多く残す
-        if (plan.handDiscard) {
+        if (plan.handDiscard && !decided) {
             const picker = new CardPicker(view, {
                 ids: hand,
                 selected: sel.handDiscard,
@@ -152,6 +153,9 @@ export class ProposalState extends ActionState {
         // P070 / P072
         for (const option of plan.options) {
             const name = nameOfNameId(option.cardKey);
+            if (decided && option.kind !== EXTRA_DISCARD) {
+                continue;
+            }
             if (option.kind === EXTRA_DISCARD) {
                 const used = sel.uses[option.hostKey] !== undefined;
                 const candidates = [...hand, ...sel.keep.filter((id) => !hand.includes(id))];
@@ -160,6 +164,8 @@ export class ProposalState extends ActionState {
                         el('input', {
                             type: 'checkbox',
                             checked: used,
+                            disabled: !keepDone,
+                            title: keepDone ? '' : _('Choose the cards to keep first'),
                             onChange: (/** @type {Event} */ e) => {
                                 if (/** @type {HTMLInputElement} */ (e.target).checked) {
                                     const first = candidates.find((id) => !claimedExcept('extra').has(id));
@@ -247,11 +253,14 @@ export class ProposalState extends ActionState {
         if (check.reason !== undefined && check.reason !== 'keepCount' && check.reason !== 'needMoreSales') {
             body.push(el('div', { class: 'pe-choice-error', role: 'alert' }, [this.reasonText(check.reason)]));
         }
+        const option70 = plan.options.find((o) => o.kind === EXTRA_DISCARD);
         view.panel.show({
-            title: format(_('Proposal: choose ${n} card(s) to keep'), { n: required }),
+            title: decided ? format(_('Proposal: ${name}'), { name: nameOfNameId(option70?.cardKey ?? '') }) : format(_('Proposal: choose ${n} card(s) to keep'), { n: required }),
             body,
         });
-        this.bga.statusBar.setTitle(format(_('${you} must choose ${n} card(s) to keep (${chosen} chosen)'), { n: required, chosen: sel.keep.length }));
+        this.bga.statusBar.setTitle(decided
+            ? format(_('${you} keep all ${n} drawn cards. You may also use ${name}'), { n: plan.drawn.length, name: nameOfNameId(option70?.cardKey ?? '') })
+            : format(_('${you} must choose ${n} card(s) to keep (${chosen} chosen)'), { n: required, chosen: sel.keep.length }));
         this.bga.statusBar.addActionButton(_('Confirm'), () => {
             if (!check.ok) {
                 return;
@@ -267,6 +276,18 @@ export class ProposalState extends ActionState {
             this.reset();
             this.refresh();
         }, { color: 'secondary' });
+    }
+
+    /**
+     * 自動で全部残した人は、待機の画面だけを出す（[Change my choice] は出さない。サーバーが actConfirmKeep を受け付けない）。
+     */
+    renderConfirmed() {
+        if (proposalMode(this.mine) !== 'auto') {
+            super.renderConfirmed();
+            return;
+        }
+        this.bga.statusBar.setTitle(format(_('You keep all ${n} drawn cards. Waiting for other players'), { n: parseProposal(this.mine).drawn.length }));
+        this.showPlan(this.confirmed ?? {});
     }
 
     /**

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\Games\projectedgeworth\Data\CardLocation;
+use Bga\Games\projectedgeworth\Effects\Query\ProposalOption;
 use Bga\Games\projectedgeworth\Effects\Runtime\StepMods;
 use Bga\Games\projectedgeworth\Flow\Action\Payability;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
@@ -77,8 +78,13 @@ final class ChoiceArgs
      */
     public function privateFor(ChoiceFlow $flow, int $playerId, ?array $autoChoice = null): array
     {
-        return ['myChoice' => $this->ctx->services->choices->ownChoice($playerId, $flow->stateId) ?? $autoChoice]
+        $private = ['myChoice' => $this->ctx->services->choices->ownChoice($playerId, $flow->stateId) ?? $autoChoice]
             + $this->detail($flow, $playerId);
+        // 入場時に自動で確定される人（選ぶ余地がない）の印。クライアントは [Change my choice] を出さない（011 追補 2026-11-14）
+        if ($flow->stateId === StateId::PROPOSAL_KEEP_CHOOSE && !$flow->step->canAct($playerId, $flow->mode)) {
+            $private['auto'] = true;
+        }
+        return $private;
     }
 
     /**
@@ -96,20 +102,33 @@ final class ChoiceArgs
             StateId::DEPLOY_MAIN_CHOOSE => $sell + $this->deploy($playerId),
             StateId::LAUNCH_MAIN_CHOOSE, StateId::LAUNCH_BONUS_CHOOSE => $sell + $this->launch($playerId, $flow->mode),
             StateId::LINK_MAIN_CHOOSE, StateId::LINK_BONUS_CHOOSE => $sell + $this->link($playerId, $flow->mode),
-            StateId::PROPOSAL_KEEP_CHOOSE => [
-                'drawn' => $phases->proposal()->drawn($playerId),
-                'keep' => $phases->proposal()->keepCount($playerId),
-                // PROPOSAL_OPTIONS（P068・P070・P072）の候補。なければ空（011 §6-5）
-                'extra' => $services->hooks->proposalExtras(
-                    $playerId,
-                    $phases->proposal()->isBonusHolder($playerId),
-                    $phases->proposal()->drawn($playerId),
-                ),
-                'sellValue' => $services->selling->price($playerId),
-                'hand' => $hand,
-            ],
+            StateId::PROPOSAL_KEEP_CHOOSE => $this->proposal($playerId, $hand) + ['sellValue' => $services->selling->price($playerId), 'hand' => $hand],
             default => [],
         };
+    }
+
+    /**
+     * 企画（91）の候補。PROPOSAL_OPTIONS（P068・P070・P072）の候補は `extra`（なければ空。011 §6-5）。
+     * 残す枚数 >= 引いた枚数のときは全部残すことが決まっているので、残す枚数を増やす P068・P072 を `extra` から除く（P070 だけ残す。011 追補 2026-11-14）。
+     *
+     * @param list<int> $hand
+     * @return array<string, mixed>
+     */
+    private function proposal(int $playerId, array $hand): array
+    {
+        $proposal = $this->ctx->phases->proposal();
+        $drawn = $proposal->drawn($playerId);
+        $keep = $proposal->keepCount($playerId);
+        $extra = $this->ctx->services->hooks->proposalExtras($playerId, $proposal->isBonusHolder($playerId), $drawn);
+        if ($drawn !== [] && $keep >= count($drawn) && $extra !== []) {
+            $options = array_values(array_filter(
+                (array) ($extra['options'] ?? []),
+                static fn(array $o): bool => $o['kind'] === ProposalOption::EXTRA_DISCARD,
+            ));
+            $extra = $options === [] ? [] : ['handDiscard' => false, 'handCandidates' => [], 'options' => $options];
+        }
+
+        return ['drawn' => $drawn, 'keep' => $keep, 'extra' => $extra];
     }
 
     /**

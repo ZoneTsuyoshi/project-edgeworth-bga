@@ -431,6 +431,9 @@ export const HANDLERS = {
   // N24: パス（ログのみ）
   actionPassed() {},
 
+  // N24b: 企画で全部残した（ログのみ）
+  proposalKeptAll() {},
+
   // N25（本人）: 引いた直後の置き場から手札へ
   drawnCardsKept(view, a) {
     const m = view.m;

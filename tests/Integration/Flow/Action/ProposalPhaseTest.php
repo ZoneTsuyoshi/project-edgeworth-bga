@@ -140,4 +140,71 @@ final class ProposalPhaseTest extends ActionTestCase
         $result = $this->phases->runner()->resolve($proposal, self::KEEP_STATE);
         $this->assertTrue($result->outcomeOf(102)?->isPass());
     }
+
+    public function testCanActIsFalseWhenKeepCountReachesDrawnCount(): void
+    {
+        $this->hooks->mainCounts = new ProposalCounts(2, 2); // P073 相当
+        $proposal = $this->phases->proposal();
+        $drawn = $proposal->drawAll();
+
+        $this->assertFalse($proposal->canAct(101, StepMode::Main), '2 枚引いて 2 枚残す');
+        $this->assertTrue($proposal->canAct(102, StepMode::Main), 'ボーナス 5 枚引いて 2 枚残す（3 < 5）は選ぶ');
+        $this->assertSame($drawn[101], $proposal->defaultChoice(101, StepMode::Main)['keep'], '自動確定は全部残す');
+        $proposal->validate(101, StepMode::Main, $proposal->defaultChoice(101, StepMode::Main));
+    }
+
+    public function testCanActStaysTrueWhenAnExtraChoiceExists(): void
+    {
+        $this->hooks->mainCounts = new ProposalCounts(2, 2);
+        $this->hooks->proposalChoice = true; // P070 を使える
+        $proposal = $this->phases->proposal();
+        $proposal->drawAll();
+
+        $this->assertTrue($proposal->canAct(101, StepMode::Main));
+    }
+
+    public function testSingleDrawnCardWhenPilesRunOutIsKeptAutomatically(): void
+    {
+        $this->db->execute("UPDATE `project_card` SET `card_location` = 'discard', `card_location_arg` = 0 WHERE `card_location` = 'deck'");
+        $this->db->execute("UPDATE `project_card` SET `card_location` = 'hand', `card_location_arg` = 101 WHERE `card_location` = 'discard'");
+        $this->db->execute("UPDATE `project_card` SET `card_location` = 'deck', `card_location_arg` = 0, `card_order` = 0 WHERE `card_id` = 50");
+        $proposal = $this->phases->proposal();
+        $drawn = $proposal->drawAll();
+        $holder = array_keys(array_filter($drawn, static fn(array $cards): bool => $cards !== []))[0];
+
+        $this->assertFalse($proposal->canAct($holder, StepMode::Main), '引けたのが 1 枚で残す枚数 1');
+        $entry = $this->phases->runner()->enter($proposal, self::KEEP_STATE);
+        $this->assertSame([], $entry->active);
+        $this->assertSame([101, 102, 103], $entry->autoConfirmed);
+        $result = $this->phases->runner()->resolve($proposal, self::KEEP_STATE);
+        $this->assertSame($drawn[$holder], $result->outcomeOf($holder)?->details['kept']);
+    }
+
+    public function testAutoAndChoosingPlayersCanBeMixed(): void
+    {
+        $this->hooks->mainCounts = new ProposalCounts(2, 2);
+        $proposal = $this->phases->proposal();
+        $drawn = $proposal->drawAll();
+        $entry = $this->phases->runner()->enter($proposal, self::KEEP_STATE);
+
+        $this->assertSame([102], $entry->active);
+        $this->assertSame([101, 103], $entry->autoConfirmed);
+        $all = $this->phases->runner()->confirm($proposal, self::KEEP_STATE, 102, ['keep' => [$drawn[102][0], $drawn[102][1]]]);
+        $this->assertTrue($all);
+        $result = $this->phases->runner()->resolve($proposal, self::KEEP_STATE);
+        $this->assertSame($drawn[101], $result->outcomeOf(101)?->details['kept']);
+        $this->assertCount(3, $result->outcomeOf(102)?->details['discarded']);
+    }
+
+    public function testEveryoneAutoMeansTheStateEndsOnEntry(): void
+    {
+        $this->globals->setBonusHolders([]);
+        $this->hooks->mainCounts = new ProposalCounts(2, 2);
+        $proposal = $this->phases->proposal();
+        $proposal->drawAll();
+        $entry = $this->phases->runner()->enter($proposal, self::KEEP_STATE);
+
+        $this->assertSame([], $entry->active);
+        $this->assertSame([101, 102, 103], $entry->autoConfirmed);
+    }
 }

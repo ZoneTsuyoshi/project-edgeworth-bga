@@ -86,7 +86,12 @@ final class ProposalPhase implements ActionStep
 
     public function canAct(int $playerId, StepMode $mode): bool
     {
-        return $this->drawn($playerId) !== [];
+        // 選ぶ余地がない人（残す枚数 >= 引いた枚数で、P070 のような追加の問いもない人）は 91 で自動確定する（011 追補 2026-11-14）。
+        // 引いた枚数 0 の人は従来どおり自動 [Pass]（未確定 8 の回答で P070 を許すなら、ここの 1 か所を変える）
+        $drawn = $this->drawn($playerId);
+        return $drawn !== []
+            && ($this->keepCount($playerId) < count($drawn)
+                || $this->services->hooks->proposalHasChoice($playerId, $this->isBonusHolder($playerId), $drawn));
     }
 
     public function validate(int $playerId, StepMode $mode, array $data): void

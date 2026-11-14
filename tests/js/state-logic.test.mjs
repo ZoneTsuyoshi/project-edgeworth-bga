@@ -12,7 +12,7 @@ import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseL
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, parseLinkable, validateLink } from '../../src/modules/js/states/logic/link.js';
 import { mulliganActionArgs, mulliganButton, mulliganPicks } from '../../src/modules/js/states/logic/mulligan.js';
 import {
-  optionPayment, parseProposal, proposalActionArgs, proposalSelectionFrom, requiredKeep, reservedHand, validateProposal,
+  keepComplete, optionPayment, parseProposal, proposalActionArgs, proposalMode, proposalSelectionFrom, pruneExtraUses, requiredKeep, reservedHand, validateProposal,
 } from '../../src/modules/js/states/logic/proposal.js';
 import {
   answerFields, assignmentLayout, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateField, validateQuestion,
@@ -308,6 +308,47 @@ test('企画: 残す枚数、オプション、売却の同梱', () => {
   assert.deepEqual(proposalActionArgs({ keep: [5, 6, 7], handDiscard: [1], uses: { 'P:72': 7 }, sell: [2] }), { keep: [5, 6, 7], handDiscard: [1], optionUses: '{"P:72":7}', sell: [2] });
   assert.deepEqual(proposalSelectionFrom({ keep: [5], optionUses: { 'P:72': '7' } }), { keep: [5], handDiscard: [], uses: { 'P:72': 7 }, sell: [] });
   assert.deepEqual(parseProposal({ drawn: [1], keep: 1, extra: [] }).options, []);
+});
+
+const p070 = { hostKey: 'P:70', cardKey: 'x', kind: 'EXTRA_DISCARD', reward: 7, tiers: [] };
+
+test('企画: 自動で全部残した人の画面の種類（auto）', () => {
+  assert.equal(proposalMode({ drawn: [5, 6], keep: 2, auto: true, extra: [] }), 'auto');
+  assert.equal(proposalMode({ drawn: [], keep: 0, auto: true, extra: [] }), 'choose', '引いた枚数 0 は従来の待機の画面');
+  assert.equal(proposalMode({ drawn: [5, 6], keep: 1, extra: [] }), 'choose');
+});
+
+test('企画: 残す枚数 >= 引いた枚数で P070 を使える人は決定済みの画面（P070 の欄だけ）', () => {
+  const mine = { drawn: [5, 6], keep: 2, hand: [1, 2], extra: { handDiscard: false, handCandidates: [], options: [p070] } };
+  assert.equal(proposalMode(mine), 'decided');
+  const plan = parseProposal(mine);
+  // 決定済みの画面は残すカードを全部残す状態から始まる。何も選ばなければそのまま確定できる（P070 を使わない）
+  const sel = { keep: [5, 6], handDiscard: [], uses: {}, sell: [] };
+  assert.equal(requiredKeep(plan, sel), 2);
+  assert.equal(keepComplete(plan, sel), true);
+  assert.equal(validateProposal(plan, sel, { hand: [1, 2], maya: 5, price: 3 }).ok, true);
+  assert.deepEqual(proposalActionArgs(sel), { keep: [5, 6] });
+  // P070 の候補は手札 + 残したカード
+  assert.equal(validateProposal(plan, { ...sel, uses: { 'P:70': 6 } }, { hand: [1, 2], maya: 5, price: 3 }).ok, true);
+  // 残す枚数 < 引いた枚数なら決定済みではない
+  assert.equal(proposalMode({ ...mine, keep: 1 }), 'choose');
+});
+
+test('企画: 通常の 91 では、残すカードが未完了のあいだ P070 を使えず、選び直しで解除される', () => {
+  const plan = parseProposal({ drawn: [5, 6, 7], keep: 2, hand: [1, 2], extra: { handDiscard: false, handCandidates: [], options: [p070] } });
+  const complete = { keep: [5, 6], handDiscard: [], uses: { 'P:70': 6 }, sell: [] };
+  assert.equal(keepComplete(plan, complete), true);
+  pruneExtraUses(plan, complete, [1, 2]);
+  assert.deepEqual(complete.uses, { 'P:70': 6 }, '完了していれば（残すカードを捨てる選択も）そのまま');
+  // 1 枚外した（未完了）ので解除する
+  const incomplete = { keep: [5], handDiscard: [], uses: { 'P:70': 1 }, sell: [] };
+  assert.equal(keepComplete(plan, incomplete), false);
+  pruneExtraUses(plan, incomplete, [1, 2]);
+  assert.deepEqual(incomplete.uses, {}, '未完了なら手札のカードを選んでいても解除する');
+  // 完了のまま、選んでいた残すカードが外れて別のカードに置き換わったら解除する
+  const swapped = { keep: [5, 7], handDiscard: [], uses: { 'P:70': 6 }, sell: [] };
+  pruneExtraUses(plan, swapped, [1, 2]);
+  assert.deepEqual(swapped.uses, {});
 });
 
 test('効果の問い: ORDER の並べ替え、EFFECT のフィールド 8 種の検証と答え', () => {

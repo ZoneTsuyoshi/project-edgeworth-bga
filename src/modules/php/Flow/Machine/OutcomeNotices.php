@@ -87,7 +87,13 @@ final class OutcomeNotices
     public function autoPassed(int $actionNo, StepMode $mode, array $autoPlayers): array
     {
         $kind = self::passKind($actionNo, $mode);
-        return array_map(fn(int $id): Notice => $this->ctx->notices->actionPassed($id, $kind, true), $autoPlayers);
+        return array_map(function (int $id) use ($actionNo, $kind): Notice {
+            // 企画（V）で引いたカードがある人は、選ぶ余地がなく全部残した人（011 追補 2026-11-14）。N24 は引いた枚数 0 の人だけ
+            $drawn = $actionNo === 5 ? count($this->ctx->phases->proposal()->drawn($id)) : 0;
+            return $drawn > 0
+                ? $this->ctx->notices->proposalKeptAll($id, $drawn)
+                : $this->ctx->notices->actionPassed($id, $kind, true);
+        }, $autoPlayers);
     }
 
     public static function passKind(int $actionNo, StepMode $mode): string

@@ -154,6 +154,20 @@ final class EngineActionHooks implements ActionHooks, UseModsAware
         );
     }
 
+    public function proposalHasChoice(int $playerId, bool $bonus, array $drawn): bool
+    {
+        if ($this->proposal === null || $drawn === []) {
+            return false;
+        }
+        foreach ($this->proposal->plan($playerId, $bonus ? StepMode::Bonus : StepMode::Main)->options as $option) {
+            if ($option->kind === ProposalOption::EXTRA_DISCARD) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function proposalExtras(int $playerId, bool $bonus, array $drawn): array
     {
         if ($this->proposal === null) {

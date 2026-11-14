@@ -13,6 +13,7 @@ use Bga\Games\projectedgeworth\Effects\Bonus\BonusDeclaration;
 use Bga\Games\projectedgeworth\Effects\Context\GameEvent;
 use Bga\Games\projectedgeworth\Effects\EffectEngine;
 use Bga\Games\projectedgeworth\Effects\EffectViolation;
+use Bga\Games\projectedgeworth\Effects\Query\EngineActionHooks;
 use Bga\Games\projectedgeworth\Effects\Query\ProposalOption;
 use Bga\Games\projectedgeworth\Effects\Query\QueryContext;
 use Bga\Games\projectedgeworth\Effects\Question\Answer;
@@ -376,6 +377,30 @@ final class E3EffectsTest extends TestCase
         $f->proposal->validate(self::P1, $plan, 1, [101, 102], [101], [], ['P:70' => 101]);
         $this->expectException(EffectViolation::class);
         $f->proposal->validate(self::P1, $plan, 1, [101, 102], [101], [], ['P:70' => 102]);
+    }
+
+    public function testProposalHasChoiceOnlyForP070(): void
+    {
+        $hooks = static fn(E3Fixture $f): EngineActionHooks => new EngineActionHooks($f->queries, $f->game, $f->proposal);
+        $drawn = [101, 102];
+
+        $f = new E3Fixture(0);
+        $f->satellite(self::P1, ['P070']);
+        $this->assertTrue($hooks($f)->proposalHasChoice(self::P1, false, $drawn));
+        $this->assertFalse($hooks($f)->proposalHasChoice(self::P1, false, []), '引いた枚数 0 は選ぶ余地なし（未確定 8）');
+
+        $f = new E3Fixture(10);
+        $f->satellite(self::P1, ['P072']);
+        $this->assertFalse($hooks($f)->proposalHasChoice(self::P1, false, $drawn), 'P072 は残す枚数 >= 引いた枚数では使い道がない');
+
+        $f = new E3Fixture(0);
+        $f->satellite(self::P1, ['P068']);
+        $this->assertFalse($hooks($f)->proposalHasChoice(self::P1, false, $drawn));
+
+        $f = new E3Fixture(0);
+        $f->satellite(self::P1, ['P070']);
+        $f->game->used['P:70'] = true;
+        $this->assertFalse($hooks($f)->proposalHasChoice(self::P1, false, $drawn), '使用済みの P070');
     }
 
     public function testP072BuysKeepSlotsUpToTheNumberDrawn(): void

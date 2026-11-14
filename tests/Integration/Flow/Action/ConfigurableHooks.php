@@ -33,8 +33,14 @@ final class ConfigurableHooks implements ActionHooks
     public array $forbidden = [];
     public ?ProposalCounts $mainCounts = null;
     public ?ProposalCounts $bonusCounts = null;
+    public bool $proposalChoice = false;
     public int $budgetExtra = 0;
     public int $sellExtra = 0;
+
+    public function proposalHasChoice(int $playerId, bool $bonus, array $drawn): bool
+    {
+        return $this->proposalChoice;
+    }
 
     public function deployCostReduction(int $playerId, Satellite $target, int $cardNumber, int $attachedCount): int
     {

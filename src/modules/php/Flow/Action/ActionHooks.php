@@ -93,4 +93,11 @@ interface ActionHooks
      * @return array<string, mixed>
      */
     public function proposalExtras(int $playerId, bool $bonus, array $drawn): array;
+
+    /**
+     * 残す枚数が引いた枚数以上のとき、それでも 91 で選ぶ余地があるか（P070 の追加の捨てが使えるとき真）。DB を書かない。
+     *
+     * @param list<int> $drawn
+     */
+    public function proposalHasChoice(int $playerId, bool $bonus, array $drawn): bool;
 }
