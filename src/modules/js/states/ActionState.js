@@ -13,8 +13,8 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { ChoiceState } from './ChoiceState.js';
-import { CardPicker } from '../ui/CardPicker.js';
 import { el } from '../ui/dom.js';
+import { HandTargets } from './HandTargets.js';
 import { format, privateOf, sellableHand, sellsWholeHand, sellTotal, validMods } from './logic/common.js';
 import { modOptionText, modName } from './texts.js';
 
@@ -41,6 +41,16 @@ export class ActionState extends ChoiceState {
         this.solo = false;
         /** @type {(() => void) | null} */
         this.unsubscribe = null;
+        /** @type {import('./HandTargets.js').HandTarget[]} 今の画面で登録された、手札を選ぶ欄（B-2） */
+        this.handDefs = [];
+        /** @type {Map<string, HTMLElement>} */
+        this.handSlots = new Map();
+        /** @type {string | null | undefined} 選択中の欄（未設定は undefined） */
+        this.handActive = undefined;
+        /** @type {string | null} 手札が見えるまでスクロールした欄 */
+        this.handShown = null;
+        /** 未完了の欄がなく欄が複数のとき、手札を使わない状態から始めるか（企画） */
+        this.handIdle = false;
     }
 
     /** 売却に使う手札の今の状態（通知で更新されるモデルから読む） */
@@ -74,6 +84,8 @@ export class ActionState extends ChoiceState {
         this.editing = false;
         this.sellMode = null;
         this.sending = false;
+        this.handActive = undefined;
+        this.handShown = null;
         this.reset();
         this.unsubscribe?.();
         const listener = (/** @type {string} */ name) => {
@@ -166,6 +178,68 @@ export class ActionState extends ChoiceState {
         }
         this.renderEdit();
         this.addSellButton();
+        this.mountHandTargets();
+    }
+
+    // ---- 手札を選ぶ欄（B-2） ----
+
+    /**
+     * 手札を選ぶ欄を登録し、パネルに置く場所（欄の部品が後で入る）を返す。renderEdit の中で呼ぶ。
+     * @param {import('./HandTargets.js').HandTarget} def
+     * @returns {HTMLElement}
+     */
+    handField(def) {
+        this.handDefs = this.handDefs.filter((d) => d.id !== def.id);
+        this.handDefs.push(def);
+        const slot = el('div', { class: 'pe-handfield-slot', dataset: { target: def.id } });
+        this.handSlots.set(def.id, slot);
+        return slot;
+    }
+
+    /** 登録した欄を捨てる（描き直しの前） */
+    resetHandFields() {
+        this.handDefs = [];
+        this.handSlots.clear();
+    }
+
+    /**
+     * 登録した欄に部品を入れ、手札のゾーンを選択中の欄に割り当てる。欄が選択中に変わったら手札までスクロールし、タイトルを欄の指示に変える。
+     */
+    mountHandTargets() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view === null || me === null || this.handDefs.length === 0) {
+            this.handShown = null;
+            return;
+        }
+        const hand = view.areas.get(me)?.hand;
+        if (hand === undefined) {
+            return;
+        }
+        const targets = new HandTargets({
+            hand,
+            targets: this.handDefs,
+            active: this.handActive,
+            idleWhenComplete: this.handIdle,
+            setActive: (id) => {
+                this.handActive = id;
+            },
+            refresh: () => this.refresh(),
+        });
+        for (const def of this.handDefs) {
+            this.handSlots.get(def.id)?.replaceChildren(targets.section(def.id));
+        }
+        targets.apply();
+        const title = targets.activeTitle();
+        if (title !== null) {
+            this.bga.statusBar.setTitle(title);
+        }
+        if (targets.active !== this.handShown) {
+            if (targets.active !== null) {
+                targets.reveal();
+            }
+            this.handShown = targets.active;
+        }
     }
 
     /** 盤面・手札・衛星の選択の表示をすべて外す */
@@ -177,6 +251,7 @@ export class ActionState extends ChoiceState {
         view.stateFrame.leaveSelection();
         view.satelliteHandler = null;
         view.panel.hide();
+        this.resetHandFields();
         const me = view.m.me;
         if (me !== null) {
             const area = view.areas.get(me);
@@ -242,6 +317,7 @@ export class ActionState extends ChoiceState {
      * @param {number[]} p.reserved 売れないカード（配備するカード）
      * @param {HTMLElement[]} [p.subject] 選択パネルの見出し部品
      * @param {{ onPick: (dir: string) => void, selected?: string | null }} [p.pad] 方向パッド
+     * @param {import('./HandTargets.js').HandTarget} [p.before] 売却の欄の前に置く手札の欄（配備するカードなど。売る欄と手札を使い分ける）
      */
     costBox(p) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
@@ -259,6 +335,7 @@ export class ActionState extends ChoiceState {
                 title: _('Pay for the action'),
                 body: [
                     ...(p.subject ?? []),
+                    ...(p.before === undefined ? [] : [el('div', { class: 'pe-choice-section' }, [this.handField(p.before)])]),
                     this.sellPrompt(p.quote.pay, p.reserved, sel.sell, (ids) => {
                         sel.sell = ids;
                         this.refresh();
@@ -297,22 +374,28 @@ export class ActionState extends ChoiceState {
     // ---- 売却 ----
 
     /**
-     * マヤが足りないときの売却の促し（008 §2-6）。必要な最小枚数と、売るカードを選ぶ部品（選択パネルに載せる）。
-     * 選んだカードは選択に同梱して確定する。予約済みのカード（配備するカードなど）は選べない。
+     * マヤが足りないときの売却の促し（008 §2-6、012 追補 2026-11-14 B-2）。必要な最小枚数と、売るカードの欄（選択パネルに載せる）。
+     * 売るカードは手札のゾーンで選ぶ（欄が選択中のとき）。選んだカードは選択に同梱して確定する。予約済みのカード（配備するカードなど）は選べない。
      * @param {{ need: number, short: number }} pay
-     * @param {number[]} reserved 売れないカード
+     * @param {number[]} reserved 売れないカード（手札のゾーンで印を付ける）
      * @param {number[]} selected 今選んでいるカード
      * @param {(ids: number[]) => void} onChange
+     * @param {string} [id] 欄の識別子（同じ画面に複数あるとき）
      * @returns {HTMLElement}
      */
-    sellPrompt(pay, reserved, selected, onChange) {
-        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
-        const picker = new CardPicker(view, {
-            ids: sellableHand(this.hand, reserved),
+    sellPrompt(pay, reserved, selected, onChange, id = 'sell') {
+        const enough = selected.length >= pay.need;
+        const slot = this.handField({
+            id,
+            label: _('Cards to sell'),
+            badge: _('Sell'),
+            candidates: sellableHand(this.hand, reserved),
             selected,
+            need: pay.need,
+            exclude: reserved,
+            title: format(_('Choose at least ${need} card(s) to sell (+${price} Maya each): ${n} / ${need} chosen'), { need: pay.need, price: this.price, n: selected.length }),
             onChange,
         });
-        const enough = selected.length >= pay.need;
         return el('div', { class: `pe-sellprompt${enough ? ' pe-sellprompt-ok' : ''}` }, [
             el('div', { class: 'pe-sellprompt-text' }, [
                 format(_('Needs ${short} more Maya. Choose at least ${need} card(s) to sell (+${price} Maya each): ${n} / ${need} chosen'), {
@@ -322,7 +405,7 @@ export class ActionState extends ChoiceState {
                     n: selected.length,
                 }),
             ]),
-            picker.root,
+            slot,
         ]);
     }
 

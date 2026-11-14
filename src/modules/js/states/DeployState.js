@@ -266,8 +266,25 @@ export class DeployState extends ActionState {
                 quote,
                 mods: target.mods,
                 sel,
-                reserved: [chosen.a],
+                reserved: [],
                 subject: [this.cardPreview(chosen.a)],
+                before: {
+                    id: 'deploy',
+                    label: _('Card to deploy'),
+                    badge: _('Deploy'),
+                    candidates: allowedCards,
+                    selected: [chosen.a],
+                    need: 1,
+                    max: 1,
+                    title: _('Choose a card to deploy'),
+                    onChange: (ids) => {
+                        sel.cardId = ids[0] ?? null;
+                        if (sel.cardId === null) {
+                            sel.sell = [];
+                        }
+                        this.refresh();
+                    },
+                },
             });
             return { chosen, pay: quote.pay };
         }
