@@ -18,7 +18,7 @@ export const SECTIONS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']
  * @property {number} total
  * @property {ScoreRow[]} rows
  * @property {{ mission: number, achieved: boolean | null }[]} missions
- * @property {{ mission: number, tier: string, points: number, cells: number[] }[]} outlines 採用したミッションの達成区域（V の内訳の順。終了時の盤面の枠用）
+ * @property {{ mission: number, slot: number, tier: string, points: number, cells: number[] }[]} outlines 採用したミッションの達成区域（V の内訳の順。終了時の盤面の枠用）。slot = そのプレイヤーのミッションカードの並びでの位置（0 = 1 枚目。枠の色・線種を決める）
  */
 
 /**
@@ -51,6 +51,36 @@ export function partsOf(section, d) {
 }
 
 /**
+ * ミッションカードのスロット（0 = 1 枚目、1 = 2 枚目）。枠の色・線種はこれで決める（012 追補 2026-11-14 C）。
+ * @param {number[]} cards そのプレイヤーのミッションカードの番号（並び順）
+ * @param {number} mission
+ * @param {number} fallback カードの並びが分からないとき（内訳の順）
+ * @returns {number}
+ */
+export function missionSlot(cards, mission, fallback = 0) {
+  const at = cards.indexOf(mission);
+  return Math.max(0, at >= 0 ? at : fallback) % 2;
+}
+
+/**
+ * 終了時に表向きにする全員のミッションカード（012 追補 2026-11-14 C）。ゲーム中・得点が未着のプレイヤーは null（従来どおり裏面）。
+ * @param {PlayerScore | undefined} score
+ * @returns {number[] | null}
+ */
+export function revealedMissions(score) {
+  return score === undefined || score.missions.length === 0 ? null : score.missions.map((m) => m.mission);
+}
+
+/**
+ * ミッションカードに付ける枠（番号 → スロット）。達成していない（outlines にない）カードは枠なし。
+ * @param {PlayerScore | undefined} score
+ * @returns {Map<number, number>}
+ */
+export function missionFrames(score) {
+  return new Map((score?.outlines ?? []).map((o) => [o.mission, o.slot]));
+}
+
+/**
  * @param {number} playerId
  * @param {Record<string, any>} detail 内訳（`I`〜`IX` と `total`）
  * @param {unknown} missions ミッション（番号の配列、または `[{ mission, achieved }]`）
@@ -70,8 +100,9 @@ export function playerScore(playerId, detail, missions) {
     }
     return { mission: Number(m), achieved: achieved.has(Number(m)) };
   });
-  const outlines = (Array.isArray(detail?.V?.missions) ? detail.V.missions : []).map((/** @type {any} */ m) => ({
+  const outlines = (Array.isArray(detail?.V?.missions) ? detail.V.missions : []).map((/** @type {any} */ m, /** @type {number} */ i) => ({
     mission: Number(m.mission),
+    slot: missionSlot(list.map((l) => l.mission), Number(m.mission), i),
     tier: String(m.tier).toLowerCase(),
     points: Number(m.points) || 0,
     cells: (Array.isArray(m.cells) ? m.cells : []).map(Number),

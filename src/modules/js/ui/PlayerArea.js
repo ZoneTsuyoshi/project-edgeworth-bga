@@ -28,6 +28,10 @@ export class PlayerArea {
         this.detail = false;
         /** @type {number[]} 本人のミッション番号（観戦者・他人は空） */
         this.lastMissions = [];
+        /** @type {number[] | null} 終了時に公開された全員のミッション（表向きにする。ゲーム中は null） */
+        this.revealed = null;
+        /** @type {Map<number, number> | null} 枠を付けるミッション（番号 → スロット）。得点表で選ばれたプレイヤーだけ */
+        this.frames = null;
         this.root = el('section', {
             class: `pe-player${opts.mine ? ' pe-player-mine' : ' pe-player-other'}`,
             dataset: { player: player.id, color: COLOR_LETTERS[player.colorIndex] },
@@ -196,10 +200,27 @@ export class PlayerArea {
             if (mine?.missions !== undefined) {
                 this.lastMissions = mine.missions;
             }
-            renderMissions(this.env, this.tooltip, this.missionsBox, this.lastMissions, p.missionCount || 2);
         } else {
             this.hand.setCount(p.handCount);
-            renderMissions(this.env, this.tooltip, this.missionsBox, null, p.missionCount || 2);
         }
+        this.renderMissionCards();
+    }
+
+    /** ミッションカード。終了時は全員を表向きにし、枠（盤面の達成区域と同じ色）を付ける。ゲーム中は本人だけ表向き */
+    renderMissionCards() {
+        const p = this.player;
+        const faces = this.revealed ?? (this.mine ? this.lastMissions : null);
+        renderMissions(this.env, this.tooltip, this.missionsBox, faces, p.missionCount || 2, this.frames);
+    }
+
+    /**
+     * 終了時のミッションカードの公開と枠（012 追補 2026-11-14 C）。
+     * @param {number[] | null} revealed 公開するミッション番号（null = 公開しない）
+     * @param {Map<number, number> | null} frames 枠を付けるミッション（番号 → スロット）
+     */
+    setMissionView(revealed, frames) {
+        this.revealed = revealed;
+        this.frames = frames;
+        this.renderMissionCards();
     }
 }

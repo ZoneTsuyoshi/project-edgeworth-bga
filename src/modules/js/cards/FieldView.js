@@ -108,20 +108,27 @@ export class FieldView {
 }
 
 /**
- * ミッション 2 枚。本人は表向き、他プレイヤー・観戦者は裏向き（MREV）2 枚（012 §4.7）。達成状況は出さない。
+ * ミッション 2 枚。本人は表向き、他プレイヤー・観戦者は裏向き（MREV）2 枚（012 §4.7）。終了時は全員を表向きにして呼ぶ（mine に番号を渡す）。
  * @param {import('./CardView.js').Env} env
  * @param {import('./Tooltip.js').Tooltip} tooltip
  * @param {HTMLElement} root
  * @param {number[] | null} mine 本人のミッション番号。他プレイヤーは null
  * @param {number} count 枚数（他プレイヤーの裏面の数）
+ * @param {Map<number, number> | null} [frames] 枠を付けるカード（ミッション番号 → スロット 0 / 1）。達成したカードだけ
  */
-export function renderMissions(env, tooltip, root, mine, count) {
+export function renderMissions(env, tooltip, root, mine, count, frames = null) {
     root.classList.add('pe-missions');
     root.replaceChildren();
     if (mine !== null && mine.length > 0) {
         for (const no of mine) {
             const card = createCard(env, missionKey(no), { classes: ['pe-mission-card'] });
             tooltip.bind(card, missionKey(no));
+            const slot = frames?.get(no);
+            if (slot !== undefined) {
+                // 盤面の達成区域の枠と同じ色・線種で囲み、左上にスロット番号の札を付ける（012 追補 2026-11-14 C）
+                card.classList.add('pe-mission-framed', `pe-mission-slot-${slot}`);
+                card.append(el('span', { class: 'pe-mission-slotno', 'aria-hidden': 'true' }, [String(slot + 1)]));
+            }
             root.append(card);
         }
         return;

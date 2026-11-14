@@ -1,7 +1,7 @@
 // cards/text-symbols.js（効果文の [記号] → アイコン）の単体テスト。sprites.js（生成物）には依存しない。実行: npm run test:js
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SYMBOLS, SYMBOL_PIECES, symbolHtml, symbolsToHtml } from '../../src/modules/js/cards/text-symbols.js';
+import { SYMBOLS, SYMBOL_PIECES, symbolHtml, symbolsToHtml, typeSymbol } from '../../src/modules/js/cards/text-symbols.js';
 
 /** スプライトの代わり。名前をそのまま背景に入れる */
 const resolve = (/** @type {string} */ piece) => ({ style: `background-image:url(${piece});`, aspect: 1 });
@@ -81,4 +81,14 @@ test('置き換え表のコマ・アイコンが、スプライトの規則（sp
   for (const piece of SYMBOL_PIECES) {
     assert.ok(names.has(piece), piece);
   }
+});
+
+test('チップの種別アイコンのキー: CREW / DEVICE / SOFTWARE から選び、不明は null', () => {
+  assert.equal(typeSymbol('CREW')?.piece, 'icon_crew');
+  assert.equal(typeSymbol('DEVICE')?.piece, 'icon_device');
+  assert.equal(typeSymbol('Software')?.piece, 'icon_software');
+  assert.equal(typeSymbol('Software')?.label, 'Software');
+  assert.equal(typeSymbol(''), null);
+  assert.equal(typeSymbol(undefined), null);
+  assert.equal(typeSymbol('maya'), null);
 });
