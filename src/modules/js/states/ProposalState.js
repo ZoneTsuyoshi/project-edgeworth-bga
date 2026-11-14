@@ -279,7 +279,7 @@ export class ProposalState extends ActionState {
     }
 
     /**
-     * 自動で全部残した人は、待機の画面だけを出す（[Change my choice] は出さない。サーバーが actConfirmKeep を受け付けない）。
+     * 自動で全部残した人は、待機の画面と [Sell cards] を出す（[Change my choice] は出さない。サーバーが actConfirmKeep を受け付けない）。
      */
     renderConfirmed() {
         if (proposalMode(this.mine) !== 'auto') {
@@ -288,6 +288,8 @@ export class ProposalState extends ActionState {
         }
         this.bga.statusBar.setTitle(format(_('You keep all ${n} drawn cards. Waiting for other players'), { n: parseProposal(this.mine).drawn.length }));
         this.showPlan(this.confirmed ?? {});
+        // 自動で確定した人も 91 の参加者なので売却できる（009 §8、Machine::sell の stepParticipants）
+        this.addSellButton();
     }
 
     /**
