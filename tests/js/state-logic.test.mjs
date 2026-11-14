@@ -17,7 +17,7 @@ import {
 import {
   answerFields, assignmentLayout, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateField, validateQuestion,
 } from '../../src/modules/js/states/logic/effects.js';
-import { fameBreakdown, mergePublicFame, parsePublicFame, playerScore, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
+import { fameBreakdown, mergePublicFame, missionFrames, missionSlot, parsePublicFame, playerScore, revealedMissions, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
 
 const funds = (maya, price = 3, sellable = 5) => ({ maya, price, sellable });
 
@@ -556,8 +556,33 @@ test('名声の内訳: ミッションの採用区域（枠の描画用）を V 
   };
   const s = playerScore(1, detail, [3, 9]);
   assert.deepEqual(s.outlines, [
-    { mission: 3, tier: 'extra', points: 18, cells: [1, 2, 3] },
-    { mission: 9, tier: 'easy', points: 5, cells: [40, 41] },
+    { mission: 3, slot: 0, tier: 'extra', points: 18, cells: [1, 2, 3] },
+    { mission: 9, slot: 1, tier: 'easy', points: 5, cells: [40, 41] },
   ]);
   assert.deepEqual(playerScore(1, { total: 0 }, []).outlines, []);
+});
+
+test('ミッションの枠のスロットは、カードの並びでの位置（達成した順ではない）', () => {
+  // 1 枚目（M003）が未達成、2 枚目（M009）だけ達成 -> 枠は 1 つで slot 1
+  const only2nd = playerScore(1, { total: 5, V: { points: 5, missions: [{ mission: 9, tier: 'EASY', points: 5, cells: [40] }] } }, [{ mission: 3, achieved: false }, { mission: 9, achieved: true }]);
+  assert.deepEqual(only2nd.outlines.map((o) => [o.mission, o.slot]), [[9, 1]]);
+  assert.deepEqual([...missionFrames(only2nd)], [[9, 1]]);
+  // 2 枚とも達成
+  const both = playerScore(1, { total: 9, V: { points: 9, missions: [{ mission: 9, tier: 'EASY', points: 5, cells: [40] }, { mission: 3, tier: 'EASY', points: 4, cells: [1] }] } }, [{ mission: 3, achieved: true }, { mission: 9, achieved: true }]);
+  assert.deepEqual(both.outlines.map((o) => [o.mission, o.slot]), [[9, 1], [3, 0]]);
+  // 0 枚
+  const none = playerScore(1, { total: 0 }, [{ mission: 3, achieved: false }, { mission: 9, achieved: false }]);
+  assert.deepEqual(none.outlines, []);
+  assert.equal(missionFrames(none).size, 0);
+  assert.equal(missionFrames(undefined).size, 0);
+  // カードの並びに無い番号は内訳の順
+  assert.equal(missionSlot([3, 9], 7, 1), 1);
+  assert.equal(missionSlot([3, 9], 7), 0);
+});
+
+test('終了時のミッションカードの公開: 得点が届いた人だけ番号で表向き', () => {
+  const score = playerScore(2, { total: 0 }, [{ mission: 3, achieved: false }, { mission: 9, achieved: true }]);
+  assert.deepEqual(revealedMissions(score), [3, 9]);
+  assert.equal(revealedMissions(undefined), null);
+  assert.equal(revealedMissions(playerScore(2, { total: 0 }, [])), null);
 });

@@ -187,8 +187,8 @@ export class BoardView {
 
     /**
      * 終了時のミッション達成区域の枠を描く（001 §12-3 追補 2026-11-12）。空の配列で消す。
-     * 1 枚目は実線、2 枚目は破線（色も変える）。
-     * @param {{ cells: number[] }[]} groups ミッションごとの区域（V の内訳の順）
+     * ミッションカードの 1 枚目（slot 0）は金の実線、2 枚目（slot 1）はシアンの破線。
+     * @param {{ cells: number[], slot: number }[]} groups ミッションごとの区域（V の内訳の順。slot = カードの位置で色・線種を決める）
      */
     setMissionOutlines(groups) {
         const svg = this.outlinesSvg;
@@ -200,11 +200,11 @@ export class BoardView {
         const rows = data.rows ?? ROWS;
         svg.setAttribute('viewBox', `0 0 ${data.cols + 0.5} ${boardHeightUnits(rows)}`);
         svg.setAttribute('preserveAspectRatio', 'none');
-        groups.forEach((g, i) => {
-            for (const s of outlineSegments(g.cells, data.cols, data.rowShift, i === 0 ? 0.9 : 0.8)) {
-                svg.append(svgEl('line', { x1: String(s.x1), y1: String(s.y1), x2: String(s.x2), y2: String(s.y2), class: `pe-outline-line pe-outline-${i % 2}` }));
+        for (const g of groups) {
+            for (const s of outlineSegments(g.cells, data.cols, data.rowShift, g.slot === 0 ? 0.9 : 0.8)) {
+                svg.append(svgEl('line', { x1: String(s.x1), y1: String(s.y1), x2: String(s.x2), y2: String(s.y2), class: `pe-outline-line pe-outline-${g.slot}` }));
             }
-        });
+        }
     }
 
     /**

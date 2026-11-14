@@ -10,6 +10,7 @@ import { applySprite, cardSprite, COLOR_LETTERS, pieceSprite, projectKey } from 
 import { cardInfo, chipInfo } from './card-text.js';
 import { fuelSlotOrder, projectFuelSlots, SATELLITE_FUEL_SLOTS } from './fuel-slots.js';
 import { SATELLITE_ROTATION } from '../board/geometry.js';
+import { typeSymbol } from './text-symbols.js';
 import { el } from '../ui/dom.js';
 import { satelliteLabel } from '../states/logic/common.js';
 
@@ -310,6 +311,27 @@ export class SatelliteView {
         return wrap;
     }
 
+    /**
+     * チップの種別アイコン（Crew / Device / Software）。種別が引けないときは出さない（012 追補 2026-11-14 A）。
+     * @param {string | undefined} type
+     * @returns {HTMLElement | null}
+     */
+    typeIcon(type) {
+        const def = typeSymbol(type);
+        if (def === null) {
+            return null;
+        }
+        // 翻訳の抽出は文字列リテラルだけを拾うので、種別ごとに書く
+        const label = def.piece === 'icon_crew' ? _('Crew') : (def.piece === 'icon_device' ? _('Device') : _('Software'));
+        const node = el('span', { class: 'pe-chip-type-icon', role: 'img', 'aria-label': label, title: label });
+        const sprite = pieceSprite(def.piece);
+        applySprite(node, sprite, this.env.imgUrl);
+        if (sprite !== null) {
+            node.style.setProperty('--pe-glyph-aspect', String(Math.round(sprite.aspect * 1e4) / 1e4));
+        }
+        return node;
+    }
+
     /** 配備カードのチップ（種類・名前・名声・燃料庫の数・歯車）。最大 4 行（012 §4.2） */
     renderChips() {
         const list = el('ul', { class: 'pe-chips' });
@@ -323,6 +345,7 @@ export class SatelliteView {
                 tabindex: 0,
             }, [
                 el('span', { class: 'pe-chip-level' }, [String(i + 1)]),
+                this.typeIcon(info?.type),
                 el('span', { class: 'pe-chip-name' }, [info?.name ?? key]),
                 el('span', { class: 'pe-chip-meta', title: _('Fame / fuel slots') }, [
                     el('span', { class: 'pe-chip-fame' }, [String(info?.fame ?? 0)]),

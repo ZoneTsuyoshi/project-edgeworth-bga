@@ -20,7 +20,7 @@ import { PlayerArea } from './PlayerArea.js';
 import { PlayerPanel } from './PlayerPanel.js';
 import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
-import { scoresFromGamedatas } from '../states/logic/score.js';
+import { missionFrames, revealedMissions, scoresFromGamedatas } from '../states/logic/score.js';
 
 const DETAIL_PREF_KEY = 'pe-detail-view';
 
@@ -187,7 +187,13 @@ export class GameView {
         if (!this.outlineChosen && this.score.selected !== this.preferredOutlinePlayer(scores)) {
             this.score.select(this.preferredOutlinePlayer(scores));
         }
-        this.board.setMissionOutlines(this.score.selectedScore()?.outlines ?? []);
+        const selected = this.score.selectedScore();
+        this.board.setMissionOutlines(selected?.outlines ?? []);
+        // ミッションカード: 終了時は全員を表向きにし、枠を表示中のプレイヤーのカードにだけ付ける（盤面の線と同じ色・線種）
+        for (const [id, area] of this.areas) {
+            const score = this.score.scores.get(id);
+            area.setMissionView(revealedMissions(score), selected !== undefined && selected.playerId === id ? missionFrames(selected) : null);
+        }
     }
 
     /**

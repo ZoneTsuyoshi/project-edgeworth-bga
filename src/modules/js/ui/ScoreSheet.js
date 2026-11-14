@@ -151,7 +151,7 @@ export class ScoreSheet {
                 return el('td', {}, [
                     el('span', { class: 'pe-score-points' }, [String(row?.points ?? 0)]),
                     ...(row?.parts ?? []).map((p, i) => el('span', { class: 'pe-score-part' }, [
-                        ...(section === 'V' ? [el('span', { class: `pe-mission-swatch pe-mission-${i % 2}`, 'aria-hidden': 'true' })] : []),
+                        ...(section === 'V' ? [el('span', { class: `pe-mission-swatch pe-mission-${s.outlines[i]?.slot ?? i % 2}`, 'aria-hidden': 'true' })] : []),
                         this.partText(p),
                     ])),
                 ]);
@@ -160,7 +160,11 @@ export class ScoreSheet {
         const total = el('tr', { class: 'pe-score-total' }, [el('th', { scope: 'row' }, [_('Total')]), ...ranked.map((s) => el('td', {}, [el('span', { class: 'pe-score-points' }, [String(s.total)])]))]);
         const missions = el('tr', {}, [el('th', { scope: 'row' }, [_('Mission cards')]), ...ranked.map((s) => el('td', {}, s.missions.map((m) => {
             const name = /** @type {Record<string, any>} */ (/** @type {unknown} */ (CARD_INFO)).missions[`M${String(m.mission).padStart(3, '0')}`]?.name ?? `M${m.mission}`;
-            return el('span', { class: `pe-score-part${m.achieved ? ' pe-score-ok' : ''}` }, [`${m.achieved ? '✓' : '–'} ${name}`]);
+            const slot = s.outlines.find((o) => o.mission === m.mission)?.slot;
+            return el('span', { class: `pe-score-part${m.achieved ? ' pe-score-ok' : ''}` }, [
+                ...(slot === undefined ? [] : [el('span', { class: `pe-mission-swatch pe-mission-${slot}`, 'aria-hidden': 'true' })]),
+                `${m.achieved ? '✓' : '–'} ${name}`,
+            ]);
         })))]);
         this.root.append(
             el('div', { class: 'pe-choice-title' }, [_('Final fame')]),

@@ -25,6 +25,16 @@ export const SYMBOLS = {
   ...Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((l) => [l, { label: `Area ${l.toUpperCase()}`, piece: `area_${l.toUpperCase()}` }])),
 };
 
+/**
+ * 配備カードのチップに添える種別アイコンの定義（012 追補 2026-11-14 A）。
+ * @param {string | undefined} type カードの種別（`CREW` / `DEVICE` / `SOFTWARE`。大文字小文字は問わない）。不明・空は null
+ * @returns {SymbolDef | null}
+ */
+export function typeSymbol(type) {
+  const key = (type ?? '').toLowerCase();
+  return key === 'crew' || key === 'device' || key === 'software' ? SYMBOLS[key] : null;
+}
+
 /** 使われているコマ・アイコンの名前の一覧（重複なし）。スプライト側に全部あることの確認に使う */
 export const SYMBOL_PIECES = [...new Set(Object.values(SYMBOLS).map((s) => s.piece))];
 

@@ -930,6 +930,46 @@ html[data-theme="dark"] .pe-modal-body {
     width: var(--pe-mission-w);
 }
 
+/* 終了時、盤面の達成区域の枠と同じ色・線種でミッションカードを囲む（012 追補 2026-11-14 C）。1 枚目 = 金の実線、2 枚目 = シアンの破線 */
+.pe-mission-framed {
+    position: relative;
+    outline: 3px solid;
+    outline-offset: 2px;
+}
+
+.pe-mission-framed.pe-mission-slot-0 {
+    outline-color: #ffd23f;
+}
+
+.pe-mission-framed.pe-mission-slot-1 {
+    outline-color: #3fe0ff;
+    outline-style: dashed;
+}
+
+.pe-mission-slotno {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    z-index: 1;
+    min-width: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 16px;
+    text-align: center;
+    color: #111;
+    pointer-events: none;
+}
+
+.pe-mission-slot-0 > .pe-mission-slotno {
+    background: #ffd23f;
+}
+
+.pe-mission-slot-1 > .pe-mission-slotno {
+    background: #3fe0ff;
+}
+
 .pe-player-other .pe-mission-card {
     width: var(--pe-actionother-w);
 }
@@ -1041,6 +1081,19 @@ html[data-theme="dark"] .pe-modal-body {
     font-size: 11px;
     font-weight: bold;
     color: var(--pe-text-dim);
+}
+
+/* 種別アイコン（Crew / Device / Software）。色の縁の補助（012 追補 2026-11-14 A）。幅はスプライトのセルの縦横比 */
+.pe-chip-type-icon {
+    flex: 0 0 auto;
+    width: calc(14px * var(--pe-glyph-aspect, 1));
+    height: 14px;
+    background-repeat: no-repeat;
+}
+
+.pe-root[data-layout="narrow"] .pe-chip-type-icon {
+    width: calc(18px * var(--pe-glyph-aspect, 1));
+    height: 18px;
 }
 
 .pe-chip-name {
