@@ -16,14 +16,13 @@ import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format, privateOf } from './logic/common.js';
 import {
-  assignmentLayout, cardsInHand, clampSelection, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateQuestion,
+  assignmentLayout, cardsInHand, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateQuestion,
 } from './logic/effects.js';
 import { cardName, modName } from './texts.js';
 
 /**
- * 盤面・衛星カード・手札から直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。
+ * 盤面・衛星カードから直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。手札から選ぶ欄は HandTargets（B-2）が受け持つ。
  * @typedef {{ kind: 'satellite', field: import('./logic/effects.js').Field, value: any, pick: (satId: number) => void }
- *   | { kind: 'cards', field: import('./logic/effects.js').Field, value: number[], set: (ids: number[]) => void }
  *   | { kind: 'assignment', assignment: Record<string, any>, sats: number[], picked: number | null, pickCard: (card: number) => void, pickSat: (satId: number) => void }} DirectDriver
  */
 
@@ -144,10 +143,12 @@ export class EffectWindowState extends ActionState {
         const me = view.m.me;
         if (me !== null) {
             view.areas.get(me)?.hand.setSelectable(null);
+            view.areas.get(me)?.hand.setPlanned(null);
             view.areas.get(me)?.setSatPicks(null);
             this.clearAssignUi();
         }
         view.satelliteHandler = null;
+        this.resetHandFields();
         this.bga.statusBar.removeActionButtons();
         if (this.sellMode !== null) {
             this.renderSell();
@@ -162,6 +163,7 @@ export class EffectWindowState extends ActionState {
         }
         this.renderWindow();
         this.addSellButton();
+        this.mountHandTargets();
     }
 
     /** @returns {string} 「Waiting for X (CARD), Y (CARD)」 */
@@ -186,8 +188,6 @@ export class EffectWindowState extends ActionState {
         /** @type {DirectDriver | null} */
         let satDriver = null;
         /** @type {DirectDriver | null} */
-        let cardsDriver = null;
-        /** @type {DirectDriver | null} */
         let assignDriver = null;
         for (const q of this.questions) {
             if (q.type === 'ORDER') {
@@ -200,8 +200,6 @@ export class EffectWindowState extends ActionState {
                         satDriver ??= driver;
                     } else if (driver.kind === 'assignment') {
                         assignDriver ??= driver;
-                    } else {
-                        cardsDriver ??= driver;
                     }
                 });
                 body.push(block);
@@ -214,7 +212,7 @@ export class EffectWindowState extends ActionState {
         if (driver !== null) {
             view.stateFrame.selectCells(driver.cells.map((cell) => ({ cell, kind: cell === driver.value ? 'selected' : 'selectable' })), driver.pick);
         }
-        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), /** @type {DirectDriver | null} */ (cardsDriver), driver !== null, /** @type {DirectDriver | null} */ (assignDriver));
+        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), driver !== null, /** @type {DirectDriver | null} */ (assignDriver));
         this.showSubjects(driver !== null || satDriver !== null);
     }
 
@@ -246,14 +244,13 @@ export class EffectWindowState extends ActionState {
     }
 
     /**
-     * 衛星と手札の直接選択を出す（最初の該当フィールドだけ）。衛星 = 候補の衛星カードと盤面のコマ、手札 = 候補のカード（すべて手札のときだけ）。
-     * 外すのは refresh / clearUi（衛星の選択・手札の選択・衛星コマの受け口）。
+     * 衛星と付け替えの直接選択を出す（最初の該当フィールドだけ）。衛星 = 候補の衛星カードと盤面のコマ。
+     * 外すのは refresh / clearUi（衛星の選択・衛星コマの受け口）。
      * @param {DirectDriver | null} sat
-     * @param {DirectDriver | null} cards
      * @param {boolean} hasArea 区域の選択が盤面を使っているか（そのときは衛星の区域の枠を足さない）
      * @param {DirectDriver | null} [assign] 付け替え（配備カードを押して選び、置き先の衛星を押す）
      */
-    showDirect(sat, cards, hasArea, assign = null) {
+    showDirect(sat, hasArea, assign = null) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const me = view.m.me;
         if (me === null) {
@@ -283,11 +280,6 @@ export class EffectWindowState extends ActionState {
         }
         if (assign?.kind === 'assignment') {
             this.showAssign(assign);
-        }
-        if (cards?.kind === 'cards') {
-            const hand = area?.hand;
-            hand?.setSelectable(cards.field.candidates.map(Number), { multi: cards.field.max > 1, onChange: (ids) => cards.set(ids) });
-            hand?.setChosen(cards.value);
         }
     }
 
@@ -424,7 +416,7 @@ export class EffectWindowState extends ActionState {
             ? this.sellPrompt({ need, short: Math.max(0, mayaToPay(q, values) - this.maya) }, reserved, sells, (ids) => {
                 this.sells.set(q.entryId, ids);
                 changed();
-            })
+            }, `sell:${q.entryId}`)
             : null;
         const check = validateQuestion(q, values);
         const payable = q.cost.kind === 'DISCARD_COST' ? q.cost.canPay !== false : need !== null;
@@ -629,14 +621,21 @@ export class EffectWindowState extends ActionState {
             }
             case 'CARDS': {
                 if (cardsInHand(field, this.hand)) {
-                    // 候補がすべて手札: 手札のカードを直接押して選ぶ（一覧は出さない）
+                    // 候補がすべて手札: 手札のゾーンで選ぶ（欄には選んだカードの一覧だけ。他の欄があれば [Choose from hand] で切り替える）
                     const current = Array.isArray(values[field.key]) ? values[field.key].map(Number) : [];
-                    onDirect({ kind: 'cards', field, value: current, set: (ids) => set(clampSelection(current, ids, field.max)) });
-                    const names = current.map(cardName);
-                    return wrap([el('div', { class: 'pe-effect-preview' }, [
-                        format(_('Choose from your hand (${n} of ${max} selected)'), { n: current.length, max: field.max }),
-                        names.length === 0 ? '' : `: ${names.join(', ')}`,
-                    ])]);
+                    const label = this.fieldLabel(field);
+                    const slot = this.handField({
+                        id: `${q.entryId}:${field.key}`,
+                        label,
+                        badge: _('Discard'),
+                        candidates: field.candidates.map(Number),
+                        selected: current,
+                        need: field.min,
+                        max: field.max,
+                        title: format(_('${label} (${n} of ${max} chosen)'), { label, n: current.length, max: field.max }),
+                        onChange: (ids) => set(ids),
+                    });
+                    return el('div', { class: 'pe-field-editor', dataset: { field: field.key, type: field.type } }, [slot]);
                 }
                 const picker = new CardPicker(view, { ids: field.candidates.map(Number), selected: values[field.key], max: field.max, onChange: (ids) => set(ids) });
                 return wrap([picker.root]);

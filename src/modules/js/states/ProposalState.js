@@ -9,6 +9,7 @@ import { el } from '../ui/dom.js';
 import { nameOfNameId } from '../cards/name-id.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
+import { pickFromOutside } from './logic/hand-targets.js';
 import {
   EXTRA_DISCARD, KEEP_PURCHASE, keepComplete, optionPayment, parseProposal, proposalActionArgs, proposalMode, proposalSelectionFrom, pruneExtraUses, requiredKeep, reservedHand, validateProposal,
 } from './logic/proposal.js';
@@ -18,6 +19,8 @@ export class ProposalState extends ActionState {
     constructor(/** @type {any} */ game, /** @type {Bga} */ bga) {
         super(game, bga);
         this.sel = proposalSelectionFrom(null);
+        // 初期の選択中の欄は「引いたカード」（手札を使わない）。手札の欄はボタンで切り替える
+        this.handIdle = true;
     }
 
     reset() {
@@ -99,19 +102,6 @@ export class ProposalState extends ActionState {
         pruneExtraUses(plan, sel, hand);
         const keepDone = keepComplete(plan, sel);
 
-        const claimedExcept = (/** @type {'handDiscard' | 'extra' | 'sell'} */ role) => {
-            const ids = new Set();
-            if (role !== 'handDiscard') {
-                sel.handDiscard.forEach((id) => ids.add(id));
-            }
-            if (role !== 'extra') {
-                plan.options.filter((o) => o.kind === EXTRA_DISCARD && sel.uses[o.hostKey] !== undefined).forEach((o) => ids.add(sel.uses[o.hostKey]));
-            }
-            if (role !== 'sell') {
-                sel.sell.forEach((id) => ids.add(id));
-            }
-            return ids;
-        };
         const check = validateProposal(plan, sel, { hand, maya: this.maya, price: this.price });
         /** @type {HTMLElement[]} */
         const body = [];
@@ -133,21 +123,20 @@ export class ProposalState extends ActionState {
             ]));
         }
 
-        // P068: 手札から捨てて、その枚数だけ多く残す
+        // P068: 手札から捨てて、その枚数だけ多く残す（手札のゾーンで選ぶ）
         if (plan.handDiscard && !decided) {
-            const picker = new CardPicker(view, {
-                ids: hand,
+            body.push(el('div', { class: 'pe-choice-section' }, [this.handField({
+                id: 'handDiscard',
+                label: _('Optional: discard cards from your hand too. For each one, you can keep one more drawn card'),
+                badge: _('Discard'),
+                candidates: hand,
                 selected: sel.handDiscard,
-                disabled: new Map([...claimedExcept('handDiscard')].map((id) => [id, _('Already used for another purpose')])),
+                title: _('Choose cards to discard from your hand. For each one, you can keep one more drawn card'),
                 onChange: (ids) => {
                     sel.handDiscard = ids;
                     this.refresh();
                 },
-            });
-            body.push(el('div', { class: 'pe-choice-section' }, [
-                el('div', { class: 'pe-choice-label' }, [_('Optional: discard cards from your hand too. For each one, you can keep one more drawn card')]),
-                picker.root,
-            ]));
+            })]));
         }
 
         // P070 / P072
@@ -157,47 +146,42 @@ export class ProposalState extends ActionState {
                 continue;
             }
             if (option.kind === EXTRA_DISCARD) {
-                const used = sel.uses[option.hostKey] !== undefined;
-                const candidates = [...hand, ...sel.keep.filter((id) => !hand.includes(id))];
-                const section = el('div', { class: 'pe-choice-section' }, [
-                    el('label', { class: 'pe-option' }, [
-                        el('input', {
-                            type: 'checkbox',
-                            checked: used,
-                            disabled: !keepDone,
-                            title: keepDone ? '' : _('Choose the cards to keep first'),
-                            onChange: (/** @type {Event} */ e) => {
-                                if (/** @type {HTMLInputElement} */ (e.target).checked) {
-                                    const first = candidates.find((id) => !claimedExcept('extra').has(id));
-                                    if (first !== undefined) {
-                                        sel.uses[option.hostKey] = first;
-                                    }
-                                } else {
-                                    delete sel.uses[option.hostKey];
-                                }
-                                this.refresh();
-                            },
-                        }),
-                        el('span', {}, [format(_('${name}: discard 1 more card for +${reward} Maya (no sale value)'), { name, reward: option.reward })]),
-                    ]),
-                ]);
-                if (used) {
-                    section.append(new CardPicker(view, {
-                        ids: candidates,
-                        selected: [sel.uses[option.hostKey]],
-                        max: 1,
-                        disabled: new Map([...claimedExcept('extra')].map((id) => [id, _('Already used for another purpose')])),
-                        onChange: (ids) => {
-                            if (ids.length === 0) {
-                                delete sel.uses[option.hostKey];
-                            } else {
-                                sel.uses[option.hostKey] = ids[0];
-                            }
-                            this.refresh();
-                        },
-                    }).root);
-                }
-                body.push(section);
+                const used = sel.uses[option.hostKey];
+                // 手札にない候補 = 残すと決めた引いたカード。欄の中の小さな一覧から選ぶ（手札のゾーンと合わせて 1 枚）
+                const kept = sel.keep.filter((id) => !hand.includes(id));
+                const keptPicker = kept.length === 0 ? undefined : new CardPicker(view, {
+                    ids: kept,
+                    selected: used === undefined ? [] : [used],
+                    max: 1,
+                    onChange: (ids) => {
+                        const next = pickFromOutside({ id: option.hostKey, candidates: [], selected: used === undefined ? [] : [used], max: 1 }, ids, hand);
+                        if (next.length === 0) {
+                            delete sel.uses[option.hostKey];
+                        } else {
+                            sel.uses[option.hostKey] = next[0];
+                        }
+                        this.refresh();
+                    },
+                });
+                body.push(el('div', { class: 'pe-choice-section' }, [this.handField({
+                    id: `extra:${option.hostKey}`,
+                    label: format(_('${name}: discard 1 more card for +${reward} Maya (no sale value)'), { name, reward: option.reward }),
+                    badge: _('Discard'),
+                    candidates: hand,
+                    selected: used === undefined ? [] : [used],
+                    max: 1,
+                    disabled: keepDone ? undefined : _('Choose the cards to keep first'),
+                    title: format(_('${name}: choose 1 card to discard (+${reward} Maya)'), { name, reward: option.reward }),
+                    extra: keptPicker?.root,
+                    onChange: (ids) => {
+                        if (ids.length === 0) {
+                            delete sel.uses[option.hostKey];
+                        } else {
+                            sel.uses[option.hostKey] = ids[0];
+                        }
+                        this.refresh();
+                    },
+                })]));
             } else if (option.kind === KEEP_PURCHASE) {
                 const group = `pe-opt-${option.hostKey}`;
                 const choices = [{ pay: 0, plus: 0 }, ...option.tiers];
@@ -239,7 +223,7 @@ export class ProposalState extends ActionState {
         if (payment > 0) {
             const need = Math.max(0, Math.ceil((payment - this.maya) / Math.max(1, this.price)));
             if (need > 0) {
-                body.push(this.sellPrompt({ need, short: Math.max(0, payment - this.maya) }, reservedHand(plan, sel), sel.sell, (ids) => {
+                body.push(this.sellPrompt({ need, short: Math.max(0, payment - this.maya) }, [], sel.sell, (ids) => {
                     sel.sell = ids;
                     this.refresh();
                 }));

@@ -2248,3 +2248,55 @@ html[data-theme="dark"] .pe-zoom {
     flex: none;
     margin-left: auto;
 }
+
+/* 手札を選ぶ欄（見出し + 選んだカードの一覧。選択中の欄だけが手札のゾーンを使う。012 追補 2026-11-14 B-2） */
+.pe-handfield {
+    padding: 4px 6px;
+    border: 1px solid var(--pe-line);
+    border-radius: 6px;
+}
+
+.pe-handfield-active {
+    border-color: var(--pe-ok);
+    box-shadow: 0 0 0 1px var(--pe-ok);
+}
+
+.pe-handfield-off {
+    opacity: 0.6;
+}
+
+.pe-handfield-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pe-handfield-note {
+    font-size: 12px;
+    color: var(--pe-text-dim);
+}
+
+.pe-handfield-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pe-handfield-item {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 2px 4px 2px 8px;
+    border: 1px solid var(--pe-line);
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.pe-handfield-slot .pe-picker {
+    margin-top: 6px;
+}
