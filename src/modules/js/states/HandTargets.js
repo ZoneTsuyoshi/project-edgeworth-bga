@@ -23,6 +23,8 @@ import { cardName } from './texts.js';
  * @property {string} [disabled] 今は使えない理由（あれば欄は選択中になれない）
  * @property {string} [title] 選択中のときのステータスバーのタイトル
  * @property {number[]} [exclude] この欄の候補にできないカード（他の目的に予約済み。印は付く）
+ * @property {Map<number, string>} [reasons] 手札のゾーンで押せないカードの理由（title）
+ * @property {(cardId: number) => string} [itemText] 選んだカードの一覧の行の文言（省略はカード名）。組の行など
  * @property {HTMLElement} [extra] 欄の中に足す部品（残すカードだけの小さな一覧など）
  * @property {(ids: number[]) => void} onChange 選択が変わった（HandTargets が上限と他の欄との重なりを整えた後の並び）
  */
@@ -78,7 +80,7 @@ export class HandTargets {
         const active = this.active === id;
         const several = this.targets.length > 1;
         const items = target.selected.map((cardId) => el('li', { class: 'pe-handfield-item', dataset: { id: cardId } }, [
-            el('span', { class: 'pe-handfield-name' }, [cardName(cardId)]),
+            el('span', { class: 'pe-handfield-name' }, [target.itemText?.(cardId) ?? cardName(cardId)]),
             el('button', {
                 type: 'button',
                 class: 'pe-btn pe-btn-small',
@@ -150,6 +152,7 @@ export class HandTargets {
             const candidates = candidatesFor(states, target.id).filter((id) => !excluded.has(id));
             hand.setSelectable(candidates, {
                 multi: target.max !== 1,
+                reasons: target.reasons,
                 onChange: (ids) => this.change(target.id, pickFromHand({ id: target.id, candidates, selected: target.selected, max: target.max }, ids, hand.ids)),
             });
             hand.setChosen(target.selected);

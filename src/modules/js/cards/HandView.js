@@ -19,6 +19,8 @@ class Selectable {
         this.chosen = new Set();
         /** @type {(ids: number[]) => void} */
         this.onChange = () => {};
+        /** @type {Map<number, string>} 押せないカードの理由 */
+        this.reasons = new Map();
     }
 }
 
@@ -74,10 +76,11 @@ export class HandView {
     /**
      * 選択モードにする。ids が null で解除。
      * @param {number[] | null} ids 選べるカード
-     * @param {{ multi?: boolean, onChange?: (ids: number[]) => void }} [opts]
+     * @param {{ multi?: boolean, onChange?: (ids: number[]) => void, reasons?: Map<number, string> }} [opts] reasons = 押せないカードの理由（title）
      */
     setSelectable(ids, opts = {}) {
         this.sel.allowed = ids === null ? null : new Set(ids);
+        this.sel.reasons = opts.reasons ?? new Map();
         this.sel.multi = opts.multi === true;
         this.sel.onChange = opts.onChange ?? (() => {});
         if (ids === null) {
@@ -119,6 +122,10 @@ export class HandView {
                 card.addEventListener('click', () => this.toggle(id));
             } else if (this.sel.allowed !== null) {
                 card.classList.add('pe-unselectable');
+                const reason = this.sel.reasons.get(id);
+                if (reason !== undefined) {
+                    card.title = reason;
+                }
             }
             card.classList.toggle('pe-selected', this.sel.chosen.has(id));
             const plan = this.planned.get(id);

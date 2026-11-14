@@ -16,13 +16,17 @@ import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format, privateOf } from './logic/common.js';
 import {
+  applyHandChange, cardOptions, isEstimated, normalizePairs, pairPayState, pickSatellite, satOptions, selectedCards, soleSatellite,
+} from './logic/effect-pairs.js';
+import {
   assignmentLayout, cardsInHand, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, pairKind, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateQuestion,
 } from './logic/effects.js';
-import { cardName, modName } from './texts.js';
+import { cardName, costNote, modName } from './texts.js';
 
 /**
  * 盤面・衛星カードから直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。手札から選ぶ欄は HandTargets（B-2）が受け持つ。
  * @typedef {{ kind: 'satellite', field: import('./logic/effects.js').Field, value: any, pick: (satId: number) => void }
+ *   | { kind: 'pairs', picks: Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', note?: string }>, plans: Map<number, { text: string }[]>, pick: (satId: number) => void }
  *   | { kind: 'assignment', assignment: Record<string, any>, sats: number[], picked: number | null, pickCard: (card: number) => void, pickSat: (satId: number) => void }} DirectDriver
  */
 
@@ -47,6 +51,8 @@ export class EffectWindowState extends ActionState {
         this.busy = new Set();
         /** @type {Map<number, number>} 付け替えで押して選んだカード（entryId → カード番号） */
         this.pickedCards = new Map();
+        /** @type {Map<number, import('./logic/effect-pairs.js').Pending>} 配備の組で、押したがまだ組になっていないカード・衛星（entryId → 保留） */
+        this.pairPending = new Map();
     }
 
     /**
@@ -64,6 +70,7 @@ export class EffectWindowState extends ActionState {
         this.orders.clear();
         this.busy.clear();
         this.pickedCards.clear();
+        this.pairPending.clear();
         this.waiting = parseWaiting(args.waiting, view.m.me);
         this.questions = parseWindow(privateOf(args, view.m.me)).questions;
         super.onEnteringState(args, isActive);
@@ -189,6 +196,8 @@ export class EffectWindowState extends ActionState {
         let satDriver = null;
         /** @type {DirectDriver | null} */
         let assignDriver = null;
+        /** @type {DirectDriver | null} */
+        let pairsDriver = null;
         for (const q of this.questions) {
             if (q.type === 'ORDER') {
                 body.push(this.orderBlock(q));
@@ -200,6 +209,8 @@ export class EffectWindowState extends ActionState {
                         satDriver ??= driver;
                     } else if (driver.kind === 'assignment') {
                         assignDriver ??= driver;
+                    } else if (driver.kind === 'pairs') {
+                        pairsDriver ??= driver;
                     }
                 });
                 body.push(block);
@@ -212,8 +223,8 @@ export class EffectWindowState extends ActionState {
         if (driver !== null) {
             view.stateFrame.selectCells(driver.cells.map((cell) => ({ cell, kind: cell === driver.value ? 'selected' : 'selectable' })), driver.pick);
         }
-        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), driver !== null, /** @type {DirectDriver | null} */ (assignDriver));
-        this.showSubjects(driver !== null || satDriver !== null);
+        this.showDirect(/** @type {DirectDriver | null} */ (satDriver), driver !== null, /** @type {DirectDriver | null} */ (assignDriver), /** @type {DirectDriver | null} */ (pairsDriver));
+        this.showSubjects(driver !== null || satDriver !== null || pairsDriver !== null);
     }
 
     /**
@@ -249,8 +260,9 @@ export class EffectWindowState extends ActionState {
      * @param {DirectDriver | null} sat
      * @param {boolean} hasArea 区域の選択が盤面を使っているか（そのときは衛星の区域の枠を足さない）
      * @param {DirectDriver | null} [assign] 付け替え（配備カードを押して選び、置き先の衛星を押す）
+     * @param {DirectDriver | null} [pairs] 配備の組（手札のカードと配備先の衛星。手札側は HandTargets が受け持つ）
      */
-    showDirect(sat, hasArea, assign = null) {
+    showDirect(sat, hasArea, assign = null, pairs = null) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const me = view.m.me;
         if (me === null) {
@@ -280,6 +292,39 @@ export class EffectWindowState extends ActionState {
         }
         if (assign?.kind === 'assignment') {
             this.showAssign(assign);
+        }
+        if (pairs?.kind === 'pairs') {
+            this.showPairs(pairs, hasArea);
+        }
+    }
+
+    /**
+     * 配備の組の衛星側: 衛星カード・盤面のコマを押して配備先を選ぶ（II 配備と同じ操作感）。選べる衛星にはコストの札、選べない衛星は理由つきで灰色。
+     * 組にした衛星の上には、配備予定のカードを予定の札で出す。
+     * @param {Extract<DirectDriver, { kind: 'pairs' }>} d
+     * @param {boolean} hasArea
+     */
+    showPairs(d, hasArea) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const area = view.areas.get(view.m.me ?? -1);
+        area?.setSatPicks(d.picks, d.pick);
+        area?.setSatPlans(d.plans);
+        view.satelliteHandler = (satId) => {
+            const pick = d.picks.get(satId);
+            if (pick === undefined || pick.state === 'blocked') {
+                return false;
+            }
+            d.pick(satId);
+            return true;
+        };
+        if (!hasArea) {
+            const cells = [...d.picks].flatMap(([satId, pick]) => {
+                const cell = pick.state === 'blocked' ? null : view.pieces.satelliteCell(satId);
+                return cell === null ? [] : [{ cell, kind: /** @type {'selectable' | 'selected'} */ (pick.state === 'selected' ? 'selected' : 'selectable') }];
+            });
+            if (cells.length > 0) {
+                view.stateFrame.selectCells(cells);
+            }
         }
     }
 
@@ -380,6 +425,7 @@ export class EffectWindowState extends ActionState {
         const values = initialValues(q);
         this.values.set(q.entryId, { sig, values });
         this.sells.delete(q.entryId);
+        this.pairPending.delete(q.entryId);
         return values;
     }
 
@@ -461,6 +507,9 @@ export class EffectWindowState extends ActionState {
      */
     needText(reason, key, q) {
         const field = q.fields.find((f) => f.key === key);
+        if (field?.type === 'PAIRS' && pairKind(q.preview) === 'deploy') {
+            return format(_('Choose: ${field}'), { field: _('a card to deploy and a satellite') });
+        }
         const label = field === undefined ? '' : this.fieldLabel(field);
         return format(_('Choose: ${field}'), { field: label });
     }
@@ -642,6 +691,9 @@ export class EffectWindowState extends ActionState {
             }
             case 'PAIRS': {
                 const kind = pairKind(q.preview);
+                if (kind === 'deploy') {
+                    return this.deployPairsEditor(q, field, values, set, onDirect);
+                }
                 const list = Array.isArray(values[field.key]) ? values[field.key] : [];
                 return wrap([el('div', { class: 'pe-pair-list' }, field.candidates.map((pair) => {
                     const on = list.some((/** @type {any} */ p) => JSON.stringify(p) === JSON.stringify(pair));
@@ -729,6 +781,144 @@ export class EffectWindowState extends ActionState {
             default:
                 return wrap([]);
         }
+    }
+
+    /**
+     * 配備の組（kind: deploy。R005・P011・P045・P074）: 手札のゾーンでカードを押し、衛星カード・盤面のコマで配備先を押す（どちらが先でもよい。B-3）。
+     * 配備先が 1 機だけの効果はカードを押した時点で組が決まる。欄には選んだ組（カード to 衛星 — cost n）の一覧だけを出す。
+     * 判定は logic/effect-pairs.js の純関数。ここは描画と、保留（押したがまだ組にならないカード・衛星）の保持だけ。
+     * @param {import('./logic/effects.js').EffectQuestion} q
+     * @param {import('./logic/effects.js').Field} field
+     * @param {Record<string, any>} values
+     * @param {(value: any) => void} set
+     * @param {(driver: DirectDriver) => void} onDirect
+     * @returns {HTMLElement}
+     */
+    deployPairsEditor(q, field, values, set, onDirect) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const me = view.m.me;
+        const targetId = `${q.entryId}:${field.key}`;
+        // 同じ問いの捨てるカード（P074）は配備できない
+        const taken = new Set(q.fields.filter((f) => f.type === 'CARDS').flatMap((f) => (Array.isArray(values[f.key]) ? values[f.key] : [])).map(Number));
+        const candidates = normalizePairs(field.candidates).filter((p) => !taken.has(p[0]));
+        const chosen = normalizePairs(values[field.key]);
+        const stored = this.pairPending.get(q.entryId) ?? { card: null, sat: null };
+        const pending = {
+            card: stored.card !== null && candidates.some((p) => p[0] === stored.card) ? stored.card : null,
+            sat: stored.sat !== null && candidates.some((p) => p[1] === stored.sat) ? stored.sat : null,
+        };
+        const max = field.max;
+        const sats = me === null ? [] : view.m.players[me].satellites;
+        const satIds = sats.map((s) => s.satId);
+        const deployed = Object.fromEntries(sats.map((s) => [s.satId, s.cards.length]));
+        const state = { chosen, pending };
+        const sole = soleSatellite(candidates);
+        /** @param {import('./logic/effect-pairs.js').PairState} next */
+        const commit = (next) => {
+            this.pairPending.set(q.entryId, next.pending);
+            if (next.pending.card !== null || next.pending.sat !== null) {
+                // 組の途中は、手札のゾーンを配備の欄に保つ（他の欄が未完了でも次の欄へ移らない）
+                this.handActive = targetId;
+            } else {
+                // 組ができた: 次の未完了の欄（捨てるカード・売るカード）へ移る（なければ配備の欄のまま）
+                this.handActive = undefined;
+            }
+            set(next.chosen.map((pair) => field.candidates.find((c) => Number(c[0]) === pair[0] && Number(c[1]) === pair[1]) ?? pair));
+        };
+
+        // 手札側: 押せるカード = 組にできるカード + 選んでいるカード（押し直して取り消す）
+        const options = cardOptions(candidates, chosen, max, deployed, pending.sat);
+        const selected = selectedCards(state);
+        const allowed = new Set([...options].filter(([, block]) => block === null).map(([card]) => card));
+        for (const card of selected) {
+            allowed.add(card);
+        }
+        /** @type {Map<number, string>} */
+        const reasons = new Map();
+        for (const card of this.hand) {
+            if (allowed.has(card)) {
+                continue;
+            }
+            const block = options.get(card);
+            reasons.set(card, block === undefined ? _('This effect cannot deploy this card')
+                : block === 'max' ? format(_('You can deploy up to ${max} card(s) with this effect'), { max })
+                    : block === 'full' ? _('A satellite holds up to 4 cards')
+                        : _('Cannot deploy this card here'));
+        }
+        const itemText = (/** @type {number} */ card) => {
+            const index = chosen.findIndex((p) => p[0] === card);
+            if (index < 0) {
+                return format(_('${card} — choose a satellite'), { card: cardName(card) });
+            }
+            const pair = chosen[index];
+            const cost = pairCost(q.preview, pair);
+            const base = format(_('${card} to ${sat}'), { card: cardName(card), sat: view.satName(pair[1]) });
+            const note = cost === null ? '' : ` — ${format(_('cost ${cost}'), { cost })}${isEstimated(index) ? ` (${_('estimated')})` : ''}`;
+            return `${base}${note}`;
+        };
+        const label = _('Cards to deploy');
+        const title = pending.card !== null
+            ? format(_('Choose a satellite to deploy ${card} to'), { card: cardName(pending.card) })
+            : pending.sat !== null
+                ? format(_('Choose a card to deploy to ${sat}'), { sat: view.satName(pending.sat) })
+                : format(_('${label} (${n} of ${max} chosen)'), { label, n: chosen.length, max });
+        const slot = this.handField({
+            id: targetId,
+            label,
+            badge: _('Deploy'),
+            candidates: [...allowed],
+            selected,
+            need: field.min,
+            max,
+            title,
+            reasons,
+            itemText,
+            onChange: (ids) => commit(applyHandChange(candidates, state, ids, { max, deployed })),
+        });
+
+        // 衛星側: 衛星カードと盤面のコマ
+        const satReasons = satOptions(candidates, chosen, max, deployed, satIds, pending.card);
+        const base = max === 1 ? [] : chosen;
+        const funds = { maya: this.maya, price: this.price, handCount: this.hand.length, otherReserved: taken.size };
+        /** @type {Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', note?: string }>} */
+        const picks = new Map();
+        for (const satId of satIds) {
+            const reason = satReasons.get(satId) ?? null;
+            if (pending.sat === satId) {
+                picks.set(satId, { state: 'selected' });
+            } else if (reason === null && pending.card !== null) {
+                const { cost, pay } = pairPayState(q.preview, base, [pending.card, satId], funds);
+                const note = `${costNote(cost, pay)}${isEstimated(base.length) ? ` (${_('estimated')})` : ''}`;
+                picks.set(satId, { state: pay.kind === 'short' ? 'blocked' : pay.kind === 'free' ? 'selectable' : 'sellable', note });
+            } else if (reason === null) {
+                picks.set(satId, { state: 'selectable' });
+            } else {
+                picks.set(satId, {
+                    state: 'blocked',
+                    note: pending.card === null ? undefined : reason === 'full' ? _('A satellite holds up to 4 cards') : _('Cannot deploy this card here'),
+                });
+            }
+        }
+        /** @type {Map<number, { text: string }[]>} */
+        const plans = new Map();
+        for (const pair of chosen) {
+            plans.set(pair[1], [...(plans.get(pair[1]) ?? []), { text: format(_('Deploying: ${card}'), { card: cardName(pair[0]) }) }]);
+        }
+        onDirect({
+            kind: 'pairs',
+            picks,
+            plans,
+            pick: (satId) => {
+                if (picks.get(satId)?.state === 'blocked') {
+                    return;
+                }
+                commit(pickSatellite(candidates, state, { max, deployed, sat: satId }));
+            },
+        });
+        return el('div', { class: 'pe-field-editor', dataset: { field: field.key, type: field.type } }, [
+            sole === null ? el('p', { class: 'pe-assign-hint' }, [_('Click a card in your hand, then the satellite to deploy it to (or a satellite first)')]) : null,
+            slot,
+        ]);
     }
 
     // ---- 送信 ----

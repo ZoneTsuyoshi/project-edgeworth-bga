@@ -395,6 +395,29 @@ export function moveTargets(assignment, card, sats) {
  * @returns {number}
  */
 export function mayaToPay(q, values) {
+  return costToPay(q, values) + deployPairsCost(q, values);
+}
+
+/**
+ * 配備の組（PAIRS、kind: deploy）のコストの合計（サーバーの preview の値の加算。同じ衛星への 2 枚目は見積もり）。
+ * @param {EffectQuestion} q
+ * @param {Record<string, any>} values
+ * @returns {number}
+ */
+function deployPairsCost(q, values) {
+  if (q.preview.costs === undefined) {
+    return 0;
+  }
+  return q.fields.filter((f) => f.type === 'PAIRS').flatMap((f) => (Array.isArray(values[f.key]) ? values[f.key] : []))
+    .reduce((sum, pair) => sum + (pairCost(q.preview, pair) ?? 0), 0);
+}
+
+/**
+ * @param {EffectQuestion} q
+ * @param {Record<string, any>} values
+ * @returns {number}
+ */
+function costToPay(q, values) {
   const cost = q.cost;
   if (cost.kind === 'PAY_MAYA') {
     return cost.amount ?? 0;

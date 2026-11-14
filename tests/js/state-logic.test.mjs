@@ -409,9 +409,9 @@ test('効果の問い: ORDER の並べ替え、EFFECT のフィールド 8 種�
   assert.deepEqual(args.sell, [5]);
   assert.equal('sell' in useEffectArgs(effect, done, []), false);
   // 代価: 払えないときは売却の最小枚数（手札のうち、答えが使うカードは売れない）
-  assert.equal(mayaToPay(effect, done), 6);
+  assert.equal(mayaToPay(effect, done), 15, '代価 6 + 配備の組のコスト 9');
   assert.deepEqual(reservedCards(effect, done), [4, 4]);
-  assert.equal(salesNeeded(effect, done, { maya: 4, price: 3, hand: [4, 5] }), 1);
+  assert.equal(salesNeeded(effect, done, { maya: 12, price: 3, hand: [4, 5] }), 1);
   assert.equal(salesNeeded(effect, done, { maya: 0, price: 3, hand: [4, 5] }), null, '売れるのは 1 枚だけで届かない');
   assert.equal(pairCost(effect.preview, [4, 11]), 9);
   assert.equal(pairCost({ links: [{ sat: 11, cell: 20, cost: 8 }] }, [11, 20]), 8);
