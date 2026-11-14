@@ -715,7 +715,7 @@ BGA 標準のパネル（名前・色・時計）に、次のカウンターを�
 
 ## 追補 2026-11-14: 配備時の効果の選択を 61 で行う（009 追補 2026-11-14）
 
-作者の要望（2026-11-14）に対応する UI。方式は 009 未確定 16 で決める。以下は推奨（即解決案）の UI。ユーザー向けの文言は英語を原文とし、翻訳で日本語化する。
+作者の要望（2026-11-14）に対応する UI。方式は作者回答（2026-11-15）で即解決案に決定（009 未確定 16）。以下はその UI。打ち上げ時の効果（71 LaunchMainChoose。009 未確定 17 の案 B で決定）にも同じ UI を使う。ユーザー向けの文言は英語を原文とし、翻訳で日本語化する。
 
 - **ボタン**: 配備（カード × 衛星）を選んだとき、サーバーが `targets[].choice` を真で返した配備（P011 のある衛星への DEVICE、P022・P024 自身）は、[Confirm] の代わりに [Deploy] を出す。押すとその場で配備し（ステージ）、問いが出る。ツールチップ: 「Deploy now and choose the effect before confirming」。ドローも同時に起きる配備（`targets[].draws`）は、ボタンの下に「You will draw cards and cannot undo this deployment」と警告を出す（未確定 21）。
 - **61 の問いのパネル**: ステータスバーの上に、状態 31 の効果の問い（`EffectWindowState.js`）と同じ部品を出す。部品は、送信するアクション名（31 は `actUseEffect` 系、61 は `actStageUse` / `actStageSkip` / `actStageOrder`）を呼び出し側から渡せるように分離する。問いの種類（`ASSIGNMENT`・`SATELLITE`・`PAIRS`・`ORDER`・`USE_MODS`）の盤面操作（012 追補 2026-11-12）はそのまま使う。
@@ -725,3 +725,4 @@ BGA 標準のパネル（名前・色・時計）に、次のカウンターを�
 - **盤面**: 答えた結果（入れ替え後の衛星、付け替え後の配備カード、P011 で配備したカード）は本人の盤面にすぐ描く。ほかのプレイヤーの画面にはバリアまで出ない（Q-20、009 追補 6）。
 - **再読み込み**: 問いの途中の状態は `args._private` の問いとステージの値から復元する。
 - **ログ**: 本人にはステージの時点で「You deploy ${card}」「You swap ${sat} with ${sat2}」などを出す。ほかの人には保留してバリアで流す。
+- **打ち上げ（71）**: 打ち上げ（衛星 × 向き）を選んだとき、サーバーが `launchable[].choice` を真で返した打ち上げ（R005・P034 のある衛星、P038 を使える状況、P035 のある衛星）は [Confirm] の代わりに [Launch]（ツールチップ「Launch now and choose the effect before confirming」）。引く効果が同時に起きる打ち上げ（`launchable[].draws`）は「You will draw cards and cannot undo this launch」と警告を出す。ステージ後は効果の問いのパネル（`AMOUNT` の選択を含む）、[Confirm]（問いが残る間は押せない）、[Reset]（引いた後は不可。「You have drawn cards and cannot undo this launch」）。盤面には、打ち上げた衛星・P034 の移動・燃料・配備したカードを本人にすぐ描き、ほかのプレイヤーにはバリアまで出さない。`LaunchState.js` に段 S1q・S1 を足す。転回（71・72 の [Turn]）に同じ UI を使うかは 009 未確定 25。
