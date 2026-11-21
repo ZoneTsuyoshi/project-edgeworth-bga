@@ -358,3 +358,9 @@ src/
 ## 追記（2026-10-20）
 
 - 未確定事項 No.1: Studio の雛形の名前空間は `Bga\Games\projectedgeworth`（すべて小文字）だった（006 の調査）。雛形に合わせて小文字に統一する（E-4・E-5 のマージ後に別 PR で機械置換）。
+
+## 追記（2026-11-21）Studio のコミット時のコード検査
+
+- **例外の文言は `clienttranslate()` と `NotificationMessage` で渡し、`_()` は使わない。** プレイヤーに見せる例外（`RuleViolation`・`EffectViolation`）は、英語の文言を `clienttranslate('Card ${id} is not in your hand')` で包み、値は `${name}` のプレースホルダーと引数の配列で渡す。状態クラスは `throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()))` で投げる。技術的な例外（`\LogicException` など）は翻訳しない。
+- Studio のコミット時の検査は、PHP の構文ではなく**文字列で**拾う。次はコメントや変数名でも引っかかるので避ける: `exec(` に見える呼び出し（クロージャの変数 `$exec(...)` など。他の禁止関数も同様）、非推奨の `_()`、バッククォートなしの `player_score`（得点は `$this->bga->playerScore` のカウンターで扱い、コメントでは「BGA の得点」と書く）、CSS の `@import`（コメントでも）。
+- これらは lint `scripts/lint/check-studio.mjs`（`npm run lint:repo` から実行）で防ぐ。

@@ -99,7 +99,7 @@ final class EndFlow
     }
 
     /**
-     * 121: 名声 I〜IX を計算し、内訳を保存して、全員分の N32 を席順に作る。player_score への書き込みは呼び出し側。
+     * 121: 名声 I〜IX を計算し、内訳を保存して、全員分の N32 を席順に作る。BGA の得点（`playerScore` のカウンター）への書き込みは呼び出し側。
      */
     public function score(): FinalScoreOutcome
     {

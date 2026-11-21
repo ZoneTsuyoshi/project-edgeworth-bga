@@ -19,7 +19,7 @@ trait StandardProposalHooks
     {
         $need = min(count($drawn), $counts->keep);
         if (count($keep) !== $need) {
-            throw new RuleViolation("Keep exactly $need card(s)");
+            throw new RuleViolation(clienttranslate('Keep exactly ${need} card(s)'), ['need' => $need]);
         }
     }
 

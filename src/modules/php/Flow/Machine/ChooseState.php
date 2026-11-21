@@ -11,6 +11,7 @@ namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\UserException;
 use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Game;
@@ -86,7 +87,7 @@ abstract class ChooseState extends GameState
         try {
             $result = $this->game->peMachine()->choice($this->id)->confirm($playerId, $data);
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->giveExtraTime($playerId);
         $this->game->peSend($result->notices);
@@ -104,7 +105,7 @@ abstract class ChooseState extends GameState
         try {
             $result = $operation();
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->giveExtraTime($playerId);
         $this->game->peSend($result->notices);
@@ -123,7 +124,7 @@ abstract class ChooseState extends GameState
         try {
             $notices = $this->game->peMachine()->sell($playerId, ChoiceData::ids($cardIds), $this->id);
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->peSend($notices);
     }

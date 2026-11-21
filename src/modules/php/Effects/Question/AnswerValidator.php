@@ -31,7 +31,7 @@ final class AnswerValidator
         }
         foreach (array_keys($answer->fields) as $key) {
             if (!isset($known[$key])) {
-                return ValidationResult::error("unknown field: $key");
+                return ValidationResult::error(clienttranslate('Unknown field: ${key}'), ['key' => $key]);
             }
         }
 
@@ -46,34 +46,34 @@ final class AnswerValidator
             case FieldType::Area:
             case FieldType::Direction:
                 if (!$given || !is_scalar($value) || !$this->contains($field->candidates, $value)) {
-                    return ValidationResult::error("invalid choice: $key");
+                    return ValidationResult::error(clienttranslate('Invalid choice: ${key}'), ['key' => $key]);
                 }
                 return ValidationResult::ok();
 
             case FieldType::Amount:
                 if (!$given || (!is_int($value) && !(is_string($value) && ctype_digit($value)))) {
-                    return ValidationResult::error("invalid amount: $key");
+                    return ValidationResult::error(clienttranslate('Invalid amount: ${key}'), ['key' => $key]);
                 }
                 $amount = (int) $value;
                 if ($field->candidates !== []) {
                     return $this->contains($field->candidates, $amount)
                         ? ValidationResult::ok()
-                        : ValidationResult::error("amount not allowed: $key");
+                        : ValidationResult::error(clienttranslate('Amount not allowed: ${key}'), ['key' => $key]);
                 }
                 return $amount >= $field->min && $amount <= $field->max
                     ? ValidationResult::ok()
-                    : ValidationResult::error("amount out of range: $key");
+                    : ValidationResult::error(clienttranslate('Amount out of range: ${key}'), ['key' => $key]);
 
             case FieldType::Cards:
             case FieldType::UseMods:
                 $list = $given ? $value : [];
                 if (!is_array($list) || !array_is_list($list)) {
-                    return ValidationResult::error("invalid list: $key");
+                    return ValidationResult::error(clienttranslate('Invalid list: ${key}'), ['key' => $key]);
                 }
                 $seen = [];
                 foreach ($list as $item) {
                     if (!is_scalar($item) || !$this->contains($field->candidates, $item) || isset($seen[(string) $item])) {
-                        return ValidationResult::error("invalid item in $key");
+                        return ValidationResult::error(clienttranslate('Invalid item in ${key}'), ['key' => $key]);
                     }
                     $seen[(string) $item] = true;
                 }
@@ -82,20 +82,20 @@ final class AnswerValidator
             case FieldType::Pairs:
                 $list = $given ? $value : [];
                 if (!is_array($list) || !array_is_list($list)) {
-                    return ValidationResult::error("invalid list: $key");
+                    return ValidationResult::error(clienttranslate('Invalid list: ${key}'), ['key' => $key]);
                 }
                 $seen = [];
                 foreach ($list as $pair) {
                     $encoded = json_encode($pair);
                     if (!$this->contains($field->candidates, $pair) || isset($seen[$encoded])) {
-                        return ValidationResult::error("invalid pair in $key");
+                        return ValidationResult::error(clienttranslate('Invalid pair in ${key}'), ['key' => $key]);
                     }
                     $seen[$encoded] = true;
                 }
                 return $this->countWithin($field, count($list));
 
             case FieldType::Assignment:
-                return $given && is_array($value) ? ValidationResult::ok() : ValidationResult::error("invalid assignment: $key");
+                return $given && is_array($value) ? ValidationResult::ok() : ValidationResult::error(clienttranslate('Invalid assignment: ${key}'), ['key' => $key]);
         }
     }
 
@@ -103,7 +103,7 @@ final class AnswerValidator
     {
         return $count >= $field->min && $count <= $field->max
             ? ValidationResult::ok()
-            : ValidationResult::error("wrong number of items: {$field->key}");
+            : ValidationResult::error(clienttranslate('Wrong number of items: ${key}'), ['key' => $field->key]);
     }
 
     /**

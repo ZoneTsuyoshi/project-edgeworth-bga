@@ -94,7 +94,7 @@ final class DeployFromHandPart extends AbstractResultPart
         $pairs = $this->pairsOf($answer);
         $cards = array_column($pairs, 0);
         if (count($cards) !== count(array_unique($cards))) {
-            return ValidationResult::error('a card can be deployed once');
+            return ValidationResult::error(clienttranslate('A card can be deployed once'));
         }
         $discard = $this->discardOf($answer);
         if (
@@ -103,7 +103,7 @@ final class DeployFromHandPart extends AbstractResultPart
             || array_intersect($answer->sell, $cards) !== []
             || array_intersect($answer->sell, $discard) !== []
         ) {
-            return ValidationResult::error('a card cannot be deployed, discarded and sold at once');
+            return ValidationResult::error(clienttranslate('A card cannot be deployed, discarded and sold at once'));
         }
         $perSatellite = [];
         foreach ($pairs as [, $satelliteId]) {
@@ -111,16 +111,16 @@ final class DeployFromHandPart extends AbstractResultPart
         }
         foreach ($perSatellite as $satelliteId => $count) {
             if (count($view->deployedCards($satelliteId)) + $count > ProjectCardRepository::MAX_DEPLOYED) {
-                return ValidationResult::error('a satellite holds up to 4 cards');
+                return ValidationResult::error(clienttranslate('A satellite holds up to 4 cards'));
             }
         }
         $plan = $this->plan($call, $pairs, $answer->fields['useMods'] ?? []);
         if ($plan === null) {
-            return ValidationResult::error('invalid modifier to use');
+            return ValidationResult::error(clienttranslate('Invalid modifier to use'));
         }
         $total = array_sum(array_column($plan, 'cost'));
         if ($view->maya($playerId) + count($answer->sell) * $view->sellPrice($playerId) < $total) {
-            return ValidationResult::error('not enough maya');
+            return ValidationResult::error(clienttranslate('Not enough maya'));
         }
 
         return ValidationResult::ok();

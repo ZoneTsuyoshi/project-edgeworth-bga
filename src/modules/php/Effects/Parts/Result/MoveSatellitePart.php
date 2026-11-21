@@ -75,7 +75,7 @@ final class MoveSatellitePart extends AbstractResultPart
         $view = $call->ctx->view;
         $playerId = $call->host->playerId;
         if ($view->maya($playerId) + count($answer->sell) * $view->sellPrice($playerId) < $pay) {
-            return ValidationResult::error('not enough maya');
+            return ValidationResult::error(clienttranslate('Not enough maya'));
         }
 
         return ValidationResult::ok();

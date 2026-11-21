@@ -163,7 +163,7 @@ final class LinkPhase implements ActionStep
             return;
         }
         if ($op !== 'link') {
-            throw new RuleViolation('Select an area to link, or pass');
+            throw new RuleViolation(clienttranslate('Select an area to link, or pass'));
         }
         $option = $this->optionFor($playerId, $mode, $data);
         $this->services->selling->assertPayable($playerId, $option->cost->total(), $this->sellList($data));
@@ -235,10 +235,10 @@ final class LinkPhase implements ActionStep
         $cell = $data['cell'] ?? null;
         $satId = $data['sat'] ?? null;
         if (!is_int($cell) || !is_int($satId)) {
-            throw new RuleViolation('Select an area and a satellite');
+            throw new RuleViolation(clienttranslate('Select an area and a satellite'));
         }
         if ($this->remainingCubes($playerId) <= 0) {
-            throw new RuleViolation('You have no cubes left');
+            throw new RuleViolation(clienttranslate('You have no cubes left'));
         }
         foreach ($this->candidates($playerId, $mode) as $candidate) {
             if ($candidate->cell !== $cell) {
@@ -250,7 +250,7 @@ final class LinkPhase implements ActionStep
                 }
             }
         }
-        throw new RuleViolation('This satellite cannot link that area');
+        throw new RuleViolation(clienttranslate('This satellite cannot link that area'));
     }
 
     /**
@@ -261,7 +261,7 @@ final class LinkPhase implements ActionStep
     {
         $sell = $data['sell'] ?? [];
         if (!is_array($sell)) {
-            throw new RuleViolation('Invalid sale');
+            throw new RuleViolation(clienttranslate('Invalid sale'));
         }
         return array_values(array_map('intval', $sell));
     }

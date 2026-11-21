@@ -126,10 +126,10 @@ final class LaunchPhase implements ActionStep
         }
         if ($op === 'budget') {
             if ($mode !== StepMode::Bonus) {
-                throw new RuleViolation('The budget increase is only available as the action bonus');
+                throw new RuleViolation(clienttranslate('The budget increase is only available as the action bonus'));
             }
             if (!$this->canRaiseBudget($playerId)) {
-                throw new RuleViolation('No inactive satellite to place');
+                throw new RuleViolation(clienttranslate('No inactive satellite to place'));
             }
             return;
         }
@@ -139,13 +139,13 @@ final class LaunchPhase implements ActionStep
         }
         if ($op === 'launch') {
             if ($mode !== StepMode::Main) {
-                throw new RuleViolation('Launching is not available as the action bonus');
+                throw new RuleViolation(clienttranslate('Launching is not available as the action bonus'));
             }
             $option = $this->launchTarget($playerId, $data);
             $this->services->selling->assertPayable($playerId, $option->cost, $this->sellList($data));
             return;
         }
-        throw new RuleViolation('Select an operation');
+        throw new RuleViolation(clienttranslate('Select an operation'));
     }
 
     /** zombie: [Pass]（コストを払わず、衛星を動かさない。008 §3-2） */
@@ -234,14 +234,14 @@ final class LaunchPhase implements ActionStep
                 continue;
             }
             match ($option->blocked) {
-                LaunchOption::BLOCKED_ACTIVE => throw new RuleViolation('This satellite is already in operation'),
-                LaunchOption::BLOCKED_NO_PROJECT => throw new RuleViolation('No Project cards deployed'),
-                LaunchOption::BLOCKED_NO_PAD => throw new RuleViolation('You have no launch base'),
+                LaunchOption::BLOCKED_ACTIVE => throw new RuleViolation(clienttranslate('This satellite is already in operation')),
+                LaunchOption::BLOCKED_NO_PROJECT => throw new RuleViolation(clienttranslate('No Project cards deployed')),
+                LaunchOption::BLOCKED_NO_PAD => throw new RuleViolation(clienttranslate('You have no launch base')),
                 default => null,
             };
             return $option;
         }
-        throw new RuleViolation('Select a satellite to launch');
+        throw new RuleViolation(clienttranslate('Select a satellite to launch'));
     }
 
     /**
@@ -257,13 +257,13 @@ final class LaunchPhase implements ActionStep
                 continue;
             }
             match ($option->blocked) {
-                TurnOption::BLOCKED_NO_INACTIVE => throw new RuleViolation('No inactive satellite to place'),
-                TurnOption::BLOCKED_FORBIDDEN => throw new RuleViolation('This satellite cannot be turned'),
+                TurnOption::BLOCKED_NO_INACTIVE => throw new RuleViolation(clienttranslate('No inactive satellite to place')),
+                TurnOption::BLOCKED_FORBIDDEN => throw new RuleViolation(clienttranslate('This satellite cannot be turned')),
                 default => null,
             };
             return $option;
         }
-        throw new RuleViolation('Select an active satellite to turn');
+        throw new RuleViolation(clienttranslate('Select an active satellite to turn'));
     }
 
     /**
@@ -274,7 +274,7 @@ final class LaunchPhase implements ActionStep
     {
         $direction = Direction::tryFrom((string) ($data['dir'] ?? ''));
         if ($direction === null) {
-            throw new RuleViolation('Select a direction (NE, E, SE, SW, W or NW)');
+            throw new RuleViolation(clienttranslate('Select a direction (NE, E, SE, SW, W or NW)'));
         }
         return $direction;
     }
@@ -297,7 +297,7 @@ final class LaunchPhase implements ActionStep
     {
         $sell = $data['sell'] ?? [];
         if (!is_array($sell)) {
-            throw new RuleViolation('Invalid sale');
+            throw new RuleViolation(clienttranslate('Invalid sale'));
         }
         return array_values(array_map('intval', $sell));
     }

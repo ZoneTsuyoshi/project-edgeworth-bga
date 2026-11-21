@@ -14,6 +14,8 @@ final readonly class ValidationResult
     private function __construct(
         public bool $ok,
         public string $message,
+        /** @var array<string, mixed> */
+        public array $args = [],
     ) {
     }
 
@@ -22,8 +24,11 @@ final readonly class ValidationResult
         return new self(true, '');
     }
 
-    public static function error(string $message): self
+    /**
+     * @param array<string, mixed> $args 文言の `${name}` に入れる値
+     */
+    public static function error(string $message, array $args = []): self
     {
-        return new self(false, $message);
+        return new self(false, $message, $args);
     }
 }

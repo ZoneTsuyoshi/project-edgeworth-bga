@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
 /**
- * 最終得点（121）の結果: 通知と、プレイヤーごとの名声の合計（player_score に書く）。
+ * 最終得点（121）の結果: 通知と、プレイヤーごとの名声の合計（BGA の得点に書く）。
  */
 final class FinalScoreOutcome
 {

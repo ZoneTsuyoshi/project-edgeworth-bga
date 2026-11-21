@@ -117,7 +117,7 @@ final class EngineActionHooks implements ActionHooks, UseModsAware
         if ($this->proposal === null) {
             $need = min(count($drawn), $counts->keep);
             if (count($keep) !== $need) {
-                throw new RuleViolation("Keep exactly $need card(s)");
+                throw new RuleViolation(clienttranslate('Keep exactly ${need} card(s)'), ['need' => $need]);
             }
 
             return;
@@ -135,7 +135,7 @@ final class EngineActionHooks implements ActionHooks, UseModsAware
                 self::ids($data['sell'] ?? []),
             );
         } catch (EffectViolation $violation) {
-            throw new RuleViolation($violation->getMessage());
+            throw new RuleViolation($violation->getMessage(), $violation->args());
         }
     }
 

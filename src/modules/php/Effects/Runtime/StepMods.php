@@ -84,12 +84,12 @@ final class StepMods
         }
         $expected = [2 => 'deploy', 3 => 'launch', 4 => 'link'][$actionNo] ?? null;
         if (($data['op'] ?? null) !== $expected) {
-            throw new RuleViolation('invalid modifier to use');
+            throw new RuleViolation(clienttranslate('Invalid modifier to use'));
         }
         try {
             return $this->runtime->useMods->validate(array_values($chosen), $this->options($actionNo, $playerId, $data));
         } catch (EffectViolation $violation) {
-            throw new RuleViolation($violation->getMessage());
+            throw new RuleViolation($violation->getMessage(), $violation->args());
         }
     }
 
@@ -109,7 +109,7 @@ final class StepMods
         if (is_array($extra) && ($extra['useMods'] ?? []) !== []) {
             $more = $this->validate(2, $playerId, $extra);
             if (array_intersect($keys, $more) !== []) {
-                throw new RuleViolation('invalid modifier to use');
+                throw new RuleViolation(clienttranslate('Invalid modifier to use'));
             }
             $keys = array_merge($keys, $more);
         }

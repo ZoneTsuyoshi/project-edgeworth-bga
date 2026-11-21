@@ -278,19 +278,19 @@ final class DeployPhase implements ActionStep
     public function stageFirst(int $playerId, array $data): StepOutcome
     {
         if (!$this->isBonusHolder($playerId)) {
-            throw new RuleViolation('You do not have the Deploy action bonus');
+            throw new RuleViolation(clienttranslate('You do not have the Deploy action bonus'));
         }
         if ($this->isStaged($playerId)) {
-            throw new RuleViolation('The first card is already deployed');
+            throw new RuleViolation(clienttranslate('The first card is already deployed'));
         }
         if (($data['op'] ?? null) !== 'deploy') {
-            throw new RuleViolation('Select a card and a satellite');
+            throw new RuleViolation(clienttranslate('Select a card and a satellite'));
         }
         unset($data['extra']);
         $plan = $this->plan($playerId, $data);
         $this->services->selling->assertPayable($playerId, $plan->totalCost(), $plan->sell, $plan->cards());
 
-        return $this->commitStep($playerId, $plan->steps[0], $plan->sell) ?? throw new RuleViolation('Not enough Maya');
+        return $this->commitStep($playerId, $plan->steps[0], $plan->sell) ?? throw new RuleViolation(clienttranslate('Not enough Maya'));
     }
 
     /**
@@ -304,7 +304,7 @@ final class DeployPhase implements ActionStep
     {
         $op = $data['op'] ?? null;
         if ($op !== 'deploy' && $op !== 'pass') {
-            throw new RuleViolation('Select a card and a satellite, or pass');
+            throw new RuleViolation(clienttranslate('Select a card and a satellite, or pass'));
         }
         $steps = [];
         if ($op === 'deploy') {
@@ -314,18 +314,18 @@ final class DeployPhase implements ActionStep
         $extra = $data['extra'] ?? null;
         if ($extra !== null) {
             if (!is_array($extra)) {
-                throw new RuleViolation('Invalid extra action');
+                throw new RuleViolation(clienttranslate('Invalid extra action'));
             }
             if (!$this->isBonusHolder($playerId)) {
-                throw new RuleViolation('You do not have the Deploy action bonus');
+                throw new RuleViolation(clienttranslate('You do not have the Deploy action bonus'));
             }
             $extraOp = $extra['op'] ?? null;
             if ($extraOp === 'draw') {
                 $draw = true;
             } elseif ($extraOp === 'deploy') {
-                throw new RuleViolation('Press [Deploy another card] to deploy the first card before choosing another');
+                throw new RuleViolation(clienttranslate('Press [Deploy another card] to deploy the first card before choosing another'));
             } elseif ($extraOp !== 'pass') {
-                throw new RuleViolation('Choose another deployment or drawing 1 card');
+                throw new RuleViolation(clienttranslate('Choose another deployment or drawing 1 card'));
             }
         }
         $sell = $steps === [] ? [] : $this->sellList($data);
@@ -346,14 +346,14 @@ final class DeployPhase implements ActionStep
             return new DeployPlan([], false, []);
         }
         if (!is_array($extra)) {
-            throw new RuleViolation('Invalid extra action');
+            throw new RuleViolation(clienttranslate('Invalid extra action'));
         }
         $op = $extra['op'] ?? null;
         if ($op === 'pass') {
             return new DeployPlan([], false, []);
         }
         if ($op !== 'deploy') {
-            throw new RuleViolation('Choose another deployment, or confirm without one');
+            throw new RuleViolation(clienttranslate('Choose another deployment, or confirm without one'));
         }
         $step = $this->stepFor($playerId, $extra);
 
@@ -369,10 +369,10 @@ final class DeployPhase implements ActionStep
         $card = $part['card'] ?? null;
         $satId = $part['sat'] ?? null;
         if (!is_int($card) || !is_int($satId)) {
-            throw new RuleViolation('Select a card and a satellite');
+            throw new RuleViolation(clienttranslate('Select a card and a satellite'));
         }
         if (!in_array($card, $this->hand($playerId), true)) {
-            throw new RuleViolation("Card $card is not in your hand");
+            throw new RuleViolation(clienttranslate('Card ${card} is not in your hand'), ['card' => $card]);
         }
         $mods = array_values(array_map('strval', (array) ($part['useMods'] ?? [])));
         foreach ($this->services->satellites->forPlayer($playerId) as $sat) {
@@ -381,16 +381,16 @@ final class DeployPhase implements ActionStep
             }
             $count = $this->services->cards->countIn(CardLocation::Satellite, $sat->id);
             if ($count >= ProjectCardRepository::MAX_DEPLOYED) {
-                throw new RuleViolation('This satellite already has 4 cards');
+                throw new RuleViolation(clienttranslate('This satellite already has 4 cards'));
             }
             if ($this->services->hooks->isForbidden(ForbiddenAction::DeployTo, $sat)) {
-                throw new RuleViolation('Cards cannot be deployed to this satellite');
+                throw new RuleViolation(clienttranslate('Cards cannot be deployed to this satellite'));
             }
             $cost = $this->cost($playerId, $card, $sat, $mods);
             $target = new DeployTarget($sat, $count, $cost, $this->services->selling->assess($playerId, $cost->total(), [$card]), null);
             return new DeployStep($card, $target, $mods);
         }
-        throw new RuleViolation("Satellite $satId is not yours");
+        throw new RuleViolation(clienttranslate('Satellite ${satId} is not yours'), ['satId' => $satId]);
     }
 
     private function canDraw(): bool
@@ -406,7 +406,7 @@ final class DeployPhase implements ActionStep
     {
         $sell = $data['sell'] ?? [];
         if (!is_array($sell)) {
-            throw new RuleViolation('Invalid sale');
+            throw new RuleViolation(clienttranslate('Invalid sale'));
         }
         return array_values(array_map('intval', $sell));
     }

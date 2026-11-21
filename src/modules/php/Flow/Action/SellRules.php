@@ -54,15 +54,15 @@ final class SellRules
     public function validate(int $playerId, array $ids, array $reserved = []): void
     {
         if (count($ids) !== count(array_unique($ids))) {
-            throw new RuleViolation('The same card cannot be sold twice');
+            throw new RuleViolation(clienttranslate('The same card cannot be sold twice'));
         }
         $hand = $this->cards->idsIn(CardLocation::Hand, $playerId);
         foreach ($ids as $id) {
             if (!in_array($id, $hand, true)) {
-                throw new RuleViolation("Card $id is not in your hand");
+                throw new RuleViolation(clienttranslate('Card ${id} is not in your hand'), ['id' => $id]);
             }
             if (in_array($id, $reserved, true)) {
-                throw new RuleViolation("Card $id is part of your choice and cannot be sold");
+                throw new RuleViolation(clienttranslate('Card ${id} is part of your choice and cannot be sold'), ['id' => $id]);
             }
         }
     }
@@ -78,7 +78,7 @@ final class SellRules
     public function sell(int $playerId, array $ids, array $reserved = []): int
     {
         if ($ids === []) {
-            throw new RuleViolation('Select at least one card to sell');
+            throw new RuleViolation(clienttranslate('Select at least one card to sell'));
         }
         $this->validate($playerId, $ids, $reserved);
         return $this->sellAll($playerId, $ids);
@@ -121,7 +121,7 @@ final class SellRules
         $this->validate($playerId, $sellIds, $reserved);
         $short = $cost - $this->players->maya($playerId);
         if ($short > 0 && $this->price($playerId) * count($sellIds) < $short) {
-            throw new RuleViolation("Not enough Maya (short $short)");
+            throw new RuleViolation(clienttranslate('Not enough Maya (short ${short})'), ['short' => $short]);
         }
     }
 

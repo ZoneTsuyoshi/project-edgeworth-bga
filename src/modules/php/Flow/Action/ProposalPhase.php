@@ -98,16 +98,16 @@ final class ProposalPhase implements ActionStep
     {
         $keep = $data['keep'] ?? null;
         if (!is_array($keep)) {
-            throw new RuleViolation('Select the cards to keep');
+            throw new RuleViolation(clienttranslate('Select the cards to keep'));
         }
         $keep = array_values(array_map('intval', $keep));
         if (count($keep) !== count(array_unique($keep))) {
-            throw new RuleViolation('The same card cannot be kept twice');
+            throw new RuleViolation(clienttranslate('The same card cannot be kept twice'));
         }
         $drawn = $this->drawn($playerId);
         foreach ($keep as $id) {
             if (!in_array($id, $drawn, true)) {
-                throw new RuleViolation("Card $id was not drawn");
+                throw new RuleViolation(clienttranslate('Card ${id} was not drawn'), ['id' => $id]);
             }
         }
         $bonus = $this->isBonusHolder($playerId);

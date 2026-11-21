@@ -241,7 +241,7 @@ final class WindowFlow
     public function sell(int $playerId, array $cardIds): array
     {
         if (!in_array($playerId, $this->playersNeedingInput(), true)) {
-            throw new RuleViolation('You cannot sell cards now');
+            throw new RuleViolation(clienttranslate('You cannot sell cards now'));
         }
         $services = $this->ctx->services;
         $n = $this->ctx->notices;
@@ -263,15 +263,15 @@ final class WindowFlow
      */
     private function act(int $playerId, \Closure $operation): array
     {
-        $rt = $this->runtime() ?? throw new RuleViolation('Card effects are not available');
+        $rt = $this->runtime() ?? throw new RuleViolation(clienttranslate('Card effects are not available'));
         if (!in_array($playerId, $this->engine()->playersNeedingInput(), true)) {
-            throw new RuleViolation('You have no effect to resolve');
+            throw new RuleViolation(clienttranslate('You have no effect to resolve'));
         }
         $mark = $rt->game->journalMark();
         try {
             $operation($this->engine());
         } catch (\Bga\Games\projectedgeworth\Effects\EffectViolation $violation) {
-            throw new RuleViolation($violation->getMessage());
+            throw new RuleViolation($violation->getMessage(), $violation->args());
         }
 
         return $this->flush($playerId, $mark);

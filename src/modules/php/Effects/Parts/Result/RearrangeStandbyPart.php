@@ -59,25 +59,25 @@ final class RearrangeStandbyPart extends AbstractResultPart
         $assignment = $this->normalize($answer->fields['assignment'] ?? null);
         $current = $this->current($call);
         if ($assignment === null || array_keys($assignment) !== array_keys($current)) {
-            return ValidationResult::error('every card on a standby satellite must be assigned exactly once');
+            return ValidationResult::error(clienttranslate('Every card on a standby satellite must be assigned exactly once'));
         }
         $standby = $this->standbyIds($call);
         $counts = [];
         foreach ($assignment as $cardNo => $satelliteId) {
             if (!in_array($satelliteId, $standby, true)) {
-                return ValidationResult::error('cards can only be placed on your standby satellites');
+                return ValidationResult::error(clienttranslate('Cards can only be placed on your standby satellites'));
             }
             $counts[$satelliteId] = ($counts[$satelliteId] ?? 0) + 1;
             if (
                 $satelliteId !== $current[$cardNo]
                 && !$this->queries->allowed(new QueryContext($call->host->playerId, $satelliteId, action: ForbiddenAction::DeployTo))
             ) {
-                return ValidationResult::error('cards cannot be placed on this satellite');
+                return ValidationResult::error(clienttranslate('Cards cannot be placed on this satellite'));
             }
         }
         foreach ($counts as $count) {
             if ($count > ProjectCardRepository::MAX_DEPLOYED) {
-                return ValidationResult::error('a satellite holds up to 4 cards');
+                return ValidationResult::error(clienttranslate('A satellite holds up to 4 cards'));
             }
         }
 

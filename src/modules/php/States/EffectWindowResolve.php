@@ -15,6 +15,7 @@ use Bga\GameFramework\Actions\Types\JsonParam;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\UserException;
 use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Machine\ChoiceData;
@@ -107,7 +108,7 @@ class EffectWindowResolve extends GameState
         try {
             $notices = $this->game->peMachine()->windows()->sell($playerId, ChoiceData::ids($cardIds));
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->peSend($notices);
     }
@@ -130,7 +131,7 @@ class EffectWindowResolve extends GameState
         try {
             $notices = $operation();
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->giveExtraTime($playerId);
         $this->game->peSend($notices);

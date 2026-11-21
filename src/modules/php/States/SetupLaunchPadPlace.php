@@ -13,6 +13,7 @@ use Bga\GameFramework\Actions\Types\IntArrayParam;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\UserException;
 use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Machine\ChoiceData;
@@ -54,7 +55,7 @@ class SetupLaunchPadPlace extends GameState
         try {
             $notices = $this->game->peMachine()->setup()->placeLaunchBase($activePlayerId, $cell);
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->giveExtraTime($activePlayerId);
         $this->game->peSend($notices);
@@ -71,7 +72,7 @@ class SetupLaunchPadPlace extends GameState
         try {
             $notices = $this->game->peMachine()->sell($activePlayerId, ChoiceData::ids($cardIds), StateId::SETUP_LAUNCH_PAD_PLACE);
         } catch (RuleViolation $violation) {
-            throw new UserException($this->game->_($violation->getMessage()));
+            throw new UserException(new NotificationMessage($violation->getMessage(), $violation->args()));
         }
         $this->game->peSend($notices);
     }

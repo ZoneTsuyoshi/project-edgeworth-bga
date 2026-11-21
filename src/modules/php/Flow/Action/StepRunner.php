@@ -57,7 +57,7 @@ final class StepRunner
     {
         $participants = $this->globals->stepParticipants();
         if (!in_array($playerId, $participants, true)) {
-            throw new RuleViolation('You are not part of this step');
+            throw new RuleViolation(clienttranslate('You are not part of this step'));
         }
         $step->validate($playerId, $mode, $data);
         $this->choices->submit($playerId, $stateId, $data, $participants);

@@ -106,24 +106,24 @@ final class EstablishLinkPart extends AbstractResultPart
         $pairs = $this->candidates($call);
         $chosen = $this->chosen($call, $answer, $pairs);
         if ($chosen === null) {
-            return ValidationResult::error('select the area to link');
+            return ValidationResult::error(clienttranslate('Select the area to link'));
         }
         $discard = $this->discardOf($answer);
         if (
             count($discard) !== $this->discardCount($call)
             || array_intersect($answer->sell, $discard) !== []
         ) {
-            return ValidationResult::error('a card cannot be discarded and sold at once');
+            return ValidationResult::error(clienttranslate('A card cannot be discarded and sold at once'));
         }
         $keys = $this->keysOf($call, $answer, $chosen);
         if ($keys === null) {
-            return ValidationResult::error('invalid modifier to use');
+            return ValidationResult::error(clienttranslate('Invalid modifier to use'));
         }
         $view = $call->ctx->view;
         $playerId = $call->host->playerId;
         $cost = $this->cost($call, $chosen[0], $chosen[1], $keys);
         if ($view->maya($playerId) + count($answer->sell) * $view->sellPrice($playerId) - $this->reserved($call) < $cost->total()) {
-            return ValidationResult::error('not enough maya');
+            return ValidationResult::error(clienttranslate('Not enough maya'));
         }
 
         return ValidationResult::ok();
@@ -135,7 +135,7 @@ final class EstablishLinkPart extends AbstractResultPart
         $chosen = $this->chosen($call, $answer, $this->candidates($call));
         $keys = $chosen === null ? null : $this->keysOf($call, $answer, $chosen);
         if ($chosen === null || $keys === null) {
-            throw new EffectViolation('select the area to link');
+            throw new EffectViolation(clienttranslate('Select the area to link'));
         }
         [$satelliteId, $cell] = $chosen;
         $playerId = $call->host->playerId;

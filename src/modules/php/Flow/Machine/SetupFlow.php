@@ -50,10 +50,10 @@ final class SetupFlow
     public function placeLaunchBase(int $playerId, int $cell): array
     {
         if ($this->nextPlacer() !== $playerId) {
-            throw new RuleViolation('It is not your turn to place a launch base');
+            throw new RuleViolation(clienttranslate('It is not your turn to place a launch base'));
         }
         if (!in_array($cell, $this->vacantCells(), true)) {
-            throw new RuleViolation('Select a vacant land area');
+            throw new RuleViolation(clienttranslate('Select a vacant land area'));
         }
         $this->ctx->services->players->setPadCell($playerId, $cell);
         return [$this->ctx->notices->launchBasePlaced($playerId, $cell)];

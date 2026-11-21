@@ -44,7 +44,7 @@ final class DeployStageFlow
     {
         $services = $this->ctx->services;
         if ($services->globals->flowPhase() !== FlowPhase::Deploy || !in_array($playerId, $services->globals->stepParticipants(), true)) {
-            throw new RuleViolation('You are not part of this step');
+            throw new RuleViolation(clienttranslate('You are not part of this step'));
         }
         $effects = $this->ctx->effects;
         $deploy = $this->ctx->phases->deploy();
@@ -122,10 +122,10 @@ final class DeployStageFlow
         $services = $this->ctx->services;
         $stage = $services->deployStages->find($playerId);
         if ($stage === null) {
-            throw new RuleViolation('There is no deployment to undo');
+            throw new RuleViolation(clienttranslate('There is no deployment to undo'));
         }
         if ($stage->irreversible) {
-            throw new RuleViolation(self::REASON_IRREVERSIBLE);
+            throw new RuleViolation(clienttranslate('You have drawn cards and cannot undo this deployment'));
         }
         DeployStageSnapshot::restore($this->ctx->db, $playerId, $stage->snapshot);
         $services->deployStages->remove($playerId);
