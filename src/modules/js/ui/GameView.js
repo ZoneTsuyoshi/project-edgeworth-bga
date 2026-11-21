@@ -22,28 +22,6 @@ import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
 import { missionFrames, revealedMissions, scoresFromGamedatas } from '../states/logic/score.js';
 
-const DETAIL_PREF_KEY = 'pe-detail-view';
-
-/** 詳細表示の選択を localStorage から読む（使えない環境では簡略表示） */
-function readDetailPref() {
-    try {
-        return localStorage.getItem(DETAIL_PREF_KEY) === '1';
-    } catch {
-        return false;
-    }
-}
-
-/**
- * @param {boolean} detail
- */
-function writeDetailPref(detail) {
-    try {
-        localStorage.setItem(DETAIL_PREF_KEY, detail ? '1' : '0');
-    } catch {
-        // 保存できなくても表示は切り替わる
-    }
-}
-
 export class GameView {
     /**
      * @param {import('../cards/CardView.js').Env} env
@@ -58,7 +36,8 @@ export class GameView {
         this.areas = new Map();
         /** @type {Map<number, PlayerPanel>} */
         this.panels = new Map();
-        this.detailAll = readDetailPref();
+        /** 詳細表示（ゲームの設定 101 "As printed"。Game.js が読んで setDetailAll で入れる。保存はしない。012 追補 U-8） */
+        this.detailAll = false;
         /** 先送り済みの保留通知の ev_id（010 §10.5。windowClosed で空にする） */
         this.appliedEvents = new Set();
         this.tooltip = new Tooltip(env);
@@ -105,10 +84,16 @@ export class GameView {
         this.effectUi = null;
         /** @type {{ applyStage: (priv: Record<string, any>, wasReset: boolean) => void } | null} 配備（状態 61）の UI。ステージ / Reset の通知を渡す */
         this.deployUi = null;
-        this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12);
+        this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12, () => this.othersCount());
         this.boardWrap.append(this.layout.renderTools());
         this.stateFrame = new StateFrame(this);
         this.board.onPick = (cell) => this.stateFrame.handleCellPick(cell);
+    }
+
+    /** @returns {number} 他プレイヤーの領域の数（観戦者は全員。まだ無ければ 2） */
+    othersCount() {
+        const m = this.model;
+        return m === null ? 2 : m.playerOrder.filter((id) => id !== m.me).length;
     }
 
     /**
@@ -127,7 +112,6 @@ export class GameView {
         this.field.setRewards(model.rewards);
         this.field.setDeck(model.deckCount);
         this.field.setDiscard(model.discard);
-        this.field.setRound(model.round);
         this.refreshBand();
 
         // プレイヤーの領域: 自分を先頭に、他は席順（観戦者は全員を席順で同じ大きさに）
@@ -140,8 +124,7 @@ export class GameView {
         for (const id of rotated) {
             const player = model.players[id];
             const mine = id === model.me;
-            const area = new PlayerArea(this.env, this.tooltip, player, { mine, rewards: model.rewards, onToggleDetail: () => this.setDetailAll(!this.detailAll) });
-            area.setFame(model.publicFame?.[id] ?? null);
+            const area = new PlayerArea(this.env, this.tooltip, player, { mine });
             if (mine) {
                 area.hand.setCards(model.myHand);
                 area.refreshHand({ hand: model.myHand, missions: model.myMissions });
@@ -233,7 +216,6 @@ export class GameView {
             phase: m.phase,
             selected: m.phase === 'PLANNING' || selected.length === 0 ? null : selected,
         });
-        this.field.setRound(m.round);
     }
 
     /** コマの層をモデルに合わせる */
@@ -265,28 +247,25 @@ export class GameView {
                 const panel = new PlayerPanel(this.env, host, p, m.rewards);
                 panel.setBase(m.basePlayer === id);
                 panel.setFame(m.publicFame?.[id] ?? null);
-                panel.listeners.add(() => this.areas.get(id)?.renderStats());
                 this.panels.set(id, panel);
             }
         }
     }
 
-    /** 途中の名声（ゲームオプション 105 が Visible のとき。通知 N36）をパネルと自分の領域に反映する */
+    /** 途中の名声（ゲームオプション 105 が Visible のとき。通知 N36）をパネルに反映する */
     refreshFame() {
         const m = this.m;
         for (const id of m.playerOrder) {
             const fame = m.publicFame?.[id] ?? null;
             this.panels.get(id)?.setFame(fame);
-            this.areas.get(id)?.setFame(fame);
         }
     }
 
-    /** 確定の印・基準プレイヤー・（終了後の）名声 */
+    /** 確定の印・基準プレイヤー（パネルだけ。012 追補 U-5） */
     refreshMarks() {
         const m = this.m;
         for (const id of m.playerOrder) {
             const p = m.players[id];
-            this.areas.get(id)?.setMarks({ confirmed: p.confirmed, isBase: m.basePlayer === id });
             this.panels.get(id)?.update({});
             this.areas.get(id)?.actions.setPlot(p.confirmed, null);
         }
@@ -313,11 +292,10 @@ export class GameView {
     }
 
     /**
-     * @param {boolean} detail
+     * @param {boolean} detail 紙どおりの詳細表示（ゲームの設定 101。保存は BGA の設定が持つ）
      */
     setDetailAll(detail) {
         this.detailAll = detail;
-        writeDetailPref(detail);
         for (const area of this.areas.values()) {
             area.setDetail(detail);
         }

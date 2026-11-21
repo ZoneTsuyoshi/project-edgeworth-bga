@@ -1,14 +1,14 @@
 /**
  * プレイヤーパネルのカウンター（仕様書 012 §5）。BGA 標準のパネル（名前・色・時計）の下に足す。
- * マヤ・予算・手札の枚数・稼働中の衛星「n / 5」・置いたキューブ「n / 16」・このゲームで使う 2 枚の褒賞の比較値・確定の印・基準プレイヤーの「1」バッジ。
- * 名声は、ゲームオプション 105 が Visible のときだけ出す（ミッションを除く途中の名声。ホバーで内訳）。既定では出さない（001 §12。終了時に計算）。数値の部品は PlayerStats.js（自分の領域の見出しと共通）。
+ * 1 行に、マヤ・予算・手札の枚数・置いたキューブ「n / 16」・このゲームで使う 2 枚の褒賞の比較値・確定の印・基準プレイヤーの「1」バッジ・待機の回転（012 追補 U-5）。
+ * 名声は、ゲームオプション 105 が Visible のときだけ出す（ミッションを除く途中の名声。ホバーで内訳）。既定では出さない（001 §12。終了時に計算）。数値の部品は PlayerStats.js。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
-import { buildStats, CUBES_TOTAL, SATELLITES_TOTAL } from './PlayerStats.js';
+import { buildStats, CUBES_TOTAL } from './PlayerStats.js';
 
-export { CUBES_TOTAL, SATELLITES_TOTAL };
+export { CUBES_TOTAL };
 
 export class PlayerPanel {
     /**
@@ -27,8 +27,6 @@ export class PlayerPanel {
         this.waiting = false;
         /** @type {{ total: number, detail: Record<string, any> } | null} */
         this.fame = null;
-        /** @type {Set<() => void>} 描き直したときに呼ぶ（自分の領域の見出しの数値を同期する） */
-        this.listeners = new Set();
         this.render();
     }
 
@@ -73,12 +71,6 @@ export class PlayerPanel {
             p.confirmed ? el('span', { class: 'pe-check', title: _('Confirmed'), 'aria-label': _('Confirmed') }, ['✓']) : null,
             this.waiting && !p.confirmed ? el('span', { class: 'pe-waiting', title: _('Choosing…'), 'aria-label': _('Choosing…') }) : null,
         ]);
-        this.root.replaceChildren(
-            el('div', { class: 'pe-panel-row' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), ...stats.first, mark]),
-            el('div', { class: 'pe-panel-row' }, stats.second),
-        );
-        for (const listener of this.listeners) {
-            listener();
-        }
+        this.root.replaceChildren(el('div', { class: 'pe-panel-row' }, [...stats, mark]));
     }
 }

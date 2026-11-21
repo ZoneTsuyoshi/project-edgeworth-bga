@@ -12,13 +12,15 @@ import { fuelSlotOrder, projectFuelSlots, SATELLITE_FUEL_SLOTS } from './fuel-sl
 import { SATELLITE_ROTATION } from '../board/geometry.js';
 import { typeSymbol } from './text-symbols.js';
 import { el } from '../ui/dom.js';
-import { satelliteLabel } from '../states/logic/common.js';
+import { format, satelliteLabel } from '../states/logic/common.js';
 
 /** 簡略表示で効果アイコンの帯を置く位置（衛星カードに対する割合。上の暗い枠の中に 2 × 2。012 §4.2） */
 const STRIP_BOX = { x: 0.3, y: 0.025, w: 0.555, h: 0.34, cols: 2, rows: 2, gap: 0.01 };
 
 /** 衛星カードの燃料庫の数（002 §6。初期燃料庫 1 + 燃料庫 1） */
 const SATELLITE_FUEL_COUNT = 2;
+/** 1 機に配備できるカードの枠の数（012 §4.2） */
+const CHIP_SLOTS = 4;
 
 /**
  * @typedef {object} SatelliteData
@@ -332,7 +334,7 @@ export class SatelliteView {
         return node;
     }
 
-    /** 配備カードのチップ（種類・名前・名声・燃料庫の数・歯車）。最大 4 行（012 §4.2） */
+    /** 配備カードのチップ（種類・名前・名声・燃料庫の数・歯車）。最大 4 行（012 §4.2）。空の枠は「+n」の印 */
     renderChips() {
         const list = el('ul', { class: 'pe-chips' });
         this.sat.cards.forEach((c, i) => {
@@ -357,8 +359,11 @@ export class SatelliteView {
             this.tooltip.bind(item, key);
             list.append(item);
         });
-        for (let i = this.sat.cards.length; i < 4; i++) {
-            list.append(el('li', { class: 'pe-chip pe-chip-empty' }, [el('span', { class: 'pe-chip-level' }, [String(i + 1)])]));
+        // 空の配備枠は行にせず、残りの枠の数を小さな印 1 つで出す（0 なら出さない。012 追補 U-6）
+        const empty = CHIP_SLOTS - this.sat.cards.length;
+        if (empty > 0) {
+            const label = format(_('${n} empty slot(s)'), { n: empty });
+            list.append(el('li', { class: 'pe-chips-more', title: label, 'aria-label': label }, [`+${empty}`]));
         }
         return list;
     }

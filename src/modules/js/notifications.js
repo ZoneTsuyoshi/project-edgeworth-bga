@@ -426,6 +426,7 @@ export const HANDLERS = {
     view.pieces.setCube(p.id, link, p.colorIndex);
     view.pieces.refreshStackBadges();
     view.panels.get(p.id)?.update({});
+    view.areas.get(p.id)?.renderRegions();
   },
 
   // N24: パス（ログのみ）
@@ -536,16 +537,14 @@ export const HANDLERS = {
     view.band.set({ endNote: true });
   },
 
-  // N32: 名声の内訳。名声は終了時にだけ出す（001 §12）
+  // N32: 名声の内訳。名声は終了時にだけ出す（001 §12）。BGA のパネルの得点と得点表に出るので、領域の見出しには出さない（012 追補 U-5）
   finalScore(view, a) {
-    const pid = int(a.player_id);
-    view.areas.get(pid)?.setMarks({ isBase: view.m.basePlayer === pid, finalFame: int(a.fame) });
     view.band.set({ phase: 'END' });
     view.score.add(scoreFromNotification(a));
     view.refreshMissionOutlines();
   },
 
-  // N36: 途中の名声（ゲームオプション 105 が Visible のときだけ届く。ミッションを除く）。パネルと自分の領域に出す
+  // N36: 途中の名声（ゲームオプション 105 が Visible のときだけ届く。ミッションを除く）。パネルに出す
   publicFameUpdated(view, a) {
     view.m.publicFame = mergePublicFame(view.m.publicFame, a.fame);
     view.refreshFame();

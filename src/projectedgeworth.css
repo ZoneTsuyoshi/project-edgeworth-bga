@@ -43,6 +43,8 @@ html[data-theme="dark"] body {
     --pe-hand-w: 120px;
     --pe-hand-h: 168px;
     --pe-satellite-w: 240px;
+    --pe-satellite-other-w: 120px;
+    --pe-field-card-w: 60px;
     --pe-action-w: 84px;
     --pe-actionother-w: 48px;
     --pe-mission-w: 84px;
@@ -173,26 +175,6 @@ html[data-theme="dark"] .pe-root {
 
 /* ---- 2 土台 ---- */
 
-.pe-field-label {
-    display: block;
-    margin-bottom: 2px;
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 0.04em;
-    color: var(--pe-text-dim);
-    text-transform: uppercase;
-}
-
-.pe-color-dot {
-    display: inline-block;
-    flex: 0 0 auto;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--pe-pc-dark, #555);
-    border-radius: 50%;
-    background: var(--pe-pc, #888);
-}
-
 .pe-check {
     display: inline-flex;
     align-items: center;
@@ -228,11 +210,6 @@ html[data-theme="dark"] .pe-root {
     font-size: 11px;
     font-weight: bold;
     color: #fff;
-}
-
-.pe-fame {
-    font-size: 12px;
-    font-weight: bold;
 }
 
 @keyframes pe-spin {
@@ -392,16 +369,14 @@ html[data-theme="dark"] .pe-root {
     color: var(--pe-warn);
 }
 
+/* 場: 白い枠をやめ、小さなカードを背景の上に置く（012 追補 U-4）。見出しの文字は無く、各グループに aria-label と title */
 .pe-field {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 24px;
+    gap: 8px 20px;
     align-items: flex-end;
     justify-content: center;
-    padding: 6px 10px;
-    border: 1px solid var(--pe-line);
-    border-radius: 8px;
-    background: var(--pe-surface);
+    padding: 2px 6px;
 }
 
 .pe-field-group {
@@ -418,8 +393,7 @@ html[data-theme="dark"] .pe-root {
     position: relative;
     display: block;
     flex: 0 0 auto;
-    width: var(--pe-reward-w);
-    min-height: calc(var(--pe-reward-w) * 999 / 715);
+    width: var(--pe-field-card-w);
     padding: 0;
     border: 0;
     background: transparent;
@@ -432,9 +406,12 @@ html[data-theme="dark"] .pe-root {
 .pe-discard-empty {
     display: block;
     width: 100%;
+    aspect-ratio: 715 / 999;
     padding-top: 40%;
     border: 2px dashed var(--pe-line);
     border-radius: 6px;
+    background: var(--pe-surface);
+    font-size: 11px;
     text-align: center;
     color: var(--pe-text-dim);
 }
@@ -442,13 +419,7 @@ html[data-theme="dark"] .pe-root {
 .pe-deck-card,
 .pe-discard-card,
 .pe-reward-card {
-    width: var(--pe-reward-w);
-}
-
-.pe-round {
-    margin-left: auto;
-    font-size: 15px;
-    font-weight: bold;
+    width: var(--pe-field-card-w);
 }
 
 /* 捨て札の一覧（モーダル。document.body 直下） */
@@ -954,10 +925,14 @@ html[data-theme="dark"] .pe-modal-body {
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-start;
-    min-height: var(--pe-hand-h);
     padding-top: 6px;
-    padding-right: 20px;
     overflow-x: auto;
+}
+
+.pe-hand-empty {
+    padding: 2px 0;
+    font-size: 12px;
+    color: var(--pe-text-dim);
 }
 
 .pe-hand-card {
@@ -982,11 +957,6 @@ html[data-theme="dark"] .pe-modal-body {
 
 .pe-hand-card.pe-selected {
     transform: translateY(-6px);
-}
-
-.pe-hand-count {
-    top: 0;
-    right: 0;
 }
 
 /* アクションカード: 横向きは 90° 回転 + グレー（回転とグレーアウトの両方。012 §4.4）。行の高さは回転後の縦横が収まるように取る */
@@ -1093,13 +1063,6 @@ html[data-theme="dark"] .pe-modal-body {
 
 /* ---- 9 衛星（カード・配備カード・燃料ゲージ。012 §4.2〜§4.5） ---- */
 
-.pe-sats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: flex-start;
-}
-
 .pe-sat {
     position: relative;
     display: flex;
@@ -1164,7 +1127,7 @@ html[data-theme="dark"] .pe-modal-body {
     display: flex;
     gap: 5px;
     align-items: center;
-    min-height: 22px;
+    min-height: 32px;
     padding: 1px 6px;
     border: 1px solid var(--pe-line);
     border-left: 4px solid var(--pe-chip-type, var(--pe-line));
@@ -1186,10 +1149,15 @@ html[data-theme="dark"] .pe-modal-body {
     --pe-chip-type: #6a4fb3;
 }
 
-.pe-chip-empty {
-    border-style: dashed;
+/* 空の配備枠の数の印（「+3」。行にはしない。012 追補 U-6） */
+.pe-chips-more {
+    align-self: flex-start;
+    padding: 0 8px;
+    border: 1px dashed var(--pe-line);
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 18px;
     color: var(--pe-text-dim);
-    cursor: default;
 }
 
 .pe-chip-level {
@@ -1470,84 +1438,123 @@ html[data-theme="dark"] .pe-modal-body {
     width: 7%;
 }
 
-/* 簡略表示で他プレイヤーの衛星は要約（小さな衛星カードと燃料ゲージだけ） */
-.pe-player-other .pe-sat {
-    --pe-satellite-w: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
-
-    width: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
-}
-
-.pe-player-other .pe-sat-card {
-    width: calc(var(--pe-satellite-w-parent, 240px) * 0.6);
-}
-
-.pe-player-other .pe-chip-name,
+/* 簡略表示で他プレイヤーの衛星は要約（幅は Layout が `--pe-satellite-other-w` に px で入れる。燃料庫の数などは隠す） */
 .pe-player-other .pe-chip-meta {
     display: none;
 }
 
-.pe-player-other .pe-chip {
-    min-height: 16px;
-}
-
 /* ---- 10 プレイヤーの領域 ---- */
 
+/* プレイヤーのマット: 背景の上の半透明の面（不透明度 90 %）とプレイヤー色の帯（012 追補 U-4）。
+   並び: wide・medium の自分 = 見出し → 衛星 → 手札・アクション・ミッション（1 行、折り返し可、中央）。他プレイヤー = 見出し → 衛星 → アクションとミッション */
 .pe-player {
-    --pe-satellite-w-parent: var(--pe-satellite-w);
-
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    place-content: flex-start center;
     padding: 8px 10px;
     border: 1px solid var(--pe-line);
     border-top: 4px solid var(--pe-pc, var(--pe-line));
     border-radius: 8px;
-    background: var(--pe-surface);
+    background: color-mix(in srgb, var(--pe-surface) 90%, transparent);
+}
+
+.pe-player-other {
+    --pe-satellite-w: var(--pe-satellite-other-w);
 }
 
 .pe-player-head {
     display: flex;
+    flex: 0 0 100%;
     gap: 8px;
     align-items: center;
-    font-weight: bold;
+    justify-content: space-between;
 }
 
-.pe-player-marks {
+/* 名前はプレイヤー色。白地・暗い地のどちらでも読めるよう白い縁取り（012 追補 U-5） */
+.pe-player-name {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--pe-pc, var(--pe-text));
+    paint-order: stroke fill;
+    -webkit-text-stroke: 2px rgb(0 0 0 / 55%);
+}
+
+/* ダーク: 暗い地では白い細い縁取り（ライトは白地の黄色が読めるよう暗い縁取り。C.3） */
+html[data-theme="dark"] .pe-player-name {
+    -webkit-text-stroke: 2px rgb(255 255 255 / 85%);
+}
+
+.pe-player-regions {
     display: inline-flex;
-    gap: 6px;
-    align-items: center;
 }
 
 .pe-player-row {
+    display: contents;
+}
+
+.pe-player-group {
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+.pe-sats {
     display: flex;
+    flex: 0 0 100%;
+    flex-wrap: nowrap;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* 他プレイヤーの衛星は 1 行（収まらなければ横スクロール） */
+.pe-player-other .pe-sats {
+    padding: 2px;
+    overflow-x: auto;
+    justify-content: safe center;
+}
+
+/* 自分の並び: 見出し → 衛星 → 手札・アクション・ミッション。narrow は 見出し → 手札 → 衛星（2 列のグリッド）→ アクションとミッション */
+.pe-player-mine .pe-player-head {
+    order: -3;
+}
+
+.pe-player-mine .pe-sats {
     flex-wrap: wrap;
-    gap: 8px 24px;
-    align-items: flex-end;
+    order: -2;
+}
+
+.pe-player-mine .pe-player-handgroup {
+    order: -1;
+}
+
+.pe-root[data-layout="narrow"] .pe-player-mine .pe-player-handgroup {
+    flex: 0 0 100%;
+    order: -2;
+}
+
+.pe-root[data-layout="narrow"] .pe-player-mine .pe-sats {
+    display: grid;
+    order: -1;
+    grid-template-columns: repeat(2, var(--pe-satellite-w));
+    justify-content: center;
+}
+
+.pe-root[data-layout="narrow"] .pe-player {
+    gap: 8px 14px;
 }
 
 #pe-others {
+    display: grid;
     grid-area: others;
-    display: flex;
-    flex-wrap: wrap;
+    grid-template-columns: repeat(var(--pe-others-cols, 1), minmax(0, 1fr));
     gap: 10px;
+    align-items: start;
 }
 
-/* ブロックの最小幅（約 340 px）を決めて折り返す。012 §10 教訓 8 */
-#pe-others > .pe-player {
-    flex: 1 1 340px;
-    min-width: 0;
-}
-
-.pe-spectator #pe-others > .pe-player {
-    flex-basis: 420px;
-}
-
-/* ---- 11 プレイヤーパネル（BGA 標準のパネルの下に足す。012 §5） ---- */
+/* ---- 11 プレイヤーパネル（BGA 標準のパネルの下に足す。012 §5、追補 U-5） ---- */
 
 .pe-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
     margin-top: 4px;
     font-size: 12px;
 }
@@ -1555,7 +1562,7 @@ html[data-theme="dark"] .pe-modal-body {
 .pe-panel-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px 8px;
+    gap: 2px 7px;
     align-items: center;
 }
 
@@ -1573,12 +1580,12 @@ html[data-theme="dark"] .pe-modal-body {
 .pe-icon {
     display: inline-block;
     flex: 0 0 auto;
-    height: 22px;
+    height: 20px;
     background-repeat: no-repeat;
 }
 
 .pe-icon-maya {
-    width: 22px;
+    width: 20px;
 }
 
 .pe-regions {
@@ -1601,19 +1608,19 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-icon-region {
-    width: 15px;
-    height: 16px;
+    width: 17px;
+    height: 18px;
     background-size: contain;
 }
 
 .pe-icon-disk {
-    width: 26px;
-    height: 22px;
+    width: 24px;
+    height: 20px;
 }
 
 /* 予算: 予算のアイコン（原本）とディスクを並べて、何の数か分かるようにする */
 .pe-icon-budget {
-    width: 22px;
+    width: 20px;
 }
 
 .pe-counter-budget {
@@ -1632,34 +1639,18 @@ html[data-theme="dark"] .pe-modal-body {
 .pe-icon-fame {
     display: inline-block;
     font-size: 17px;
-    line-height: 22px;
+    line-height: 20px;
     color: #c98a00;
 }
 
-/* 自分の領域の見出しの行の数値（プレイヤーパネルと同じ内容） */
-.pe-player-stats {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 2px 10px;
-    align-items: center;
-    margin-left: auto;
-    font-size: 12px;
-    font-weight: normal;
-}
-
-.pe-icon-sat {
-    width: 34px;
-    height: 20px;
-}
-
 .pe-icon-reward {
-    width: 16px;
-    height: 22px;
+    width: 14px;
+    height: 20px;
 }
 
 .pe-icon-cardback {
-    width: 14px;
-    height: 20px;
+    width: 13px;
+    height: 18px;
     border: 1px solid #555;
     border-radius: 2px;
     background: linear-gradient(135deg, #3b4a6b, #1c2230);
@@ -1858,25 +1849,14 @@ html[data-theme="dark"] .pe-zoom {
     padding: 2px 8px;
 }
 
-.pe-root[data-layout="narrow"] .pe-sat {
-    width: 100%;
-    max-width: 360px;
-}
-
-.pe-root[data-layout="narrow"] .pe-sat-card {
-    width: var(--pe-satellite-w);
-}
-
-.pe-root[data-layout="narrow"] .pe-chip {
-    min-height: 32px;
-}
-
 .pe-root[data-layout="narrow"] .pe-btn,
 .pe-root[data-layout="narrow"] .pe-btn-small {
     min-height: 32px;
 }
 
 .pe-root[data-layout="narrow"] .pe-field {
+    --pe-field-card-w: 48px;
+
     gap: 6px 14px;
 }
 
@@ -2349,12 +2329,6 @@ html[data-theme="dark"] .pe-zoom {
     color: #0a1224;
     transform: translateX(-50%);
     pointer-events: none;
-}
-
-/* 詳細 / 簡略の切り替え（プレイヤーの領域の見出しの右端。作者回答 2026-10-20） */
-.pe-detail-toggle {
-    flex: none;
-    margin-left: auto;
 }
 
 /* 手札を選ぶ欄（見出し + 選んだカードの一覧。選択中の欄だけが手札のゾーンを使う。012 追補 2026-11-14 B-2） */
