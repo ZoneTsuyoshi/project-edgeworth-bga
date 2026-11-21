@@ -6,17 +6,39 @@
 /** 区域の幅の上限（wide。px） */
 export const HEX_W_MAX = 150;
 /** 区域の幅の下限（px。これより小さくは拡縮しない） */
-export const HEX_W_MIN = 28;
+export const HEX_W_MIN = 32;
 /** スマホ（narrow）の段階: 標準 52 px、大 76 px（012 §3.8）。概観は画面幅に収める */
 export const NARROW_STEPS = { normal: 52, large: 76 };
-/** PC のズームボタンの倍率（1.25 倍・0.8 倍） */
-export const ZOOM_FACTOR = 1.25;
-/** PC のズームの段数の範囲 */
-export const ZOOM_LEVEL_LIMIT = 3;
+/** スマホの段の並び（小さい順）。拡縮ボタンはこの順に 1 つずつ移る */
+export const NARROW_STEP_ORDER = /** @type {const} */ (['overview', 'normal', 'large']);
+/** `#pe-root` の幅の上限（px。012 追補 U-2） */
+export const ROOT_MAX_WIDTH = 1400;
+/** `#pe-root` の左右の余白（px。操作しない余白。012 追補 U-2） */
+export const ROOT_GUTTER = 12;
 
 /**
- * `#pe-root` の幅 → data-layout（012 §2.2）。
- * @param {number} rootWidth
+ * `#pe-root` の外寸の幅から、左右の余白を引いた内側の幅。盤面の幅と data-layout の判定はこの値で行う。
+ * @param {number} rootWidth `#pe-root` の外寸の幅（px）
+ * @returns {number}
+ */
+export function innerWidthOf(rootWidth) {
+  return Math.max(0, rootWidth - ROOT_GUTTER * 2);
+}
+
+/**
+ * スマホの段を delta 段ずらす（端で止まる。拡縮ボタンの [−]=-1、[+]=+1）。
+ * @param {'overview' | 'normal' | 'large'} step
+ * @param {number} delta
+ * @returns {'overview' | 'normal' | 'large'}
+ */
+export function shiftNarrowStep(step, delta) {
+  const i = NARROW_STEP_ORDER.indexOf(step) + delta;
+  return NARROW_STEP_ORDER[Math.max(0, Math.min(NARROW_STEP_ORDER.length - 1, i))];
+}
+
+/**
+ * `#pe-root` の内側の幅 → data-layout（012 §2.2）。
+ * @param {number} rootWidth 余白を引いた内側の幅（`innerWidthOf`）
  * @returns {'wide' | 'medium' | 'narrow'}
  */
 export function layoutOf(rootWidth) {
@@ -42,24 +64,20 @@ export function fitHexWidth(rootWidth, cols) {
 /**
  * 区域の幅 `--pe-hex-w`（px）を決める。
  * wide: 幅 ÷ (cols + 0.5) を 150 px で頭打ち。medium: 幅 ÷ (cols + 0.5)。narrow: 段階（概観 / 標準 / 大）。
- * PC のズームボタンの段数 zoomLevel は wide・medium の自動値に 1.25 倍ずつ掛ける。
  * @param {object} p
- * @param {number} p.rootWidth `#pe-root` の幅（px）
+ * @param {number} p.rootWidth `#pe-root` の内側の幅（px。`innerWidthOf`）
  * @param {number} p.cols 盤面の列数（12 / 9 / 6）
- * @param {number} [p.zoomLevel] PC のズーム段数（-3〜3）
  * @param {'overview' | 'normal' | 'large'} [p.narrowStep] スマホの段階
  * @returns {number} px（小数 1 桁に丸める）
  */
-export function computeHexWidth({ rootWidth, cols, zoomLevel = 0, narrowStep = 'normal' }) {
+export function computeHexWidth({ rootWidth, cols, narrowStep = 'normal' }) {
   const layout = layoutOf(rootWidth);
   const fit = fitHexWidth(rootWidth, cols);
   let w;
   if (layout === 'narrow') {
     w = narrowStep === 'overview' ? fit : NARROW_STEPS[narrowStep];
   } else {
-    const level = Math.max(-ZOOM_LEVEL_LIMIT, Math.min(ZOOM_LEVEL_LIMIT, zoomLevel));
-    const auto = layout === 'wide' ? Math.min(HEX_W_MAX, fit) : fit;
-    w = auto * ZOOM_FACTOR ** level;
+    w = layout === 'wide' ? Math.min(HEX_W_MAX, fit) : fit;
   }
   return Math.round(Math.max(HEX_W_MIN, w) * 10) / 10;
 }
