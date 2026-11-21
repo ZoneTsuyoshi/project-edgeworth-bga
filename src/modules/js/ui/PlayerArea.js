@@ -56,18 +56,39 @@ export class PlayerArea {
         this.actionsBox = el('div');
         this.missionsBox = el('div');
         this.handBox = el('div');
+        /** 手札の見出しの行のボタンの置き場（[Sell cards]。BGA の addActionButton の destination。012 追補 U-1） */
+        this.handTools = el('div', { class: 'pe-hand-tools' });
         this.actions = new ActionRow(env, tooltip, this.actionsBox, { mine: opts.mine });
         this.hand = new HandView(env, tooltip, this.handBox);
+        this.actionsGroup = el('div', { class: 'pe-player-group' }, [el('span', { class: 'pe-field-label' }, [_('Actions')]), this.actionsBox]);
         this.root.append(
             el('header', { class: 'pe-player-head' }, [el('span', { class: 'pe-color-dot', 'aria-hidden': 'true' }), this.title, this.marks, this.statsBox, this.detailButton]),
             this.satsBox,
             el('div', { class: 'pe-player-row' }, [
-                el('div', { class: 'pe-player-group' }, [el('span', { class: 'pe-field-label' }, [_('Actions')]), this.actionsBox]),
+                this.actionsGroup,
                 el('div', { class: 'pe-player-group' }, [el('span', { class: 'pe-field-label' }, [_('Missions')]), this.missionsBox]),
             ]),
-            el('div', { class: 'pe-player-group pe-player-handgroup' }, [el('span', { class: 'pe-field-label' }, [_('Hand')]), this.handBox]),
+            el('div', { class: 'pe-player-group pe-player-handgroup' }, [
+                el('div', { class: 'pe-hand-head' }, [el('span', { class: 'pe-field-label' }, [_('Hand')]), this.handTools]),
+                this.handBox,
+            ]),
         );
         this.refresh();
+    }
+
+    /**
+     * 自分のアクションカードの行を別の場所（計画フェイズの選択パネル）へ移す。null で自分の領域の元の場所へ戻す。
+     * 同じ行が画面に 2 つ同時に出ないよう、要素そのものを移す。
+     * @param {HTMLElement | null} container
+     */
+    moveActionsTo(container) {
+        if (container === null) {
+            if (this.actionsBox.parentElement !== this.actionsGroup) {
+                this.actionsGroup.append(this.actionsBox);
+            }
+            return;
+        }
+        container.append(this.actionsBox);
     }
 
     /**

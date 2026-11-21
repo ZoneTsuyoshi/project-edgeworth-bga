@@ -3,6 +3,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { CARD_INFO } from '../cards/card-info.js';
+import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
 
@@ -51,6 +52,8 @@ export class PlanningPlot extends ActionState {
         super(game, bga);
         /** @type {number | null} */
         this.no = null;
+        /** 次にパネルを出すとき画面へスクロールするか（入場時だけ） */
+        this.scrollPanel = true;
     }
 
     reset() {
@@ -66,6 +69,60 @@ export class PlanningPlot extends ActionState {
     summarize(choice) {
         const info = /** @type {Record<string, { numeral: string, name: string }>} */ (/** @type {unknown} */ (CARD_INFO.actions))[`A${String(choice.action).padStart(3, '0')}`];
         return info === undefined ? '' : `${info.numeral} ${info.name}`;
+    }
+
+    /**
+     * @param {Record<string, any>} args
+     * @param {boolean} isActive
+     */
+    onEnteringState(args, isActive) {
+        this.scrollPanel = true;
+        super.onEnteringState(args, isActive);
+    }
+
+    onLeavingState() {
+        super.onLeavingState();
+        this.peRestoreActions();
+    }
+
+    /** 描き直しのたびに、アクションカードの行を元の場所へ戻してから外す（パネルの付け直しは refresh の最後） */
+    clearUi() {
+        this.peRestoreActions();
+        super.clearUi();
+    }
+
+    refresh() {
+        super.refresh();
+        this.peShowActionsPanel();
+    }
+
+    peRestoreActions() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view !== null && me !== null) {
+            view.areas.get(me)?.moveActionsTo(null);
+        }
+    }
+
+    /**
+     * 計画の間、自分のアクションカードの行を選択パネル（盤面の上）に出す（012 追補 U-1 の 8）。確定後も 22 の間はパネルに置く。
+     * 同じ行が 2 か所に出ないよう、要素そのものを移す。観戦者・参加していない人には出さない。
+     */
+    peShowActionsPanel() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        const area = me === null ? undefined : view?.areas.get(me);
+        if (view === null || area === undefined || this.mine === null) {
+            return;
+        }
+        const body = el('div', { class: 'pe-choice-section pe-plan-actions' });
+        view.panel.show({
+            title: _('Choose your Action Card'),
+            hint: _('Sideways cards were used last round and cannot be chosen'),
+            body: [body],
+        }, { scroll: this.scrollPanel });
+        this.scrollPanel = false;
+        area.moveActionsTo(body);
     }
 
     renderConfirmed() {
@@ -92,21 +149,6 @@ export class PlanningPlot extends ActionState {
             this.refresh();
         });
         this.bga.statusBar.setTitle(this.no === null ? _('${you} must choose an Action Card') : _('${you} chose an Action Card. Confirm it'));
-        // アクションカードを押す代わりに、ステータスバーの 5 択のボタンでも選べる（選べないカードは押せない）
-        const selectable = (this.mine.selectable ?? []).map(Number);
-        const labels = [_('I Budget'), _('II Deploy'), _('III Launch / Turn'), _('IV Link'), _('V Proposal')];
-        labels.forEach((label, i) => {
-            const no = i + 1;
-            // 選べるかはサーバーの `_private.selectable` を正とする（モデルの向きは見た目だけ）
-            const usable = selectable.includes(no);
-            this.bga.statusBar.addActionButton(label, () => {
-                if (!usable) {
-                    return;
-                }
-                this.no = this.no === no ? null : no;
-                this.refresh();
-            }, { color: this.no === no ? 'primary' : 'secondary', disabled: !usable });
-        });
         if (this.no !== null) {
             const no = this.no;
             this.bga.statusBar.addActionButton(this.confirmed === null ? _('Confirm') : _('Confirm the new choice'), () => this.send('actConfirmPlot', { actionNo: no }, { action: no }), { color: 'primary' });

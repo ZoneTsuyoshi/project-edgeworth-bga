@@ -5,7 +5,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { ActionState } from './ActionState.js';
-import { format, sideAvailability, soleOption } from './logic/common.js';
+import { canShowPass, format, sideAvailability, soleOption } from './logic/common.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, linkSelectionFrom, parseLinkable, validateLink } from './logic/link.js';
 import { costNote } from './texts.js';
 
@@ -176,8 +176,11 @@ export class LinkState extends ActionState {
             this.bga.statusBar.addActionButton(_('Reset'), () => {
                 this.reset();
                 this.refresh();
-            }, { color: 'secondary' });
+            }, { color: 'alert', classes: 'pe-bar-undo' });
         }
-        this.bga.statusBar.addActionButton(_('Pass'), () => this.send('actConfirmLink', linkActionArgs({ op: 'pass' }), { op: 'pass' }), { color: 'secondary' });
+        // [Pass] は何も選んでいないときだけ（選び始めたら [Reset]。012 追補 U-1）
+        if (canShowPass(sel.cell, sel.satId)) {
+            this.bga.statusBar.addActionButton(_('Pass'), () => this.send('actConfirmLink', linkActionArgs({ op: 'pass' }), { op: 'pass' }), { color: 'secondary' });
+        }
     }
 }

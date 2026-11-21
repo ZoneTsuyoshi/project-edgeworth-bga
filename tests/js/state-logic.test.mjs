@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { keyOfNameId, nameOfNameId, parseHostKey } from '../../src/modules/js/cards/name-id.js';
 import {
-  compact, costWith, intList, jsonParam, minSales, parseMods, payState, privateOf, satelliteLabel, sellableHand, sellsWholeHand, sideAvailability, soleOption,
+  canShowPass, compact, costWith, hasPicked, intList, jsonParam, minSales, parseMods, payState, privateOf, satelliteLabel, sellableHand, sellsWholeHand, sideAvailability, soleOption,
 } from '../../src/modules/js/states/logic/common.js';
 import {
   deployActionArgs, deployedCards, deployPairs, deployQuote, deploySecondArgs, deploySecondFrom, deploySelectionFrom, deployStage, deployStageArgs, parseStage, parseTargets, passNeedsBonusChoice, validateDeploy,
@@ -626,4 +626,14 @@ test('終了時のミッションカードの公開: 得点が届いた人だけ
   assert.deepEqual(revealedMissions(score), [3, 9]);
   assert.equal(revealedMissions(undefined), null);
   assert.equal(revealedMissions(playerScore(2, { total: 0 }, [])), null);
+});
+
+test('[Pass] は何も選んでいないときだけ出す（012 追補 U-1）', () => {
+  assert.equal(canShowPass(null, null), true);
+  assert.equal(canShowPass(null, undefined, [], '', false), true);
+  assert.equal(canShowPass(5, null), false);
+  assert.equal(canShowPass(null, 0), false);
+  assert.equal(canShowPass(null, [3]), false);
+  assert.equal(hasPicked(), false);
+  assert.equal(hasPicked('launch'), true);
 });

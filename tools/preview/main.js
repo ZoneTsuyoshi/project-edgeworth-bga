@@ -137,16 +137,33 @@ if (stateName !== null) {
             setTitle: (/** @type {string} */ text) => {
                 titleBox.textContent = text.replaceAll('${you}', 'You');
             },
-            addActionButton: (/** @type {string} */ label, /** @type {() => void} */ fn, /** @type {{ color?: string, disabled?: boolean }} */ opts = {}) => {
+            addActionButton: (/** @type {string} */ label, /** @type {() => void} */ fn, /** @type {{ color?: string, disabled?: boolean, classes?: string | string[], destination?: HTMLElement, tooltip?: string, title?: string }} */ opts = {}) => {
                 const b = document.createElement('button');
                 b.type = 'button';
                 b.textContent = label;
                 b.disabled = opts.disabled === true;
-                if (opts.color === 'secondary' || opts.color === 'alert') {
-                    b.className = `pv-${opts.color}`;
+                // 色の見分け: primary = 青、secondary = 白地、alert = 赤（本物の BGA のボタンの代用。index.html の CSS は触らず style で付ける）
+                const color = opts.color ?? 'primary';
+                const palette = { primary: ['#2f6fd6', '#fff', '#2f6fd6'], secondary: ['#fff', '#1d2430', '#9aa3b2'], alert: ['#d83a34', '#fff', '#d83a34'] };
+                const [bg, fg, border] = palette[/** @type {'primary' | 'secondary' | 'alert'} */ (color)] ?? palette.primary;
+                b.className = `bgabutton bgabutton_${color === 'secondary' ? 'gray' : color === 'alert' ? 'red' : 'blue'}`;
+                b.style.cssText = `background:${bg};color:${fg};border:1px solid ${border};border-radius:4px;padding:4px 12px;margin:0;cursor:pointer;${b.disabled ? 'opacity:0.45;cursor:default;' : ''}`;
+                const extra = Array.isArray(opts.classes) ? opts.classes : (opts.classes ?? '').split(/\s+/).filter((c) => c !== '');
+                b.classList.add(...extra);
+                if (extra.includes('pe-bar-undo')) {
+                    b.style.marginLeft = '16px';
                 }
-                b.addEventListener('click', fn);
-                buttonBox.append(b);
+                const tip = opts.tooltip ?? opts.title;
+                if (tip !== undefined) {
+                    b.title = tip;
+                }
+                b.addEventListener('click', () => {
+                    if (!b.disabled) {
+                        fn();
+                    }
+                });
+                (opts.destination ?? buttonBox).append(b);
+                return b;
             },
             removeActionButtons: () => buttonBox.replaceChildren(),
         },

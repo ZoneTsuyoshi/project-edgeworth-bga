@@ -114,6 +114,7 @@ export class ActionState extends ChoiceState {
         this.unsubscribe?.();
         this.unsubscribe = null;
         this.clearUi();
+        this.clearHandTools();
         this.bga.statusBar.removeActionButtons();
         super.onLeavingState();
     }
@@ -242,6 +243,31 @@ export class ActionState extends ChoiceState {
         }
     }
 
+    /** 自分の手札の見出しの行のボタンの置き場（[Sell cards]）を空にする（destination のボタンは removeActionButtons で消えない） */
+    clearHandTools() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        if (view !== null && me !== null) {
+            view.areas.get(me)?.handTools.replaceChildren();
+        }
+    }
+
+    /**
+     * 選択パネルの中の置き場に BGA 標準のボタンを置く（効果の窓の [Use] [Skip] など。012 追補 U-1 の 6）。
+     * @param {HTMLElement} container
+     * @param {string} label
+     * @param {() => void} callback
+     * @param {{ color?: 'primary' | 'secondary' | 'alert', disabled?: boolean, tooltip?: string }} [opts]
+     */
+    pePanelButton(container, label, callback, opts = {}) {
+        this.bga.statusBar.addActionButton(label, callback, {
+            color: opts.color ?? 'primary',
+            disabled: opts.disabled === true,
+            tooltip: opts.tooltip,
+            destination: container,
+        });
+    }
+
     /** 盤面・手札・衛星の選択の表示をすべて外す */
     clearUi() {
         const view = this.game.view;
@@ -252,6 +278,7 @@ export class ActionState extends ChoiceState {
         view.satelliteHandler = null;
         view.panel.hide();
         this.resetHandFields();
+        this.clearHandTools();
         const me = view.m.me;
         if (me !== null) {
             const area = view.areas.get(me);
@@ -275,7 +302,7 @@ export class ActionState extends ChoiceState {
             this.editing = true;
             this.restore(this.confirmed);
             this.refresh();
-        }, { color: 'secondary' });
+        }, { color: 'alert' });
         this.addSellButton();
     }
 
@@ -409,12 +436,22 @@ export class ActionState extends ChoiceState {
         ]);
     }
 
-    /** ステータスバーに [Sell cards] を出す（手札があるとき） */
+    /**
+     * 自分の手札の見出しの行に [Sell cards] を出す（手札があるときだけ。観戦者は出さない。012 追補 U-1 の 5）。
+     * 置き場は、描き直しのたびに空にしてから置く（重複して増えない）。
+     */
     addSellButton() {
+        const view = this.game.view;
+        const me = view?.m.me ?? null;
+        const tools = me === null ? undefined : view?.areas.get(me)?.handTools;
+        if (tools === undefined) {
+            return;
+        }
+        tools.replaceChildren();
         if (this.hand.length === 0) {
             return;
         }
-        this.bga.statusBar.addActionButton(_('Sell cards'), () => this.startSell(), { color: 'secondary' });
+        this.bga.statusBar.addActionButton(_('Sell cards'), () => this.startSell(), { color: 'secondary', destination: tools });
     }
 
     /**
@@ -464,11 +501,11 @@ export class ActionState extends ChoiceState {
         if (sell.askAll) {
             // 手札をすべて売るときだけ確認を挟む（008 §2-3）
             this.bga.statusBar.setTitle(format(_('Sell all ${n} cards in your hand (+${gain} Maya)? This cannot be undone'), { n: count, gain }));
-            this.bga.statusBar.addActionButton(_('Yes, sell all'), () => this.doSell(), { color: 'alert' });
+            this.bga.statusBar.addActionButton(_('Yes, sell all'), () => this.doSell(), { color: 'primary' });
             this.bga.statusBar.addActionButton(_('Cancel'), () => {
                 sell.askAll = false;
                 this.refresh();
-            }, { color: 'secondary' });
+            }, { color: 'alert', classes: 'pe-bar-undo' });
             return;
         }
         area?.hand.setSelectable(candidates, {
@@ -497,7 +534,7 @@ export class ActionState extends ChoiceState {
         );
         this.bga.statusBar.addActionButton(_('Cancel'), () => {
             this.cancelSell();
-        }, { color: 'secondary' });
+        }, { color: 'alert', classes: 'pe-bar-undo' });
     }
 
     cancelSell() {

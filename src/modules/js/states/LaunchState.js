@@ -6,7 +6,7 @@
  */
 import { directionLabel } from '../board/Highlights.js';
 import { ActionState } from './ActionState.js';
-import { format } from './logic/common.js';
+import { canShowPass, format } from './logic/common.js';
 import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from './logic/launch.js';
 import { costNote, launchBlockedText, turnBlockedText } from './texts.js';
 
@@ -225,11 +225,11 @@ export class LaunchState extends ActionState {
             if (this.isBonus) {
                 this.addOp('budget', _('Budget +1'), canBudget);
             }
-            if (sel.satId !== null) {
-                this.bga.statusBar.addActionButton(_('Reset'), () => {
-                    this.reset();
-                    this.refresh();
-                }, { color: 'secondary' });
+            // 前進 → 脇 → 取り消し。[Pass] は何も選んでいないときだけ、衛星を選んだら [Reset]（012 追補 U-1）
+            if (canShowPass(sel.satId)) {
+                this.addPass();
+            } else {
+                this.addReset();
             }
         } else {
             this.bga.statusBar.addActionButton(_('Confirm'), () => {
@@ -238,11 +238,18 @@ export class LaunchState extends ActionState {
                 }
                 this.send('actConfirmLaunch', launchActionArgs(sel), sel.op === 'budget' ? { op: 'budget' } : { op: sel.op, sat: sel.satId, dir: sel.dir, sell: [...sel.sell], useMods: [...sel.useMods] });
             }, { color: 'primary', disabled: !ok });
-            this.bga.statusBar.addActionButton(_('Reset'), () => {
-                this.reset();
-                this.refresh();
-            }, { color: 'secondary' });
+            this.addReset();
         }
+    }
+
+    addReset() {
+        this.bga.statusBar.addActionButton(_('Reset'), () => {
+            this.reset();
+            this.refresh();
+        }, { color: 'alert', classes: 'pe-bar-undo' });
+    }
+
+    addPass() {
         this.bga.statusBar.addActionButton(_('Pass'), () => this.send('actConfirmLaunch', launchActionArgs({ op: 'pass' }), { op: 'pass' }), { color: 'secondary' });
     }
 
