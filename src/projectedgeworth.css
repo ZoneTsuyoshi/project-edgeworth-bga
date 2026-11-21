@@ -9,6 +9,22 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 
+/* ---- 0 テーマの背景（012 追補 U-3）。BGA の既定の背景は html にあり、body の背景がそれを覆う。fixed は使わない（iOS） ---- */
+
+body {
+    background:
+        url("img/pe_background.webp") repeat top center / 900px auto,
+        linear-gradient(180deg, #dbe7f0 0%, #c9dae8 55%, #bfd2e3 100%);
+    background-color: #c9dae8;
+}
+
+html[data-theme="dark"] body {
+    background:
+        url("img/pe_background.webp") repeat top center / 900px auto,
+        linear-gradient(180deg, #0f1b33 0%, #0b1428 55%, #08101f 100%);
+    background-color: #0b1428;
+}
+
 /* ---- 1 トークン ---- */
 
 .pe-root {
@@ -41,12 +57,70 @@
     --pe-c-y-dark: #82600f;
 
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+        "band"
+        "field"
+        "panel"
+        "score"
+        "board"
+        "me"
+        "others";
     gap: 10px;
     width: 100%;
-    padding: 8px 0;
+    max-width: 1400px;
+    margin-inline: auto;
+    padding: 8px 12px;
     color: var(--pe-text);
+}
+
+/* wide: フェイズ帯と場を同じ行に置く。narrow は場を自分の領域の下へ（012 追補 U-2・U-6） */
+.pe-root[data-layout="wide"] {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "band field"
+        "panel panel"
+        "score score"
+        "board board"
+        "me me"
+        "others others";
+}
+
+.pe-root[data-layout="narrow"] {
+    grid-template-areas:
+        "band"
+        "panel"
+        "score"
+        "board"
+        "me"
+        "field"
+        "others";
+    gap: 6px;
+}
+
+#pe-phase-band {
+    grid-area: band;
+}
+
+#pe-field {
+    grid-area: field;
+}
+
+#pe-choice-panel {
+    grid-area: panel;
+}
+
+#pe-score {
+    grid-area: score;
+}
+
+#pe-board-wrap {
+    grid-area: board;
+}
+
+#pe-me {
+    grid-area: me;
 }
 
 html[data-theme="dark"] .pe-root {
@@ -267,6 +341,7 @@ html[data-theme="dark"] .pe-root {
     border: 1px solid var(--pe-line);
     border-radius: 8px;
     background: var(--pe-surface);
+    justify-content: center;
 }
 
 .pe-phase-label {
@@ -322,6 +397,7 @@ html[data-theme="dark"] .pe-root {
     flex-wrap: wrap;
     gap: 10px 24px;
     align-items: flex-end;
+    justify-content: center;
     padding: 6px 10px;
     border: 1px solid var(--pe-line);
     border-radius: 8px;
@@ -420,27 +496,45 @@ html[data-theme="dark"] .pe-modal-body {
 /* ---- 5 盤面 ---- */
 
 .pe-board-wrap {
+    position: relative;
+    justify-self: center;
+    width: fit-content;
+    max-width: 100%;
     overflow: clip;
-    border: 1px solid var(--pe-line);
     border-radius: 8px;
-    background: var(--pe-surface);
+    background: var(--pe-board-bg);
 }
 
-.pe-board-head {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 10px;
-}
-
-.pe-board-title {
-    font-weight: bold;
-}
-
+/* narrow だけ出す拡縮ボタン。盤面の枠の右上に重ねる（012 追補 U-6） */
 .pe-board-tools {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 4;
     display: flex;
     gap: 4px;
+}
+
+.pe-board-tools[hidden] {
+    display: none;
+}
+
+.pe-board-tool {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #fff6;
+    border-radius: 6px;
+    background: #0d1830cc;
+    font-size: 18px;
+    line-height: 1;
+    color: #fff;
+    cursor: pointer;
+}
+
+.pe-board-tool:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
 
 .pe-board-viewport {
@@ -1432,6 +1526,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 #pe-others {
+    grid-area: others;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -1754,10 +1849,6 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 /* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 700 px 未満） ---- */
-
-.pe-root[data-layout="narrow"] {
-    gap: 6px;
-}
 
 .pe-root[data-layout="narrow"] .pe-phase-name {
     display: none;

@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import {
   BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, outlineSegments, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
-import { computeHexWidth, layoutOf, narrowStepFor, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
+import { computeHexWidth, HEX_W_MIN, innerWidthOf, layoutOf, narrowStepFor, ROOT_GUTTER, shiftNarrowStep, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
 test('行のずれと区域 ID（003 §1.1・§1.4）', () => {
   assert.equal(shiftOf(1, 0), 1);
@@ -73,11 +73,34 @@ test('レイアウトの計算（012 §2.2、§3.8）', () => {
   assert.equal(computeHexWidth({ rootWidth: 800, cols: 12 }), 64);
   assert.equal(computeHexWidth({ rootWidth: 390, cols: 12 }), 52);
   assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'large' }), 76);
-  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'overview' }), 31.2);
-  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12, zoomLevel: 1 }), 125);
+  // 概観は幅に収めるが、区域の下限 32 px で止める
+  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'overview' }), HEX_W_MIN);
+  assert.equal(computeHexWidth({ rootWidth: 600, cols: 12, narrowStep: 'overview' }), 48);
+  assert.equal(computeHexWidth({ rootWidth: 600, cols: 6, narrowStep: 'overview' }), 92.3);
   assert.equal(narrowStepFor(390, 4), 'large');
   assert.equal(narrowStepFor(390, 7), 'normal');
   assert.equal(narrowStepFor(390, 12.5), 'overview');
+});
+
+test('内側の幅と拡縮の段（012 追補 U-2・U-6）', () => {
+  assert.equal(ROOT_GUTTER, 12);
+  assert.equal(innerWidthOf(1400), 1376);
+  assert.equal(innerWidthOf(390), 366);
+  assert.equal(innerWidthOf(10), 0);
+  // 余白を引いた幅で data-layout を決める: 外寸 1204 → 内側 1180（wide）、外寸 1203 → medium
+  assert.equal(layoutOf(innerWidthOf(1204)), 'wide');
+  assert.equal(layoutOf(innerWidthOf(1203)), 'medium');
+  assert.equal(layoutOf(innerWidthOf(724)), 'medium');
+  assert.equal(layoutOf(innerWidthOf(723)), 'narrow');
+  // 1400 px 上限の根では、盤面は内側 1376 px で 12 列が 110 px
+  assert.equal(computeHexWidth({ rootWidth: innerWidthOf(1400), cols: 12 }), 110.1);
+  // 段は 1 つずつ移り、端で止まる
+  assert.equal(shiftNarrowStep('normal', -1), 'overview');
+  assert.equal(shiftNarrowStep('normal', 1), 'large');
+  assert.equal(shiftNarrowStep('overview', -1), 'overview');
+  assert.equal(shiftNarrowStep('large', 1), 'large');
+  assert.equal(shiftNarrowStep('overview', 1), 'normal');
+  assert.equal(shiftNarrowStep('large', -1), 'normal');
 });
 
 test('拡大表示の寸法（012 §4.1、§4.6）', () => {

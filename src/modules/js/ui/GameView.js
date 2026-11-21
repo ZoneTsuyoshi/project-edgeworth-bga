@@ -73,13 +73,11 @@ export class GameView {
         this.sheetBox = el('div', { id: 'pe-sheet' });
         this.meBox = el('div', { id: 'pe-me' });
         this.othersBox = el('div', { id: 'pe-others' });
-        const boardHead = el('div', { class: 'pe-board-head' }, [el('span', { class: 'pe-board-title' }, [_('Board')])]);
         this.root.append(this.bandBox, this.fieldBox, this.panelBox, this.scoreBox, this.boardWrap, this.meBox, this.othersBox);
 
         this.band = new PhaseBand(this.bandBox);
         this.field = new FieldView(env, this.tooltip, this.fieldBox);
         this.board = new BoardView(env, this.boardWrap);
-        this.boardWrap.prepend(boardHead);
         this.boardWrap.append(this.sheetBox);
         this.highlights = new Highlights(this.board);
         /** @type {((satId: number) => boolean) | null} 盤面の衛星コマのタップを、操作中の状態が受ける（受けたら true。転回の衛星の選択） */
@@ -108,7 +106,7 @@ export class GameView {
         /** @type {{ applyStage: (priv: Record<string, any>, wasReset: boolean) => void } | null} 配備（状態 61）の UI。ステージ / Reset の通知を渡す */
         this.deployUi = null;
         this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12);
-        boardHead.append(this.layout.renderTools());
+        this.boardWrap.append(this.layout.renderTools());
         this.stateFrame = new StateFrame(this);
         this.board.onPick = (cell) => this.stateFrame.handleCellPick(cell);
     }
