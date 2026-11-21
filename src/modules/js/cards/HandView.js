@@ -1,10 +1,10 @@
 /**
  * 手札（プロジェクトカード）とアクションカード 5 枚（仕様書 012 §4.4、§12）。
- * 手札は本人のみ ID の並び、他プレイヤーは枚数だけ（010 §8.1）。アクションカードは全員の状態が公開（010 §6.1）。
+ * 手札は本人のみ ID の並び（他プレイヤーの枚数はプレイヤーパネルだけ。012 追補 U-5）。アクションカードは全員の状態が公開（010 §6.1）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { actionKey, projectKey } from './sprite-layout.js';
-import { createBadge, createCard, createCardBack } from './CardView.js';
+import { createCard, createCardBack } from './CardView.js';
 import { el } from '../ui/dom.js';
 
 /**
@@ -64,16 +64,6 @@ export class HandView {
     }
 
     /**
-     * 他プレイヤー・観戦者: 枚数だけ（裏面を重ねる）。
-     * @param {number} count
-     */
-    setCount(count) {
-        this.ids = [];
-        this.count = count;
-        this.render();
-    }
-
-    /**
      * 選択モードにする。ids が null で解除。
      * @param {number[] | null} ids 選べるカード
      * @param {{ multi?: boolean, onChange?: (ids: number[]) => void, reasons?: Map<number, string> }} [opts] reasons = 押せないカードの理由（title）
@@ -105,11 +95,8 @@ export class HandView {
 
     render() {
         this.root.replaceChildren();
-        if (this.ids.length === 0 && this.count > 0) {
-            for (let i = 0; i < Math.min(this.count, 10); i++) {
-                this.root.append(createCardBack(this.env, 'PREV', ['pe-hand-card']));
-            }
-            this.root.append(createBadge(this.count, 'pe-hand-count'));
+        if (this.ids.length === 0) {
+            this.root.append(el('span', { class: 'pe-hand-empty' }, [_('No cards in hand')]));
             return;
         }
         for (const id of this.ids) {

@@ -4,7 +4,7 @@
  * 更新は 100 ms でデバウンスする（012 §10）。盤面の拡縮は `--pe-hex-w` の変更だけで行う（bga-zoom は使わない暫定案。未確定事項 No.3）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { cardSizes, computeHexWidth, innerWidthOf, layoutOf, NARROW_STEP_ORDER, narrowStepFor, shiftNarrowStep } from './layout-math.js';
+import { cardSizes, computeHexWidth, innerWidthOf, layoutOf, NARROW_STEP_ORDER, narrowStepFor, othersColumns, satelliteWidths, shiftNarrowStep } from './layout-math.js';
 import { el } from './dom.js';
 
 const DEBOUNCE_MS = 100;
@@ -15,10 +15,12 @@ export class Layout {
     /**
      * @param {HTMLElement} root `#pe-root`
      * @param {() => number} getCols 盤面の列数
+     * @param {() => number} [getOthers] 他プレイヤーの人数（衛星の幅と他プレイヤーの列数に使う）
      */
-    constructor(root, getCols) {
+    constructor(root, getCols, getOthers = () => 2) {
         this.root = root;
         this.getCols = getCols;
+        this.getOthers = getOthers;
         /** @type {'overview' | 'normal' | 'large'} */
         this.narrowStep = 'normal';
         this.lastManualZoom = 0;
@@ -62,6 +64,12 @@ export class Layout {
             this.root.style.setProperty(`--pe-${name}-w`, `${w}px`);
             this.root.style.setProperty(`--pe-${name}-h`, `${h}px`);
         }
+        // 衛星カードの幅は流動（px の CSS 変数。012 追補 U-6）
+        const columns = othersColumns(layout, this.getOthers());
+        const sat = satelliteWidths({ layout, rootWidth: width, othersColumns: columns });
+        this.root.style.setProperty('--pe-satellite-w', `${sat.mine}px`);
+        this.root.style.setProperty('--pe-satellite-other-w', `${sat.other}px`);
+        this.root.style.setProperty('--pe-others-cols', String(columns));
         this.renderTools();
     }
 

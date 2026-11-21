@@ -1,5 +1,6 @@
 /**
- * 場の情報（仕様書 012 §2.3、§4.7）: 褒賞カード 2 枚、プロジェクトカードの山札（枚数）と捨て札（一番上の 1 枚）、ラウンド。
+ * 場の情報（仕様書 012 §2.3、§4.7）: 褒賞カード 2 枚、プロジェクトカードの山札（枚数）と捨て札（一番上の 1 枚）。
+ * 見出しの文字は出さず、各グループに aria-label と title を付ける。ラウンドはフェイズ帯にだけ出す（012 追補 U-4・U-5）。
  * ミッション（本人は表、他プレイヤーは裏）もここで作る。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -21,12 +22,10 @@ export class FieldView {
         this.rewardsBox = el('div', { class: 'pe-rewards' });
         this.deckBox = el('div', { class: 'pe-deck', title: _('Project deck') });
         this.discardBox = el('button', { type: 'button', class: 'pe-discard', title: _('Discard pile'), onClick: () => this.openDiscard() });
-        this.roundBox = el('div', { class: 'pe-round' });
         root.append(
-            el('div', { class: 'pe-field-group' }, [el('span', { class: 'pe-field-label' }, [_('Rewards')]), this.rewardsBox]),
-            el('div', { class: 'pe-field-group' }, [el('span', { class: 'pe-field-label' }, [_('Project deck')]), this.deckBox]),
-            el('div', { class: 'pe-field-group' }, [el('span', { class: 'pe-field-label' }, [_('Discard')]), this.discardBox]),
-            this.roundBox,
+            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Rewards'), title: _('Rewards') }, [this.rewardsBox]),
+            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Project deck'), title: _('Project deck') }, [this.deckBox]),
+            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Discard'), title: _('Discard') }, [this.discardBox]),
         );
         /** @type {number[]} */
         this.discard = [];
@@ -66,13 +65,6 @@ export class FieldView {
             this.discardBox.append(createCard(this.env, projectKey(top), { classes: ['pe-discard-card'] }));
         }
         this.discardBox.append(createBadge(ids.length, 'pe-discard-count'));
-    }
-
-    /**
-     * @param {number} round
-     */
-    setRound(round) {
-        this.roundBox.textContent = round > 0 ? `${_('Round')} ${round}` : _('Setup');
     }
 
     /** 捨て札の全一覧（公開情報）を開く（012 §4.7） */
