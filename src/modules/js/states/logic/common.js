@@ -270,6 +270,26 @@ export function soleOption(pairs, a) {
   return options.length === 1 ? options[0].b : null;
 }
 
+// ---- ステータスバーのボタン（012 追補 U-1） ----
+
+/**
+ * 何かを選び始めているか（null・undefined・false・空配列・空文字は「選んでいない」）。
+ * @param {...unknown} values 選択の各部分（カード・衛星・区域・操作・向きなど）
+ * @returns {boolean}
+ */
+export function hasPicked(...values) {
+  return values.some((v) => v !== null && v !== undefined && v !== false && v !== '' && !(Array.isArray(v) && v.length === 0));
+}
+
+/**
+ * [Pass] を出してよいか。何も選んでいないときだけ出す。選び始めたら [Reset] を出し、[Pass] は隠す（[Reset] で戻ってから [Pass]）。
+ * @param {...unknown} values 選択の各部分
+ * @returns {boolean}
+ */
+export function canShowPass(...values) {
+  return !hasPicked(...values);
+}
+
 // ---- 文面 ----
 
 /**

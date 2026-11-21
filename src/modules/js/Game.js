@@ -14,30 +14,6 @@ import { PlanningPlot, SetupLaunchPadPlace } from './states/PlacementStates.js';
 import { ProposalState } from './states/ProposalState.js';
 import { GameView } from './ui/GameView.js';
 
-/**
- * 仮の待機状態（サーバー側 States/PlaceholderWait）。I-07 で状態ごとのクラスに置き換える。
- */
-class PlaceholderWait {
-    /**
-     * @param {Game} game
-     * @param {Bga} bga
-     */
-    constructor(game, bga) {
-        this.game = game;
-        this.bga = bga;
-    }
-
-    /**
-     * @param {unknown} _args
-     * @param {boolean} isCurrentPlayerActive
-     */
-    onEnteringState(_args, isCurrentPlayerActive) {
-        if (isCurrentPlayerActive) {
-            this.bga.statusBar.addActionButton(_('End the game (temporary)'), () => this.bga.actions.performAction('actEndTemporarily'));
-        }
-    }
-}
-
 export class Game {
     /**
      * @param {Bga} bga
@@ -46,7 +22,6 @@ export class Game {
         this.bga = bga;
         /** @type {GameView | null} */
         this.view = null;
-        this.bga.states.register('PlaceholderWait', new PlaceholderWait(this, bga));
         // 状態クラスはサーバー側の States/ のクラス名で登録する（状態 11・13・22・31・61・71・72・81・82・91 の操作 UI）
         this.bga.states.register('SetupLaunchPadPlace', new SetupLaunchPadPlace(this, bga));
         this.bga.states.register('SetupMulligan', new MulliganState(this, bga));

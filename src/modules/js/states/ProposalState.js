@@ -259,7 +259,7 @@ export class ProposalState extends ActionState {
         this.bga.statusBar.addActionButton(_('Reset'), () => {
             this.reset();
             this.refresh();
-        }, { color: 'secondary' });
+        }, { color: 'alert', classes: 'pe-bar-undo' });
     }
 
     /**

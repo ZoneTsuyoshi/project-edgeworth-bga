@@ -13,7 +13,7 @@ import { createCard } from '../cards/CardView.js';
 import { projectKey } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
-import { format, sideAvailability } from './logic/common.js';
+import { canShowPass, format, sideAvailability } from './logic/common.js';
 import {
     deployActionArgs, deployPairs, deployQuote, deploySecondArgs, deploySecondFrom, deploySelectionFrom, deployStage, deployStageArgs, deployedCards, parseStage, parseTargets, passNeedsBonusChoice, validateDeploy,
 } from './logic/deploy.js';
@@ -334,7 +334,7 @@ export class DeployState extends ActionState {
             this.bga.statusBar.addActionButton(_('No bonus'), () => {
                 this.bonusDeclined = true;
                 this.refresh();
-            }, { color: 'primary' });
+            }, { color: 'secondary' });
         } else {
             const hint = this.isBonus
                 ? _('${you} must deploy a card to a satellite, or pass. Then you choose how to use the Action bonus')
@@ -348,10 +348,12 @@ export class DeployState extends ActionState {
                 }
             }
         }
-        if (sel.cardId !== null || sel.satId !== null) {
-            this.addReset();
+        // 前進 → 脇 → 取り消し（右端）。[Pass] は何も選んでいないときだけ、選び始めたら [Reset]（012 追補 U-1）
+        if (canShowPass(sel.cardId, sel.satId)) {
+            this.addPass();
+        } else {
+            this.addReset(!(stage === 'ready' && this.isBonus));
         }
-        this.addPass();
     }
 
     /**
@@ -380,24 +382,27 @@ export class DeployState extends ActionState {
                 this.send('actConfirmDeploy', deploySecondArgs(sel), this.secondChoiceOf(sel));
             }
         }, { color: 'primary', disabled: !ok });
-        if (sel.cardId !== null || sel.satId !== null) {
+        const cancelBonus = !canShowPass(sel.cardId, sel.satId);
+        if (cancelBonus) {
             this.bga.statusBar.addActionButton(_('Cancel the bonus'), () => {
                 this.second = deploySelectionFrom(null);
                 this.refresh();
-            }, { color: 'secondary' });
+            }, { color: 'alert', classes: 'pe-bar-undo' });
         }
-        this.addUndoStage(info);
+        this.addUndoStage(info, !cancelBonus);
     }
 
     /**
      * [Reset]（S1）: ステージした 1 枚目を取り消す。山札から引いた後は押せない状態で出し、理由を表示する。
      * @param {import('./logic/deploy.js').DeployStageInfo} info
+     * @param {boolean} first 取り消し系の最初のボタンか（左に余白を取る）
      */
-    addUndoStage(info) {
+    addUndoStage(info, first) {
         const blocked = !info.canReset;
         const reason = RESET_BLOCKED_TEXT();
         this.bga.statusBar.addActionButton(_('Reset'), () => this.resetStage(), {
-            color: 'secondary',
+            color: 'alert',
+            classes: first ? 'pe-bar-undo' : undefined,
             disabled: blocked,
             title: blocked ? reason : _('Cancel the first deployment and choose again'),
         });
@@ -460,21 +465,24 @@ export class DeployState extends ActionState {
                 sel.extra = { op: 'draw' };
                 this.refresh();
             }, { color: 'primary' });
-            this.bga.statusBar.addActionButton(_('Pass without the bonus'), () => this.send('actConfirmDeploy', deployActionArgs({}), { op: 'pass' }), { color: 'primary' });
+            this.bga.statusBar.addActionButton(_('Pass without the bonus'), () => this.send('actConfirmDeploy', deployActionArgs({}), { op: 'pass' }), { color: 'secondary' });
+            this.bga.statusBar.addActionButton(_('Back'), () => {
+                this.reset();
+                this.refresh();
+            }, { color: 'alert', classes: 'pe-bar-undo' });
         }
-        this.bga.statusBar.addActionButton(_('Back'), () => {
-            this.reset();
-            this.refresh();
-        }, { color: 'secondary' });
     }
 
-    /** ボーナスの選択をやり直す（選び終わった後） */
-    addBonusAgain() {
+    /**
+     * ボーナスの選択をやり直す（選び終わった後）。取り消し系なので赤。
+     * @param {boolean} [first] 取り消し系の最初のボタンか（左に余白を取る）
+     */
+    addBonusAgain(first = true) {
         this.bga.statusBar.addActionButton(_('Choose the bonus again'), () => {
             this.sel.extra = null;
             this.bonusDeclined = false;
             this.refresh();
-        }, { color: 'secondary' });
+        }, { color: 'alert', classes: first ? 'pe-bar-undo' : undefined });
     }
 
     /**
@@ -532,11 +540,14 @@ export class DeployState extends ActionState {
         };
     }
 
-    addReset() {
+    /**
+     * @param {boolean} [first] 取り消し系の最初のボタンか（左に余白を取る）
+     */
+    addReset(first = true) {
         this.bga.statusBar.addActionButton(_('Reset'), () => {
             this.reset();
             this.refresh();
-        }, { color: 'secondary' });
+        }, { color: 'alert', classes: first ? 'pe-bar-undo' : undefined });
     }
 
     addPass() {

@@ -94,7 +94,7 @@ export class HandTargets {
                 el('div', { class: 'pe-choice-label' }, [target.label]),
                 several ? el('button', {
                     type: 'button',
-                    class: `pe-btn pe-btn-small${active ? ' pe-btn-primary' : ''}`,
+                    class: 'pe-btn pe-btn-small',
                     disabled: target.disabled !== undefined,
                     title: target.disabled,
                     'aria-pressed': active ? 'true' : 'false',

@@ -137,6 +137,7 @@ export class EffectWindowState extends ActionState {
         this.waiting = [];
         this.mine = null;
         this.clearUi();
+        this.clearHandTools();
         this.bga.statusBar.removeActionButtons();
     }
 
@@ -156,6 +157,7 @@ export class EffectWindowState extends ActionState {
         }
         view.satelliteHandler = null;
         this.resetHandFields();
+        this.clearHandTools();
         this.bga.statusBar.removeActionButtons();
         if (this.sellMode !== null) {
             this.renderSell();
@@ -383,14 +385,13 @@ export class EffectWindowState extends ActionState {
                 ]),
             ]);
         });
+        // 窓のボタンはパネルの中の置き場に BGA 標準のボタンで置く（012 追補 U-1 の 6）
+        const buttons = el('div', { class: 'pe-effect-buttons' });
+        this.pePanelButton(buttons, _('Confirm order'), () => this.act('actOrderEffects', { entryIds: order }, sig.length), { color: 'primary' });
         return el('section', { class: 'pe-choice-section pe-order' }, [
             el('div', { class: 'pe-choice-label' }, [_('The order of these effects changes the result. Choose the order to resolve them (the initial order is the default order)')]),
             el('ol', { class: 'pe-order-list' }, rows),
-            el('button', {
-                type: 'button',
-                class: 'pe-btn pe-btn-primary',
-                onClick: () => this.act('actOrderEffects', { entryIds: order }, sig.length),
-            }, [_('Confirm order')]),
+            buttons,
         ]);
     }
 
@@ -470,32 +471,30 @@ export class EffectWindowState extends ActionState {
         const ready = check.ok && payable && sellOk && !this.busy.has(q.entryId);
         const sell = need !== null && need > 0 ? sells : [];
 
+        const buttons = el('div', { class: 'pe-effect-buttons' });
+        this.pePanelButton(buttons, _('Use'), () => {
+            if (ready) {
+                this.act('actUseEffect', useEffectArgs(q, values, sell), q.entryId);
+            }
+        }, { color: 'primary', disabled: !ready });
+        if (!q.mandatory) {
+            this.pePanelButton(buttons, _('Skip'), () => this.act('actSkipEffect', { entryId: q.entryId }, q.entryId), {
+                color: 'secondary',
+                disabled: this.busy.has(q.entryId),
+                tooltip: _('The effect is not used and cannot be used for this trigger later'),
+            });
+        }
+        if (!check.ok) {
+            buttons.append(el('span', { class: 'pe-effect-need' }, [this.needText(check.reason, check.key, q)]));
+        }
+
         return el('section', { class: 'pe-choice-section pe-effect', dataset: { entry: q.entryId } }, [
             head,
             cost,
             ...fields,
             preview,
             prompt,
-            el('div', { class: 'pe-effect-buttons' }, [
-                el('button', {
-                    type: 'button',
-                    class: 'pe-btn pe-btn-primary',
-                    disabled: !ready,
-                    onClick: () => {
-                        if (ready) {
-                            this.act('actUseEffect', useEffectArgs(q, values, sell), q.entryId);
-                        }
-                    },
-                }, [_('Use')]),
-                q.mandatory ? null : el('button', {
-                    type: 'button',
-                    class: 'pe-btn',
-                    disabled: this.busy.has(q.entryId),
-                    title: _('The effect is not used and cannot be used for this trigger later'),
-                    onClick: () => this.act('actSkipEffect', { entryId: q.entryId }, q.entryId),
-                }, [_('Skip')]),
-                check.ok ? null : el('span', { class: 'pe-effect-need' }, [this.needText(check.reason, check.key, q)]),
-            ]),
+            buttons,
         ]);
     }
 
