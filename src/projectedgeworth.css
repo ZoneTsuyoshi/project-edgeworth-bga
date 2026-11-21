@@ -206,10 +206,8 @@ html[data-theme="dark"] .pe-root {
     font-weight: bold;
 }
 
-/* ステータスバーの取り消し系の最初のボタン: 前進のボタンと離す（012 追補 U-1。BGA の既定の余白より強い指定） */
-#page-title .bgabutton.pe-bar-undo,
-#generalactions .bgabutton.pe-bar-undo,
-button.bgabutton.pe-bar-undo {
+/* ステータスバーの取り消し系の最初のボタン: 前進のボタンと離す（012 追補 U-1。BGA のボタンのクラス名に依らず、既定の余白より強い指定） */
+.pe-bar-undo {
     margin-left: 16px !important;
 }
 
