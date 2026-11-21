@@ -142,6 +142,8 @@ export const SAT_W_MINE_NARROW_MAX = 200;
 export const SAT_W_OTHER_MAX = 160;
 /** スマホの他プレイヤーの衛星の幅（横 1 列のスクロール。px） */
 export const SAT_W_OTHER_NARROW = 120;
+/** 自分の衛星を 5 機 1 行に並べる幅の下限（px）。これ未満だと配備カードのチップの名前が切れるので、3 機ずつ（3 + 2 の 2 行）にする */
+export const SAT_W_MINE_ROW_MIN = 200;
 /** プレイヤーの領域の左右の余白と枠（padding 10 px × 2 + border 1 px × 2。CSS の 10 プレイヤーの領域と合わせる） */
 export const PLAYER_AREA_PAD = 22;
 /** 衛星の間隔（px。CSS の `.pe-sats` の gap と合わせる） */
@@ -167,12 +169,22 @@ export function othersColumns(layout, otherCount) {
  * @returns {number}
  */
 function fitFiveInRow(areaWidth) {
-  return Math.floor((areaWidth - PLAYER_AREA_PAD - SAT_GAP * (SAT_COUNT - 1)) / SAT_COUNT);
+  return fitInRow(areaWidth, SAT_COUNT);
+}
+
+/**
+ * n 機が 1 行に収まる衛星カードの幅（px。切り捨て）。
+ * @param {number} areaWidth 領域（プレイヤーの面）の外寸の幅
+ * @param {number} n 1 行の機数
+ * @returns {number}
+ */
+function fitInRow(areaWidth, n) {
+  return Math.floor((areaWidth - PLAYER_AREA_PAD - SAT_GAP * (n - 1)) / n);
 }
 
 /**
  * 衛星カードの幅（px。012 追補 U-6）。`Layout.update` が px の CSS 変数として入れる（`cqw` は使わない）。
- * 自分: wide・medium は 5 機が 1 行に収まる幅（上限 240）、narrow は 2 列（上限 200）。
+ * 自分: wide・medium は 5 機が 1 行に収まる幅（上限 240）。それが 200（`SAT_W_MINE_ROW_MIN`）未満なら 3 機ずつ 2 行の幅（上限 240）。narrow は 2 列（上限 200）。
  * 他プレイヤー: 他の列の幅から 5 機が 1 行に収まる幅（上限 160）、narrow は 120（横 1 列のスクロール）。
  * @param {object} p
  * @param {'wide' | 'medium' | 'narrow'} p.layout
@@ -187,8 +199,10 @@ export function satelliteWidths({ layout, rootWidth, othersColumns: columns }) {
     return { mine: floorAt(Math.min(SAT_W_MINE_NARROW_MAX, mine)), other: SAT_W_OTHER_NARROW };
   }
   const columnWidth = (rootWidth - OTHERS_GAP * (columns - 1)) / columns;
+  const five = fitFiveInRow(rootWidth);
+  const mine = five >= SAT_W_MINE_ROW_MIN ? five : fitInRow(rootWidth, 3);
   return {
-    mine: floorAt(Math.min(SAT_W_MINE_MAX, fitFiveInRow(rootWidth))),
+    mine: floorAt(Math.min(SAT_W_MINE_MAX, mine)),
     other: floorAt(Math.min(SAT_W_OTHER_MAX, fitFiveInRow(columnWidth))),
   };
 }

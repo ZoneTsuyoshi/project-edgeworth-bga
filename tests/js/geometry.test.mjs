@@ -172,12 +172,17 @@ test('他プレイヤーの列数と衛星カードの流動の幅（012 追補 
   // wide（内側 1376 px）: 自分は上限 240、他は 2 列で列の幅（683 px）から 5 機が 1 行に収まる 124、1 列なら上限 160
   assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 2 }), { mine: 240, other: 124 });
   assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 1 }), { mine: 240, other: 160 });
-  // medium（内側 700 px）: 自分も他も 5 機が 1 行に収まる幅（127）
-  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 700, othersColumns: 1 }), { mine: 127, other: 127 });
-  // 領域の幅に収まる: 5 機 + 間隔 4 つ + 領域の余白が根の幅以内
-  for (const w of [700, 800, 1000, 1180]) {
+  // medium（内側 700 px）: 5 機 1 行だと 127 でチップの名前が切れるので、自分は 3 機ずつ 2 行（219）。他は 5 機 1 行（127）
+  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 700, othersColumns: 1 }), { mine: 219, other: 127 });
+  // 5 機 1 行で 200 px 以上になる幅（内側 1062 px 以上）は 5 機 1 行のまま
+  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 1062, othersColumns: 1 }), { mine: 200, other: 160 });
+  assert.equal(satelliteWidths({ layout: 'medium', rootWidth: 1061, othersColumns: 1 }).mine, 240);
+  // 領域の幅に収まる: 1 行の機数（5 機 1 行で 200 px 以上なら 5、未満なら 3）+ 間隔 + 領域の余白が根の幅以内
+  for (const w of [700, 800, 1000, 1061, 1062, 1180]) {
     const { mine } = satelliteWidths({ layout: layoutOf(w), rootWidth: w, othersColumns: 1 });
-    assert.ok(mine * 5 + 40 + 22 <= w, `width ${w}`);
+    const perRow = Math.floor((w - 22 - 40) / 5) >= 200 ? 5 : 3;
+    assert.ok(mine * perRow + 10 * (perRow - 1) + 22 <= w, `width ${w}`);
+    assert.ok(mine >= 200, `width ${w}: チップの名前が切れない幅`);
   }
   // narrow: 自分は 2 列（390 px の画面 = 内側 366 px で 167、上限 200）、他は 120 固定
   assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 366, othersColumns: 1 }), { mine: 167, other: 120 });

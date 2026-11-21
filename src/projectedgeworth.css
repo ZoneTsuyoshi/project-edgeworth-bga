@@ -1477,7 +1477,12 @@ html[data-theme="dark"] .pe-modal-body {
     font-weight: bold;
     color: var(--pe-pc, var(--pe-text));
     paint-order: stroke fill;
-    -webkit-text-stroke: 4px #fff;
+    -webkit-text-stroke: 2px rgb(0 0 0 / 55%);
+}
+
+/* ダーク: 暗い地では白い細い縁取り（ライトは白地の黄色が読めるよう暗い縁取り。C.3） */
+html[data-theme="dark"] .pe-player-name {
+    -webkit-text-stroke: 2px rgb(255 255 255 / 85%);
 }
 
 .pe-player-regions {
@@ -1515,6 +1520,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-player-mine .pe-sats {
+    flex-wrap: wrap;
     order: -2;
 }
 
