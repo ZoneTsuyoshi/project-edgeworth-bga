@@ -106,6 +106,7 @@
   - 3 のスプライト生成物のパターンは、T-012 でファイル名が決まった時点で合わせる（姉妹は `src/img/cards_` 始まり）。第 1 段階では `src/` が無いので検査は空振りする。
   - **追加 5**: `src/` に非推奨ファイルを置かない（004 §3）。禁止: `states.inc.php`、`material.inc.php`、`*.action.php`、`*.view.php`、`*.tpl`、`src/ts/`、`rollup.config.mjs`、`src-disabled/`。Studio の初期ファイルに含まれていたものを誤って取り込むのを防ぐ。姉妹にない検査。
   - **追加 6**: BGA 配布のスタブ `_ide_helper.php` と `bga-framework.d.ts` が、リポジトリのどこにも追跡されていないこと（004 §11・§3: コミットしない）。`.gitignore` だけでは `git add -f` を防げない。姉妹にない検査。
+  - **追加 7（2026-11-21）**: `scripts/lint/check-studio.mjs`（`npm run lint:repo` が `check-repo.mjs` に続けて実行）。Studio のコミット時の検査が文字列で拾うものを、`src/` の PHP・CSS から検出する: 禁止関数の呼び出しに見える `exec(`・`$exec(` など、非推奨の `_(`、バッククォートなしの `player_score`、CSS の `@import`（コメントを含む）。自己テストは `check-studio.test.mjs`。
 - 失敗時は `check-repo: N 件の問題があります。` と各行 `<ファイル>: <理由>` を出して終了コード 1。`src/` が無い間もすべて成功する。
 
 #### 2.5 PHP の構文・規約・`strict_types`（P1・P2・P2'）
