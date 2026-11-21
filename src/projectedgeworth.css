@@ -275,9 +275,32 @@ html[data-theme="dark"] .pe-root {
 }
 
 .pe-btn[aria-pressed="true"] {
-    border-color: var(--pe-accent);
-    background: var(--pe-accent);
-    color: #fff;
+    border-color: var(--pe-text);
+    box-shadow: inset 0 0 0 1px var(--pe-text);
+    font-weight: bold;
+}
+
+/* ステータスバーの取り消し系の最初のボタン: 前進のボタンと離す（012 追補 U-1。BGA のボタンのクラス名に依らず、既定の余白より強い指定） */
+.pe-bar-undo {
+    margin-left: 16px !important;
+}
+
+/* 手札の見出しの行: 左に見出し、右に [Sell cards] の置き場 */
+.pe-hand-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pe-hand-tools {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.pe-hand-tools:empty {
+    display: none;
 }
 
 .pe-btn:disabled {
@@ -2071,12 +2094,6 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 /* 効果の問い */
-.pe-btn-primary {
-    border-color: var(--pe-accent);
-    background: var(--pe-accent);
-    color: #fff;
-}
-
 .pe-effect-head {
     display: flex;
     gap: 10px;
