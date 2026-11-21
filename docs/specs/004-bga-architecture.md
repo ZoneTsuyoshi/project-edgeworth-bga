@@ -234,7 +234,7 @@ src/
 | `losers_not_ranked` | `false` | **【確認】** 2 人プレイや同点が多いゲームでは使わないよう公式が注意している（GameInfos） |
 | `is_coop` | `0` | 対戦ゲーム |
 | `db_undo_support` | `false` | §5.4 |
-| `game_interface_width.min` | `740`（初期ファイルの値のまま。暫定） | 横長の盤面（12 列）の幅の扱いは T-012（bga-zoom の自動縮小）。未確定事項 No.10 |
+| `game_interface_width.min` | `740`（初期ファイルの値のまま。暫定） | 横長の盤面（12 列）の幅の扱いは T-012（bga-zoom の自動縮小）。未確定事項 No.10 **→ 012 追補 2026-11-21 U-6 で 360 に変更** |
 | `player_colors` | 初期ファイルのまま | 駒の色（衛星の青・緑・赤・黄との対応）は T-012 で決める。BGA の既定色を 4 色に絞る必要がある |
 | `language_dependency` | `false` | UI 文言は翻訳機構、カード券面は画像 |
 
@@ -339,7 +339,7 @@ src/
 | 7 | オプション 100（ボードの配置）を `level: major`（ロビーで目立つ）にしてよいか | `major` にしない（`base`）。他のオプションも `base`、ドラフト・マリガンのみ `additional` | 暫定案のとおり（2026-10-19） |
 | 8 | `gameinfos` の `publisher`・`publisher_website`・`publisher_bgg_id` に入れる値。MINIMUM JOURNEY の登録と同じ英語表記は何か | 作者の回答待ち（姉妹の `gameinfos.jsonc` も初期値のまま） | `Danjiri Concerto`、`https://danjiri-concerto.github.io/index.html`、出版社の BGG ID は未取得（`0`）（2026-10-19） |
 | 9 | ソースファイル冒頭の著作権表記に入れる氏名と連絡先 | 作者の回答待ち | 「© だんじり協奏曲 (Danjiri Concerto)」と https://x.com/danjiriconcerto（2026-10-19） |
-| 10 | 横長の盤面（12 列）に対する `game_interface_width.min` の値。スマートフォンでの最小幅の方針 | `740`（初期ファイルのまま）。bga-zoom の自動縮小で対応し、T-012 で最終決定 | 暫定案のとおり（2026-10-19） |
+| 10 | 横長の盤面（12 列）に対する `game_interface_width.min` の値。スマートフォンでの最小幅の方針 | `740`（初期ファイルのまま）。bga-zoom の自動縮小で対応し、T-012 で最終決定 | 暫定案のとおり（2026-10-19） **→ 012 追補 2026-11-21 U-6 で `min` を 360 に下げる** |
 | 11 | JS を TypeScript ではなく素の JS ＋ JSDoc で進めることを、本ゲームでも続けてよいか（姉妹では作者了承済み。ただし本ゲームは UI が複雑） | 続ける。ファイル分割で対応 | 暫定案のとおり（2026-10-19） |
 
 ## 受け入れ条件
