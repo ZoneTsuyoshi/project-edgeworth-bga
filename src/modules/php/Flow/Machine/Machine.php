@@ -90,10 +90,10 @@ final class Machine
         }
         if ($stateId === StateId::SETUP_LAUNCH_PAD_PLACE) {
             if ($this->setup()->nextPlacer() !== $playerId) {
-                throw new RuleViolation('You cannot sell cards now');
+                throw new RuleViolation(clienttranslate('You cannot sell cards now'));
             }
         } elseif (!in_array($stateId, self::sellableStates(), true) || !in_array($playerId, $services->globals->stepParticipants(), true)) {
-            throw new RuleViolation('You cannot sell cards now');
+            throw new RuleViolation(clienttranslate('You cannot sell cards now'));
         }
 
         $reserved = [];

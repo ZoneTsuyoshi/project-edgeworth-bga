@@ -330,16 +330,16 @@ final class EffectEngine
     public function useEffect(int $playerId, int $entryId, Answer $answer): void
     {
         $item = $this->askable($playerId, $entryId);
-        [$spec, $host, $part, $call] = $this->bind($item) ?? throw new EffectViolation('the effect is no longer available');
+        [$spec, $host, $part, $call] = $this->bind($item) ?? throw new EffectViolation(clienttranslate('The effect is no longer available'));
 
         $fields = $part->buildFields($call);
         $result = $this->validator->validate($fields, $answer);
         if (!$result->ok) {
-            throw new EffectViolation($result->message);
+            throw new EffectViolation($result->message, $result->args);
         }
         $result = $part->validate($call, $answer);
         if (!$result->ok) {
-            throw new EffectViolation($result->message);
+            throw new EffectViolation($result->message, $result->args);
         }
         $this->checkSale($playerId, $spec, $answer, $item->stage === 1, $part->acceptsSale($call));
 
@@ -355,7 +355,7 @@ final class EffectEngine
         $item = $this->askable($playerId, $entryId);
         $spec = $this->catalog->specFor($item->cardKey);
         if ($spec === null || !$spec->optional) {
-            throw new EffectViolation('a mandatory effect cannot be skipped');
+            throw new EffectViolation(clienttranslate('A mandatory effect cannot be skipped'));
         }
         $item->status = PoolItemStatus::Skipped;
         $this->settle($playerId);
@@ -381,7 +381,7 @@ final class EffectEngine
                 return;
             }
         }
-        throw new EffectViolation('the order must list every effect of one pending conflict set exactly once');
+        throw new EffectViolation(clienttranslate('The order must list every effect of one pending conflict set exactly once'));
     }
 
     /**
@@ -673,15 +673,15 @@ final class EffectEngine
     {
         $sell = $answer->sell;
         if ($sell !== [] && (!$firstStage || ($spec->cost === null && !$partAcceptsSale))) {
-            throw new EffectViolation('nothing to pay for');
+            throw new EffectViolation(clienttranslate('Nothing to pay for'));
         }
         if (count(array_unique($sell)) !== count($sell) || array_diff($sell, $this->view->hand($playerId)) !== []) {
-            throw new EffectViolation('invalid cards to sell');
+            throw new EffectViolation(clienttranslate('Invalid cards to sell'));
         }
         if ($firstStage && $spec->cost !== null && $spec->cost->kind === CostKind::PayMaya) {
             $funds = $this->view->maya($playerId) + count($sell) * $this->view->sellPrice($playerId);
             if ($funds < $spec->cost->amount) {
-                throw new EffectViolation('not enough maya');
+                throw new EffectViolation(clienttranslate('Not enough maya'));
             }
         }
     }
@@ -692,14 +692,14 @@ final class EffectEngine
     {
         $plan = $this->plan($playerId);
         if ($plan->kind === PlanKind::Order) {
-            throw new EffectViolation('the order of conflicting effects must be decided first');
+            throw new EffectViolation(clienttranslate('The order of conflicting effects must be decided first'));
         }
         foreach ($plan->kind === PlanKind::Ask ? $plan->items : [] as $item) {
             if ($item->id === $entryId) {
                 return $item;
             }
         }
-        throw new EffectViolation('this effect cannot be answered now');
+        throw new EffectViolation(clienttranslate('This effect cannot be answered now'));
     }
 
     /**

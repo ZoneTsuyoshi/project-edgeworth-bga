@@ -133,26 +133,26 @@ final class ProposalOptions
         $unique = static fn(array $list): bool => count($list) === count(array_unique($list));
 
         foreach ($uses as $key => $value) {
-            $option = $plan->option((string) $key) ?? throw new EffectViolation("option is not available: $key");
+            $option = $plan->option((string) $key) ?? throw new EffectViolation(clienttranslate('Option ${key} is not available'), ['key' => $key]);
             if ($option->kind === ProposalOption::KEEP_PURCHASE && !isset($option->tiers[(int) $value])) {
-                throw new EffectViolation('invalid payment tier');
+                throw new EffectViolation(clienttranslate('Invalid payment tier'));
             }
             if ($option->kind === ProposalOption::EXTRA_DISCARD && !in_array((int) $value, [...$hand, ...$keep], true)) {
-                throw new EffectViolation('the extra discard must be a card in hand');
+                throw new EffectViolation(clienttranslate('The extra discard must be a card in hand'));
             }
         }
         if (!$unique($keep) || array_diff($keep, $drawn) !== []) {
-            throw new EffectViolation('keep only cards that were drawn');
+            throw new EffectViolation(clienttranslate('Keep only cards that were drawn'));
         }
         if ($handDiscard !== [] && !$plan->handDiscard) {
-            throw new EffectViolation('discarding from hand needs Shannon Entropy');
+            throw new EffectViolation(clienttranslate('Discarding from hand needs Shannon Entropy'));
         }
         if (!$unique($handDiscard) || array_diff($handDiscard, $hand) !== []) {
-            throw new EffectViolation('invalid cards to discard from hand');
+            throw new EffectViolation(clienttranslate('Invalid cards to discard from hand'));
         }
         $keepCount = $this->keepCount($plan, $baseKeep, count($drawn), $uses);
         if (count($keep) !== min(count($drawn), $keepCount + count($handDiscard))) {
-            throw new EffectViolation('keep exactly ' . min(count($drawn), $keepCount + count($handDiscard)) . ' card(s)');
+            throw new EffectViolation(clienttranslate('Keep exactly ${count} card(s)'), ['count' => min(count($drawn), $keepCount + count($handDiscard))]);
         }
         $extra = array_map(static fn(mixed $v): int => (int) $v, array_values(array_filter(
             $uses,
@@ -161,14 +161,14 @@ final class ProposalOptions
         )));
         $claimed = [...$handDiscard, ...$extra, ...$sell];
         if (!$unique($claimed)) {
-            throw new EffectViolation('a card cannot be used twice');
+            throw new EffectViolation(clienttranslate('A card cannot be used twice'));
         }
         if (array_diff($sell, $hand) !== []) {
-            throw new EffectViolation('invalid cards to sell');
+            throw new EffectViolation(clienttranslate('Invalid cards to sell'));
         }
         $pay = $this->payment($plan, $uses);
         if ($this->view->maya($playerId) + count($sell) * $this->view->sellPrice($playerId) < $pay) {
-            throw new EffectViolation('not enough maya');
+            throw new EffectViolation(clienttranslate('Not enough maya'));
         }
     }
 

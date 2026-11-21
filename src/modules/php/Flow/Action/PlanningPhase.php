@@ -57,10 +57,10 @@ final class PlanningPhase implements ActionStep
     {
         $action = $data['action'] ?? null;
         if (!is_int($action) || !in_array($action, ActionCardRepository::ACTION_NUMBERS, true)) {
-            throw new RuleViolation('Select an action card');
+            throw new RuleViolation(clienttranslate('Select an action card'));
         }
         if (!in_array($action, $this->selectable($playerId), true)) {
-            throw new RuleViolation('Used last round. Returns to your hand next round.');
+            throw new RuleViolation(clienttranslate('Used last round. Returns to your hand next round.'));
         }
     }
 

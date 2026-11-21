@@ -1,5 +1,5 @@
 /*
- * PROJECT EDGEWORTH のスタイル（仕様書 012）。素の CSS 1 ファイル（SCSS・@import は使わない。004 §4）。
+ * PROJECT EDGEWORTH のスタイル（仕様書 012）。素の CSS 1 ファイル（SCSS や CSS の読み込み命令は使わない。004 §4）。
  * 寸法の基準は JS（ui/Layout.js）が ResizeObserver で測って `#pe-root` に入れる px の CSS 変数
  *   --pe-root-w（ゲーム領域の幅）、--pe-hex-w（盤面の区域の幅）、--pe-<kind>-w / -h（カードの大きさ）
  * と、`data-layout`（wide / medium / narrow）。`cqw`・`vw`・`@media` の幅には依存しない（012 §2.2、§10 教訓 1）。

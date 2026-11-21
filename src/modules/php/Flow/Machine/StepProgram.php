@@ -17,7 +17,7 @@ namespace Bga\Games\projectedgeworth\Flow\Machine;
  * - 'win:XX' は窓 XX を開く位置。WindowGate が必要と答えたときだけ window_id と window_resume を書いて 'window' を返す
  *   （状態 30 へ。閉じると 32 が戻り先のドライバへ返す）。不要なら素通りする。
  * - 'next' は終わり。flow_step を 0 に戻して 'next' を返す。
- * - それ以外は $exec が実行し、遷移名を返したらそこで止める（選択状態へ出る）。null なら続ける。
+ * - それ以外は $runOp が実行し、遷移名を返したらそこで止める（選択状態へ出る）。null なら続ける。
  */
 final class StepProgram
 {
@@ -29,9 +29,9 @@ final class StepProgram
 
     /**
      * @param list<string> $ops
-     * @param \Closure(string, NoticeList): ?string $exec
+     * @param \Closure(string, NoticeList): ?string $runOp
      */
-    public function run(array $ops, \Closure $exec): DriverResult
+    public function run(array $ops, \Closure $runOp): DriverResult
     {
         $globals = $this->ctx->globals;
         $notes = new NoticeList();
@@ -56,7 +56,7 @@ final class StepProgram
                 $globals->setFlowStep(0);
                 return new DriverResult('next', $notes->all());
             }
-            $transition = $exec($op, $notes);
+            $transition = $runOp($op, $notes);
             if ($transition !== null) {
                 return new DriverResult($transition, $notes->all());
             }

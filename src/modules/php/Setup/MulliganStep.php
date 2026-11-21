@@ -43,16 +43,16 @@ final class MulliganStep implements ActionStep
     {
         $discard = $data['discard'] ?? null;
         if (!is_array($discard)) {
-            throw new RuleViolation('Select the cards to discard');
+            throw new RuleViolation(clienttranslate('Select the cards to discard'));
         }
         $ids = array_values(array_map('intval', $discard));
         if (count($ids) !== count(array_unique($ids))) {
-            throw new RuleViolation('The same card cannot be selected twice');
+            throw new RuleViolation(clienttranslate('The same card cannot be selected twice'));
         }
         $hand = $this->hand($playerId);
         foreach ($ids as $id) {
             if (!in_array($id, $hand, true)) {
-                throw new RuleViolation("Card $id is not in your hand");
+                throw new RuleViolation(clienttranslate('Card ${id} is not in your hand'), ['id' => $id]);
             }
         }
     }

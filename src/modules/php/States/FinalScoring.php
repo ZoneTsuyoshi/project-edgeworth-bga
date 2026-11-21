@@ -16,7 +16,7 @@ use Bga\Games\projectedgeworth\Flow\StateId;
 use Bga\Games\projectedgeworth\Game;
 
 /**
- * 名声 I〜IX を計算し（001 §12）、player_score に合計を保存して、内訳を通知する。同点は同順位（player_score_aux は使わない。Q-08）。
+ * 名声 I〜IX を計算し（001 §12）、BGA の得点（`playerScore` のカウンター）に合計を保存して、内訳を通知する。同点は同順位（補助の得点は使わない。Q-08）。
  * 99 ではなく GameResult::individualRanking を返してゲームを終える（009 B10）。
  */
 class FinalScoring extends GameState

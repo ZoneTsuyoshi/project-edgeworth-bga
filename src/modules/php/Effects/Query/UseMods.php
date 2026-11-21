@@ -103,7 +103,7 @@ final class UseMods
         $keys = [];
         foreach ($chosen as $key) {
             if (!is_string($key) || !in_array($key, $allowed, true) || in_array($key, $keys, true)) {
-                throw new EffectViolation('invalid modifier to use');
+                throw new EffectViolation(clienttranslate('Invalid modifier to use'));
             }
             $keys[] = $key;
         }
@@ -120,7 +120,7 @@ final class UseMods
     {
         $all = array_merge([], ...$perChoice);
         if (count($all) !== count(array_unique($all))) {
-            throw new EffectViolation('a modifier can be used once per round');
+            throw new EffectViolation(clienttranslate('A modifier can be used once per round'));
         }
     }
 
@@ -135,7 +135,7 @@ final class UseMods
             [$kind, $src] = explode(':', $key) + [1 => '0'];
             $host = $this->view->host($kind, (int) $src);
             if ($host === null) {
-                throw new EffectViolation('the modifier card is gone');
+                throw new EffectViolation(clienttranslate('The modifier card is gone'));
             }
             $this->mutator->markUsed($host);
         }

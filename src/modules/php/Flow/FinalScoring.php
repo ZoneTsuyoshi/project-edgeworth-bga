@@ -30,7 +30,7 @@ use Bga\Games\projectedgeworth\Scoring\ScoringBoard;
 /**
  * 最終得点（009 の 121 FinalScoring）。DB の状態から PlayerState を組み立て、FameCalculator に渡して
  * 内訳を player.fame_detail に保存する。手札の換金（Q-12）は FameCalculator が計算上で行う。
- * player_score への書き込みと通知は呼び出し側（Game / 状態クラス）が、返り値の total で行う。
+ * BGA の得点（`playerScore` のカウンター）への書き込みと通知は呼び出し側（Game / 状態クラス）が、返り値の total で行う。
  */
 final class FinalScoring
 {
