@@ -14,7 +14,8 @@ const MAX_FILE_BYTES = 2_000_000; // 1 ファイル 2 MB（005 §2.9、004 §13�
 const MAX_TOTAL_BYTES = 15_000_000; // 総量 15 MB
 const WARN_TOTAL_BYTES = 10_000_000; // 目標 10 MB（012 §7.2）
 const MAX_DIM = 4096;
-const WARN_DIRECT_FILE_COUNT = 10; // img/ 直下が 10 個以上で警告（img/README）
+const WARN_DIRECT_FILE_COUNT = 13; // img/ 直下が 13 個以上で警告（BGA の Game art の目安は a dozen 以下。012 追補 U-3）
+const BACKGROUND_FILE = 'pe_background.webp'; // テーマの背景（scripts/build-background.mjs の生成物。012 追補 U-3）
 const NAME_RE = /^pe_[a-z0-9_]+\.webp$/; // 空白・括弧・大文字・他の拡張子を禁止
 const IMAGE_EXT_RE = /\.(webp|png|jpe?g|gif|svg)$/i;
 
@@ -51,7 +52,7 @@ export async function checkSprites({ out, manifest, js }) {
   if (zoomDir !== '' && zoomDir !== 'zoom/') errors.push(`manifest.zoomDir が '' か 'zoom/' ではありません: ${zoomDir}`);
 
   // ファイルの存在・余計な画像・ファイル名
-  const expected = [...SHEETS.map((s) => sheetFile(s, zoomDir)), `${PIECES_STEM}.webp`];
+  const expected = [...SHEETS.map((s) => sheetFile(s, zoomDir)), `${PIECES_STEM}.webp`, BACKGROUND_FILE];
   const present = (await listFiles(out)).filter((f) => IMAGE_EXT_RE.test(f));
   for (const f of expected) if (!present.includes(f)) errors.push(`ファイルがありません: ${f}`);
   for (const f of present) {
@@ -89,7 +90,7 @@ export async function checkSprites({ out, manifest, js }) {
   if (total > MAX_TOTAL_BYTES) errors.push(`総量 ${total} バイトが上限 ${MAX_TOTAL_BYTES} を超えています`);
   else if (total > WARN_TOTAL_BYTES) warnings.push(`総量 ${total} バイトが目標 ${WARN_TOTAL_BYTES} を超えています`);
   const direct = present.filter((f) => !f.includes('/'));
-  if (direct.length >= WARN_DIRECT_FILE_COUNT) warnings.push(`img/ 直下に ${direct.length} 個のファイルがあります（BGA の目安は 10 個未満）`);
+  if (direct.length >= WARN_DIRECT_FILE_COUNT) warnings.push(`img/ 直下に ${direct.length} 個のファイルがあります（BGA の目安は 13 個未満）`);
   for (const f of present) {
     const depth = f.split('/').length - 1;
     if (depth > 1 || (depth === 1 && !f.startsWith('zoom/'))) errors.push(`想定外のサブフォルダです（zoom/ のみ）: ${f}`);

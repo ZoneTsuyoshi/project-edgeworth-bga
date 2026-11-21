@@ -1,6 +1,6 @@
 // data/ の原本から BGA 用の webp スプライトと配置情報を生成する（仕様書 012 第 7 節）。
 // 使い方: npm run build:sprites [-- --out <dir>] [--manifest <path>] [--js <path>] [--quality <n>] [--flat-zoom] [--verify-determinism]
-// 出力: src/img/pe_*.webp、src/img/zoom/pe_zoom_*.webp、build/sprites/manifest.json、src/modules/js/cards/sprites.js（src/ 配下はコミットする。build/ だけ .gitignore 対象）。
+// 出力: src/img/pe_*.webp（背景 pe_background.webp は scripts/build-background.mjs。ここからも呼ぶ）、src/img/zoom/pe_zoom_*.webp、build/sprites/manifest.json、src/modules/js/cards/sprites.js（src/ 配下はコミットする。build/ だけ .gitignore 対象）。
 // data/ は読み取りのみ。
 import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -14,6 +14,7 @@ import {
   PROJECT_KEYS, MISC_KEYS, REWARD_KEYS, ROCKET_KEYS, TILE_KEYS,
 } from './lib/sprite-layout.mjs';
 import { checkSprites } from './check-sprites.mjs';
+import { BACKGROUND_FILE, buildBackground } from './build-background.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = path.join(ROOT, 'data');
@@ -186,6 +187,8 @@ export async function buildAll({ out, manifest, js, quality, zoomDir }) {
   }
   const tiles = Object.fromEntries(TILE_KEYS.map((k) => [k, cardPosition(k, 'base')]));
   const pieces = await buildPieces(out);
+  // 背景も同じ出力先に作る（check-sprites が正規の生成物として検査し、--verify-determinism の一時ディレクトリにも出るようにする）
+  await buildBackground(path.join(out, BACKGROUND_FILE));
 
   const doc = {
     version: 1,
