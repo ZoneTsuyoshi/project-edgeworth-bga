@@ -37,7 +37,7 @@ final readonly class GameOptions
     }
 
     /**
-     * ゲームオプションの値（未設定は null で既定）から作る。人数と合わない盤面の大きさ、未実装の値は例外（004 §7）。
+     * ゲームオプションの値（未設定は null で既定）から作る。人数と合わない盤面の大きさ、未知の値は例外（004 §7）。
      *
      * @param callable(int): ?int $get オプション ID => 値（BGA では $this->tableOptions->get を渡す）
      */

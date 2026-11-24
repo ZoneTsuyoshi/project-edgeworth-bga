@@ -177,6 +177,45 @@ final class Notices
     }
 
     /**
+     * N9（ドラフト。本人だけ。013 §5.1）: 選んだカード、または最後に渡されたカードを手札に加える。ログも本人だけに出る。
+     */
+    public function draftTaken(int $playerId, int $cardId, bool $auto): Notice
+    {
+        $message = $auto
+            ? clienttranslate('You receive ${card_name}, the last card passed to you')
+            : clienttranslate('You keep ${card_name}');
+        return new Notice('handCardsAdded', $message, [
+            'cards' => [$cardId],
+            'zone' => 'hand',
+            'reason' => 'draft',
+            'auto' => $auto,
+            'card_name' => self::cardName($cardId),
+            'i18n' => ['card_name'],
+        ], $playerId);
+    }
+
+    /**
+     * N38（全員。カード ID を載せない）。
+     */
+    public function draftPassed(int $pickNo, int $pickTotal, bool $last): Notice
+    {
+        $message = $last
+            ? clienttranslate('Everyone received the last card passed to them')
+            : clienttranslate('Everyone kept a card and passed the rest to the left (pick ${pick_no} of ${pick_total})');
+        return new Notice('draftPassed', $message, ['pick_no' => $pickNo, 'pick_total' => $pickTotal, 'last' => $last]);
+    }
+
+    /**
+     * N39（本人だけ）: 新しく前に来たパックの ID（並び順）と次の回。
+     *
+     * @param list<int> $pack
+     */
+    public function draftPackReceived(int $playerId, array $pack, int $nextPickNo): Notice
+    {
+        return new Notice('draftPackReceived', '', ['pack' => $pack, 'pick_no' => $nextPickNo], $playerId);
+    }
+
+    /**
      * N10: 捨てたカードの ID は公開（捨て札は表向き）。
      *
      * @param list<int> $cards
@@ -505,7 +544,7 @@ final class Notices
     /**
      * N33
      *
-     * @param array<int, array{handCount: int, drawnCount: int, cubesLeft: int, rewardValues: array<string, int>}> $players
+     * @param array<int, array{handCount: int, packCount: int, drawnCount: int, cubesLeft: int, rewardValues: array<string, int>}> $players
      */
     public function countersUpdate(int $deckCount, int $discardCount, array $players): Notice
     {

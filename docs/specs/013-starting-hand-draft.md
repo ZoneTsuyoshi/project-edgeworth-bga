@@ -2,7 +2,7 @@
 
 | 項目 | 内容 |
 | --- | --- |
-| ステータス | Draft |
+| ステータス | Approved |
 | 対応タスク | I-22 |
 | 作成日 | 2026-11-24 |
 | 関連仕様書 | 001（§3-5、§11-1）、004（§7）、008（§2・§6・§8・§9-1）、009（§3.1〜3.3・§5・§9）、010（§4・§8・§9.3・§10.2・§13・§15）、012（パネル、`CardPicker`、未確定 17、追補 2026-11-21 U-1）。参照: rule-questions Q-06 |
@@ -19,6 +19,8 @@
 ## 仕様
 
 ### 1. すでに決まっていること（変えない）
+
+本書の「パック」は、ドラフトで左隣へ回すカードの束を指す内部の呼び名（ブースターパックではない）。画面・ログの英語では pack を使わない（作者の指摘、2026-11-24）。
 
 | 項目 | 内容 | 出典 |
 | --- | --- | --- |
@@ -74,9 +76,9 @@
 | 参加者 | 全員（パックは常に 1 枚以上あるので `canAct` は常に真。自動確定は起きない） |
 | `actConfirmDraftPick(int $card)` | `#[PossibleAction] #[CheckAction(false)]`。`peConfirm(playerId, ['card' => $card])` |
 | `actSell(?array $cardIds)` | `SetupMulligan` と同じ。`Machine::sellableStates()` に 15 を足す |
-| 検証（`DraftPickStep::validate`） | `card` が整数。本人の今のパックにある。なければ `RuleViolation`（`Select a card from your pack` / `Card ${id} is not in your pack`） |
+| 検証（`DraftPickStep::validate`） | `card` が整数。本人の今のパックにある。なければ `RuleViolation`（`Select one card to keep` / `You cannot choose card ${id}`） |
 | zombie（`defaultChoice`） | 本人のパックの先頭（order の最小）の `{"card": ID}` |
-| description | 他人: `Other players must pick a card from their pack`。本人: `${you} must pick a card from your pack`（詳しい指示は画面が `setTitle` で出す。§6） |
+| description | 他人: `Other players must choose a card to keep (Draft)`。本人: `${you} must choose a card to keep (Draft)`（詳しい指示は画面が `setTitle` で出す。§6） |
 
 `Setup/DraftPickStep.php`（`ActionStep`）を作り、`ChoiceFlow::forState` に `SETUP_DRAFT_PICK` を足す。`resolve(mode, choices)` は 16 から呼ばれ、全員分を検証して（確定がない人は `defaultChoice`）、`takeFromPack` で選んだカードを手札へ移す。
 
@@ -102,8 +104,8 @@
 
 | No. | 通知名 | 送り先 | args | ログ文言（英語原文） | 送る処理・クライアントでの効果 |
 | --- | --- | --- | --- | --- | --- |
-| N9（既存） | `handCardsAdded` | 本人 | `cards`、`zone` = `hand`、`reason` = **`draft`**（新）、`auto`（最後の 1 枚のとき真）、`card_name`、`i18n` | 通常: `You take ${card_name}`。`auto`: `You receive ${card_name} from the last pack`（**本人だけのログ**。他の reason は `''` のまま） | 16 の手順 1 と 4。取ったカード（最後の 1 枚）を手札に加える。他人には何も届かない |
-| N38 | `draftPassed` | 全員 | `pick_no`（今終えた回。1〜4）、`pick_total`（4）、`last`（最後の 1 枚の配布なら真） | 通常: `Everyone took a card and passed the rest to the left (pick ${pick_no} of ${pick_total})`。`last`: `Everyone received the last card of the pack passed to them` | 16 の手順 3・4。**公開ログ**。カード ID は載せない |
+| N9（既存） | `handCardsAdded` | 本人 | `cards`、`zone` = `hand`、`reason` = **`draft`**（新）、`auto`（最後の 1 枚のとき真）、`card_name`、`i18n` | 通常: `You keep ${card_name}`。`auto`: `You receive ${card_name}, the last card passed to you`（**本人だけのログ**。他の reason は `''` のまま） | 16 の手順 1 と 4。取ったカード（最後の 1 枚）を手札に加える。他人には何も届かない |
+| N38 | `draftPassed` | 全員 | `pick_no`（今終えた回。1〜4）、`pick_total`（4）、`last`（最後の 1 枚の配布なら真） | 通常: `Everyone kept a card and passed the rest to the left (pick ${pick_no} of ${pick_total})`。`last`: `Everyone received the last card passed to them` | 16 の手順 3・4。**公開ログ**。カード ID は載せない |
 | N39 | `draftPackReceived` | 本人 | `pack`（新しく前に来たパックの ID。並び順）、`pick_no`（次の回。`last` のときは送らない） | `''` | 16 の手順 3。クライアントのモデルの `myPack` を更新する（§5.3 の未確定 1） |
 | N33（既存） | `countersUpdate` | 全員 | `players[pid].handCount` と、**`packCount`（新）** | `''` | 16 の最後に `ctx->sync()` が送る。手札・パックの枚数の更新 |
 
@@ -220,12 +222,12 @@ Studio は `main` へのマージごとに自動同期される。画面がで�
 
 | No. | 質問 | 案 A（推奨） | 案 B | 根拠の節 | 回答 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 新しいパックを本人に知らせる通知を別に作るか | **N39 `draftPackReceived`（本人宛て。パックの ID）を送る**。クライアントのモデルの `myPack` を通知で更新し、再読み込みは `getAllDatas` に揃える（010 §10.1「画面の更新は通知と `getAllDatas` で行う」。リプレイ・観戦で崩れないため） | 通知は作らず、15 の入場時の args（`_private.pack`）だけで更新する（通知が 1 つ減るが、状態の args に表示を頼る） | §5.1、010 §10.1 | |
-| 2 | 取ったカード名の本人だけのログを、既存の N9 `handCardsAdded` に載せるか | **N9 に `reason: draft` を足し、`draft` のときだけメッセージ（`You take ${card_name}`）を付ける**（他の reason は `''` のまま）。新しい通知名が増えず、N9 が「手札に入る」唯一の経路のまま | ログ用に別の本人宛ての通知（例: `draftTaken`）を足し、N9 は `''` のまま（N9 の約束は崩れないが、通知の種類が増える） | §5.1、010 §10.2 | |
-| 3 | 見出しに「渡す相手」と「受け取る相手」の両方を出すか | **両方出す**（`You pass the rest to X, and receive a pack from Y`）。どちらの方向か、誰のパックかが分かる。2 人プレイは 1 人の名前に畳む | 渡す相手（左隣）だけを出す（短い。受け取る相手は見出しに出ない） | §6 | |
-| 4 | 確定した後、パックを画面に残すか | **残す**（選んだカードに `Picked`、操作不可）。何を選んだか本人が確認でき、[Change my choice] で戻せる | パックを隠し、タイトルに選んだカード名だけを出す（画面は短いが、他の候補が見えなくなる） | §6、012 未確定 17 | |
-| 5 | 実装の PR の分け方 | **2 つ**（1/2 サーバー、2/2 クライアント + オプションの公開）。値 3 は 2/2 で載せ、画面前にロビーで選ばれてテーブルが壊れるのを避ける | 1 つ（差分が大きく、レビューが重い） | §10 | |
-| 6 | ドラフトの値 3 を載せるとき、公開直後の数日は `alpha`（開発者・訓練向けの印）を付けるか | **付けない**（`level: additional` の通常の値。今の 104=2 と同じ扱い。004 §7 の「Public Alpha 前」の段階で他の人は少ない） | `"alpha": true` を付け、Studio の確認が済んでから外す（004 §7 の【確認】の手段） | §7、004 §7 | |
+| 1 | 新しいパックを本人に知らせる通知を別に作るか | **N39 `draftPackReceived`（本人宛て。パックの ID）を送る**。クライアントのモデルの `myPack` を通知で更新し、再読み込みは `getAllDatas` に揃える（010 §10.1「画面の更新は通知と `getAllDatas` で行う」。リプレイ・観戦で崩れないため） | 通知は作らず、15 の入場時の args（`_private.pack`）だけで更新する（通知が 1 つ減るが、状態の args に表示を頼る） | §5.1、010 §10.1 | 案 A のとおり（作者回答、2026-11-24） |
+| 2 | 取ったカード名の本人だけのログを、既存の N9 `handCardsAdded` に載せるか | **N9 に `reason: draft` を足し、`draft` のときだけメッセージ（`You keep ${card_name}`）を付ける**（他の reason は `''` のまま）。新しい通知名が増えず、N9 が「手札に入る」唯一の経路のまま | ログ用に別の本人宛ての通知（例: `draftTaken`）を足し、N9 は `''` のまま（N9 の約束は崩れないが、通知の種類が増える） | §5.1、010 §10.2 | 案 A のとおり（作者回答、2026-11-24） |
+| 3 | 見出しに「渡す相手」と「受け取る相手」の両方を出すか | **両方出す**（`You pass the rest to X, and receive a pack from Y`）。どちらの方向か、誰のパックかが分かる。2 人プレイは 1 人の名前に畳む | 渡す相手（左隣）だけを出す（短い。受け取る相手は見出しに出ない） | §6 | 案 A のとおり（作者回答、2026-11-24） |
+| 4 | 確定した後、パックを画面に残すか | **残す**（選んだカードに `Picked`、操作不可）。何を選んだか本人が確認でき、[Change my choice] で戻せる | パックを隠し、タイトルに選んだカード名だけを出す（画面は短いが、他の候補が見えなくなる） | §6、012 未確定 17 | 案 A のとおり（作者回答、2026-11-24） |
+| 5 | 実装の PR の分け方 | **2 つ**（1/2 サーバー、2/2 クライアント + オプションの公開）。値 3 は 2/2 で載せ、画面前にロビーで選ばれてテーブルが壊れるのを避ける | 1 つ（差分が大きく、レビューが重い） | §10 | 案 A のとおり（作者回答、2026-11-24） |
+| 6 | ドラフトの値 3 を載せるとき、公開直後の数日は `alpha`（開発者・訓練向けの印）を付けるか | **付けない**（`level: additional` の通常の値。今の 104=2 と同じ扱い。004 §7 の「Public Alpha 前」の段階で他の人は少ない） | `"alpha": true` を付け、Studio の確認が済んでから外す（004 §7 の【確認】の手段） | §7、004 §7 | 案 A のとおり（作者回答、2026-11-24） |
 
 ## 既存の仕様書と実装の食い違い（本書で直した、または実装で直す点）
 

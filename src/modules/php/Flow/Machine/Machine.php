@@ -136,6 +136,7 @@ final class Machine
     {
         return [
             StateId::SETUP_MULLIGAN,
+            StateId::SETUP_DRAFT_PICK,
             StateId::PLANNING_PLOT,
             StateId::DEPLOY_MAIN_CHOOSE,
             StateId::LAUNCH_MAIN_CHOOSE,

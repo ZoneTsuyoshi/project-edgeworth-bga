@@ -15,10 +15,11 @@ use Bga\Games\projectedgeworth\Flow\Action\StepEntry;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\Action\StepRunner;
 use Bga\Games\projectedgeworth\Flow\StateId;
+use Bga\Games\projectedgeworth\Setup\DraftPickStep;
 use Bga\Games\projectedgeworth\Setup\MulliganStep;
 
 /**
- * 同時選択の状態 1 つ分（13・22・61・71・72・81・82・91）の共通パターン（009 §5.2）を、Table に依存せずに行う。
+ * 同時選択の状態 1 つ分（13・15・22・61・71・72・81・82・91）の共通パターン（009 §5.2）を、Table に依存せずに行う。
  * 状態クラスは enter / confirm / zombie / args を呼び、フレームワークの操作（setPlayersMultiactive など）と通知の送信だけを行う。
  */
 final class ChoiceFlow
@@ -43,6 +44,7 @@ final class ChoiceFlow
         $phases = $ctx->phases;
         return match ($stateId) {
             StateId::SETUP_MULLIGAN => new self($ctx, $stateId, new MulliganStep($ctx->services), StepMode::Main, null),
+            StateId::SETUP_DRAFT_PICK => new self($ctx, $stateId, new DraftPickStep($ctx->services), StepMode::Main, null),
             StateId::PLANNING_PLOT => new self($ctx, $stateId, $phases->planning(), StepMode::Main, null),
             StateId::DEPLOY_MAIN_CHOOSE => new self($ctx, $stateId, $phases->deploy(), StepMode::Main, 2),
             StateId::LAUNCH_MAIN_CHOOSE => new self($ctx, $stateId, $phases->launch(), StepMode::Main, 3),

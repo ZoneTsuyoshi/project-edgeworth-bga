@@ -22,6 +22,8 @@ enum CardLocation: string
     case Hand = 'hand';
     /** 企画（V）で引いた直後の、残すか捨てるかを選ぶ前のカード。location_arg = プレイヤー ID */
     case Drawn = 'drawn';
+    /** ドラフトのパック（013）。location_arg = 今そのパックを持っているプレイヤー ID。順序の小さい方が先頭。本人にだけ ID を見せる */
+    case Pack = 'pack';
     /** 衛星に配備されたカード。location_arg = sat_id、order = 配備の段（1〜4） */
     case Satellite = 'satellite';
 }

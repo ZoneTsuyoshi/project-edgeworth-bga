@@ -16,13 +16,15 @@ use ProjectEdgeworthTests\Support\StateGraph;
 /** 009 §3 の状態一覧・ID・遷移と、States/ の状態クラスが一致していること。 */
 final class StateGraphTest extends TestCase
 {
-    /** 009 §3.3〜§3.9 の表から書き起こした期待値（ドラフトの 15・16 は初版では作らない） */
+    /** 009 §3.3〜§3.9 の表から書き起こした期待値 */
     private const EXPECTED = [
         10 => ['SetupLaunchPadNext', 'GAME', ['place' => 11, 'done' => 12]],
         11 => ['SetupLaunchPadPlace', 'ACTIVE_PLAYER', ['placed' => 10]],
-        12 => ['SetupHandRoute', 'GAME', ['mulligan' => 13, 'none' => 17]],
+        12 => ['SetupHandRoute', 'GAME', ['mulligan' => 13, 'draft' => 15, 'none' => 17]],
         13 => ['SetupMulligan', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 14]],
         14 => ['SetupMulliganApply', 'GAME', ['done' => 17]],
+        15 => ['SetupDraftPick', 'MULTIPLE_ACTIVE_PLAYER', ['allConfirmed' => 16]],
+        16 => ['SetupDraftPass', 'GAME', ['next' => 15, 'done' => 17]],
         17 => ['SetupFinish', 'GAME', ['start' => 40]],
         20 => ['RoundStart', 'GAME', ['plan' => 21]],
         21 => ['PlanningCollect', 'GAME', ['plot' => 22, 'window' => 30]],
@@ -51,10 +53,10 @@ final class StateGraphTest extends TestCase
         121 => ['FinalScoring', 'GAME', []],
     ];
 
-    public function testTwentyNineStatesMatchTheSpec(): void
+    public function testThirtyOneStatesMatchTheSpec(): void
     {
         $graph = StateGraph::load();
-        self::assertCount(29, $graph);
+        self::assertCount(31, $graph);
         foreach (self::EXPECTED as $id => [$class, $type, $transitions]) {
             self::assertArrayHasKey($id, $graph, "state $id ($class)");
             self::assertSame($class, $graph[$id]['class']);

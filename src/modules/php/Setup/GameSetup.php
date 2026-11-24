@@ -13,6 +13,7 @@ use Bga\Games\projectedgeworth\Board\BoardLayout;
 use Bga\Games\projectedgeworth\Board\BoardLayoutBuilder;
 use Bga\Games\projectedgeworth\Board\RandomSource;
 use Bga\Games\projectedgeworth\Data\ActionCardRepository;
+use Bga\Games\projectedgeworth\Data\CardLocation;
 use Bga\Games\projectedgeworth\Data\Database;
 use Bga\Games\projectedgeworth\Data\GlobalValues;
 use Bga\Games\projectedgeworth\Data\MissionRepository;
@@ -102,8 +103,10 @@ final class GameSetup
         $this->dealMissions($players);
 
         // 手順 14: プロジェクトカード 5 枚（席順に直列に引く。010 §4.3）
+        // ドラフト（013）のときは手札ではなくパックに配る（順序は同じ）
+        $into = $options->startingHand === StartingHand::Draft ? CardLocation::Pack : CardLocation::Hand;
         foreach ($players as $player) {
-            $this->projectCards->drawTop($player->id, self::HAND_SIZE);
+            $this->projectCards->drawTop($player->id, self::HAND_SIZE, $into);
         }
 
         return $layout;

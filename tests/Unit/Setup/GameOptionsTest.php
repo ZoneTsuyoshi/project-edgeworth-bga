@@ -97,10 +97,11 @@ final class GameOptionsTest extends TestCase
         self::options($players, [101 => $size]);
     }
 
-    public function testDraftIsNotImplemented(): void
+    public function testValueThreeIsTheDraft(): void
     {
+        $this->assertSame(StartingHand::Draft, self::options(2, [104 => 3])->startingHand);
         $this->expectException(\InvalidArgumentException::class);
-        self::options(2, [104 => 3]);
+        self::options(2, [104 => 4]);
     }
 
     public function testUnknownValuesAndPlayerCountAreRejected(): void

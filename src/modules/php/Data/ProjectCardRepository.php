@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Bga\Games\projectedgeworth\Data;
 
 use Bga\Games\projectedgeworth\Board\RandomSource;
+use Bga\Games\projectedgeworth\Setup\PackPassing;
 
 /**
  * project_card テーブルの唯一の読み書き口（010 §4.4）。
@@ -96,15 +97,15 @@ final class ProjectCardRepository
     }
 
     /**
-     * 山札の上から n 枚を hand または drawn へ移し、引いた順の ID を返す。
+     * 山札の上から n 枚を hand・drawn・pack へ移し、引いた順の ID を返す。
      * 山札が足りなければ捨て札をシャッフルして山札にする（001 §2-1）。それでも足りなければ引けた分だけ。
      *
      * @return list<int>
      */
     public function drawTop(int $playerId, int $count, CardLocation $into = CardLocation::Hand): array
     {
-        if ($into !== CardLocation::Hand && $into !== CardLocation::Drawn) {
-            throw new \InvalidArgumentException('drawTop can only move cards into hand or drawn');
+        if ($into !== CardLocation::Hand && $into !== CardLocation::Drawn && $into !== CardLocation::Pack) {
+            throw new \InvalidArgumentException('drawTop can only move cards into hand, drawn or pack');
         }
         $drawn = [];
         while (count($drawn) < $count) {
@@ -120,6 +121,39 @@ final class ProjectCardRepository
             $drawn[] = $top;
         }
         return $drawn;
+    }
+
+    /**
+     * ドラフト: 全員のパックを先に読んでから、card_id 単位で持ち主を席順の次の人に書き換える（order は変えない）。
+     * location_arg を条件に順に書くと、渡した先のパックと混ざるので使わない。$intoHand が真なら、受け取る人の手札へ移す（最後の 1 枚）。
+     *
+     * @param list<int> $order 席順のプレイヤー ID
+     */
+    public function passPacks(array $order, bool $intoHand): void
+    {
+        $moves = [];
+        foreach ($order as $holder) {
+            $receiver = PackPassing::receiver($order, $holder);
+            foreach ($this->idsIn(CardLocation::Pack, $holder) as $id) {
+                $moves[] = [$id, $receiver];
+            }
+        }
+        foreach ($moves as [$id, $receiver]) {
+            if ($intoHand) {
+                $this->place($id, CardLocation::Hand, $receiver, $this->nextOrder(CardLocation::Hand, $receiver));
+                continue;
+            }
+            $this->db->execute("UPDATE `project_card` SET `card_location_arg` = $receiver WHERE `card_id` = $id");
+        }
+    }
+
+    /**
+     * ドラフト: 自分のパックから 1 枚を手札へ。
+     */
+    public function takeFromPack(int $playerId, int $cardId): void
+    {
+        $this->assertOwned([$cardId], CardLocation::Pack, $playerId);
+        $this->place($cardId, CardLocation::Hand, $playerId, $this->nextOrder(CardLocation::Hand, $playerId));
     }
 
     /**

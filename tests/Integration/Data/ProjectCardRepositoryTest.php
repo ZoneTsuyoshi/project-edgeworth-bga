@@ -52,6 +52,30 @@ final class ProjectCardRepositoryTest extends DatabaseTestCase
         $this->assertSame($first, $again->idsIn(CardLocation::Deck));
     }
 
+    public function testPacksAreDealtPassedAndTaken(): void
+    {
+        $this->cards->shuffleDeck();
+        foreach ([10, 11, 12] as $id) {
+            $this->cards->drawTop($id, 3, CardLocation::Pack);
+        }
+        $p10 = $this->cards->idsIn(CardLocation::Pack, 10);
+        $p11 = $this->cards->idsIn(CardLocation::Pack, 11);
+        $p12 = $this->cards->idsIn(CardLocation::Pack, 12);
+        $this->assertSame([0, 1, 2], array_map(fn(int $c): int => $this->cards->locationOf($c)['order'], $p10));
+        $this->cards->passPacks([10, 11, 12], false);
+        $this->assertSame($p12, $this->cards->idsIn(CardLocation::Pack, 10));
+        $this->assertSame($p10, $this->cards->idsIn(CardLocation::Pack, 11));
+        $this->assertSame($p11, $this->cards->idsIn(CardLocation::Pack, 12));
+        $this->cards->takeFromPack(11, $p10[1]);
+        $this->assertSame([$p10[1]], $this->cards->idsIn(CardLocation::Hand, 11));
+        $this->assertCount(2, $this->cards->idsIn(CardLocation::Pack, 11));
+        $this->cards->passPacks([10, 11, 12], true);
+        $this->assertSame(0, $this->cards->countIn(CardLocation::Pack, 10) + $this->cards->countIn(CardLocation::Pack, 11) + $this->cards->countIn(CardLocation::Pack, 12));
+        $this->assertCount(2, $this->cards->idsIn(CardLocation::Hand, 12));
+        $this->expectException(\DomainException::class);
+        $this->cards->takeFromPack(10, 1);
+    }
+
     public function testDrawTopTakesFromTheTopInOrder(): void
     {
         $this->cards->shuffleDeck();
