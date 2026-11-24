@@ -9,11 +9,14 @@ declare(strict_types=1);
 
 namespace Bga\Games\projectedgeworth\Flow\Machine;
 
+use Bga\Games\projectedgeworth\Data\CardLocation;
 use Bga\Games\projectedgeworth\Data\FlowPhase;
 use Bga\Games\projectedgeworth\Flow\Action\RuleViolation;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
+use Bga\Games\projectedgeworth\Setup\DraftPickStep;
 use Bga\Games\projectedgeworth\Setup\LaunchPadPlacement;
+use Bga\Games\projectedgeworth\Setup\PackPassing;
 use Bga\Games\projectedgeworth\Setup\StartingHand;
 
 /**
@@ -78,11 +81,62 @@ final class SetupFlow
     }
 
     /**
-     * 12: ゲームオプションで分岐。ドラフトは初版では未実装（GameOptions が受け付けない）。
+     * 12: ゲームオプションで分岐。
      */
     public function route(StartingHand $option): string
     {
-        return $option === StartingHand::Mulligan ? 'mulligan' : 'none';
+        return match ($option) {
+            StartingHand::Mulligan => 'mulligan',
+            StartingHand::Draft => 'draft',
+            StartingHand::None => 'none',
+        };
+    }
+
+    /**
+     * 16: 全員の確定を受けて、選んだカードを手札へ入れ、残りのパックを席順の次の人へ渡す（013 §4.2）。
+     * 4 回目の後に残った 1 枚は、渡してから受け取った人の手札に入れる。
+     */
+    public function applyDraftPass(): DriverResult
+    {
+        $services = $this->ctx->services;
+        $order = $services->players->playerIds();
+        $notices = $this->ctx->notices;
+        $step = new DraftPickStep($services);
+        $pickNo = $step->pickNo();
+        $rest = $step->packSize() - 1;
+        if ($rest < 1) {
+            throw new \LogicException('draft pack is too small to pass');
+        }
+        $flow = ChoiceFlow::forState($this->ctx, StateId::SETUP_DRAFT_PICK);
+        $result = $this->ctx->phases->runner()->resolve($flow->step, $flow->stateId, StepMode::Main);
+        $notes = new NoticeList();
+        foreach ($result->outcomes as $outcome) {
+            $notes->add($notices->draftTaken($outcome->playerId, (int) $outcome->details['card'], false));
+        }
+        $last = $rest === 1;
+        /** @var array<int, list<int>> 最後の 1 枚: 受け取る人 => カード */
+        $received = [];
+        if ($last) {
+            foreach ($order as $holder) {
+                $received[PackPassing::receiver($order, $holder)] = $services->cards->idsIn(CardLocation::Pack, $holder);
+            }
+        }
+        $services->cards->passPacks($order, $last);
+        if ($last) {
+            foreach ($order as $playerId) {
+                foreach ($received[$playerId] ?? [] as $cardId) {
+                    $notes->add($notices->draftTaken($playerId, $cardId, true));
+                }
+            }
+        }
+        $notes->add($notices->draftPassed($pickNo, DraftPickStep::PICKS, $last));
+        if (!$last) {
+            foreach ($order as $playerId) {
+                $notes->add($notices->draftPackReceived($playerId, $services->cards->idsIn(CardLocation::Pack, $playerId), $pickNo + 1));
+            }
+        }
+        $notes->add(...$this->ctx->sync());
+        return new DriverResult($last ? 'done' : 'next', $notes->all());
     }
 
     /**

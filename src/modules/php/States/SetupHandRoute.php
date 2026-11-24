@@ -17,7 +17,7 @@ use Bga\Games\projectedgeworth\Material\OptionId;
 use Bga\Games\projectedgeworth\Setup\StartingHand;
 
 /**
- * ゲームオプション（初期手札。001 §3-5）で分岐する（009 §3.3）。マリガン → 13、なし → 17。ドラフト（15・16）は初版では未実装。
+ * ゲームオプション（初期手札。001 §3-5）で分岐する（009 §3.3）。マリガン → 13、ドラフト → 15、なし → 17。
  */
 class SetupHandRoute extends GameState
 {
@@ -30,6 +30,7 @@ class SetupHandRoute extends GameState
             type: StateType::GAME,
             transitions: [
                 'mulligan' => StateId::SETUP_MULLIGAN,
+                'draft' => StateId::SETUP_DRAFT_PICK,
                 'none' => StateId::SETUP_FINISH,
             ],
         );

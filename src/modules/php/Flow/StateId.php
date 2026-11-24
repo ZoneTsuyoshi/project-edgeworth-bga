@@ -13,7 +13,7 @@ namespace Bga\Games\projectedgeworth\Flow;
  * 状態 ID（仕様書 009 §3）。transitions の行き先と、グローバル値 window_resume に使う。
  * 1 と 99 は BGA の予約（初期状態・ゲーム終了）なので使わない。本番稼働後は値を変えない。
  * BGA は States/ の中の全クラスを状態として読むので、この定数クラスは States/ に置かない。
- * 15・16（ドラフト）は初版では実装しない（ID だけ予約。Q-06、009 未確定 8）。
+ * 15・16 はドラフト（013）。
  */
 final class StateId
 {
@@ -23,6 +23,8 @@ final class StateId
     public const SETUP_HAND_ROUTE = 12;
     public const SETUP_MULLIGAN = 13;
     public const SETUP_MULLIGAN_APPLY = 14;
+    public const SETUP_DRAFT_PICK = 15;
+    public const SETUP_DRAFT_PASS = 16;
     public const SETUP_FINISH = 17;
 
     // ラウンド・計画フェイズ（20〜23）

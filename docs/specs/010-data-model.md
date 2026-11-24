@@ -443,6 +443,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | 盤面（`region`・区域の一覧）、衛星、配備されたカード、キューブ、発射拠点、褒賞、アクションカードの状態 | 送る | 同左 | 同左 |
 | マヤ・予算 | 送る | 送る | 送る |
 | 手札のプロジェクトカード | **ID の一覧** | 枚数のみ | 枚数のみ |
+| ドラフトのパック（`myPack`、`packCount`。013） | **ID の一覧** | 枚数のみ | 枚数のみ |
 | 引いた直後（`drawn`）のカード | **ID の一覧** | 枚数のみ | 枚数のみ |
 | 山札 | 枚数のみ | 枚数のみ | 枚数のみ |
 | 捨て札 | ID の並び（公開） | 同左 | 同左 |
@@ -501,7 +502,8 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | --- | --- | --- |
 | `board.cells` | 区域の一覧（`cell`・種類・地域・ボーナスのスロット）。`Board/` が `region` から計算して 1 回だけ送る | 区域ごとの行は DB に持たない（§5.5） |
 | `deckCount` / `discard` | 山札は枚数のみ、捨て札は ID の並び | — |
-| `myHand` / `myDrawn` / `myMissions` | 本人の分だけ。観戦者には空配列 | — |
+| `myHand` / `myPack` / `myDrawn` / `myMissions` | 本人の分だけ。観戦者には空配列。`myPack` はドラフト中だけ中身がある（013） | — |
+| `playerData[pid].packCount` | ドラフトのパックの枚数（全員に公開。ドラフト以外は 0） | — |
 | `playerData[pid].satellites[].cards` | 配備されたカード（段の昇順）。`activation` は起動効果の使用済み（公開。008 §4） | — |
 | `playerData[pid].cubesLeft` | 残りキューブ（窓の外ではステージは空） | 窓の最中は §9.4 のスナップショットから |
 | `playerData[pid].rewardValues` | 使っている褒賞 2 面（`rewards`）の、その人の今の比較値（`{ "T001": 3, "T013": 15 }`）。全員分を公開する。サーバーが `RewardComparison`（002 §7）で計算し、手札は換金しない。パネルの「褒賞: 値」表示に使う（通知 N33 でも更新） | 送らないとパネルが「–」になる（2026-11-12 修正） |
@@ -542,6 +544,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | 状態 | `choice_data` | 備考 |
 | --- | --- | --- |
 | 13 `SetupMulligan` | `{"discard": [カード ID, …]}`（0〜5 枚） | 0 枚 = [Keep all]。ID は本人の手札 |
+| 15 `SetupDraftPick` | `{"card": ID}` | ID は本人の今のパックのカード（013 §3.1） |
 | 22 `PlanningPlot` | `{"action": 1〜5}` | 手札のアクションカードのみ |
 | 61 `DeployMainChoose` | `{"op": "deploy", "card": ID, "sat": sat_id, "sell": […], "useMods": […], "extra": {…}}` または `{"op": "pass", "extra": {…}}` | **配備のボーナスは通常の配備と同時に選ぶ**（作者回答 2026-10-20）。`extra` は**ボーナス保持者（セットアップは全員）だけ**で、追加の配備 `{"op": "deploy", "card": ID, "sat": sat_id, "useMods": […]}` または `{"op": "draw"}`（1 枚引く）。`extra` が追加の配備のときは、`op` が `pass` でもよい（通常の配備をしない）。`sell` は 2 枚分の合計コストに対する売却（配備する 2 枚は売れない）。`useMods`（外側）は通常の配備のカード、`extra.useMods` は追加の配備のカードに使う起動の修正で、同じ鍵を 2 枚には使えない。2 枚は同じ衛星でもよい（1 機 4 枚の上限は 2 枚を合わせて数え、稼働中の衛星への +5 は 1 枚ごと）。引いたカードは同時処理なので、同じ選択の配備には使えない。62 は欠番 |
 | 71 `LaunchMainChoose` | `{"op": "launch", "sat": sat_id, "dir": "NE", "sell": […]}`、`{"op": "turn", "sat": sat_id, "dir": "SW"}`、`{"op": "pass"}` | 転回は稼働中の衛星、打ち上げは非稼働。向きを変えない転回も `turn`（FAQ 行 17） |
@@ -609,7 +612,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N6 | `actionRevealed` | 全員 | `player_id`、`player_name`、`action_no`、`action_name` | `${player_name} chose ${action_name}` | 23。プロットを一斉に表向きにする。席順（基準プレイヤーから）で 1 件ずつ。`bonus_holders` を更新 |
 | N7 | `phaseStarted` | 全員 | `phase`、`phase_name`、`holders`（ボーナス保持者の ID 配列） | `${phase_name} phase begins` | 40 が次のフェイズへ進めるとき。フェイズ帯の点灯。保持者は公開 |
 | N8 | `cardsDrawn` | 全員 | `player_id`、`player_name`、`count`、`zone`（`hand` / `drawn`）、`reason`、`deck_count`、`discard_count` | `${player_name} draws ${count} card(s)` | 引いたとき（配備のボーナス、企画、衛星の打ち上げ時、山岳ボーナス、効果）。枚数と山の枚数だけ。裏向きのカードが山札から動く |
-| N9 | `handCardsAdded` | 本人 | `cards`（ID 配列）、`zone`（`hand` / `drawn`）、`reason` | `''` | N8 と同時に本人へ。ID を手札（または引いた直後の置き場）に加える |
+| N9 | `handCardsAdded` | 本人 | `cards`（ID 配列）、`zone`（`hand` / `drawn`）、`reason`（`draft` を含む）。`reason` = `draft` のときは `auto`（最後の 1 枚のとき真）、`card_name`、`i18n` も | `''`。ただし `reason` = `draft` は本人だけのログ: `You keep ${card_name}`、最後の 1 枚（`auto`）は `You receive ${card_name}, the last card passed to you` | N8 と同時に本人へ。ID を手札（または引いた直後の置き場）に加える。ドラフトでは N8 は送らず（013 §5.1）、N9 だけを本人へ |
 | N10 | `cardsDiscarded` | 全員 | `player_id`、`player_name`、`cards`（ID 配列）、`reason`（`sell` / `proposal` / `mulligan` / `effect` / `deckRefill`）、`discard_count` | `sell`: `${player_name} sold ${count} card(s)`、`proposal`: `${player_name} discards ${count} card(s)`、`mulligan`: `${player_name} mulligans ${count} card(s)` | 売却・企画の捨てた・マリガンの捨てた・効果で捨てたとき。**ID を公開**（捨て札は表向き）。売却のマヤは N12 に続く |
 | N11 | `deckReshuffled` | 全員 | `deck_count` | `The discard pile is shuffled into a new deck` | 山札が尽きて捨て札をシャッフルしたとき。順序は載せない |
 | N12 | `mayaChanged` | 全員 | `player_id`、`player_name`、`delta`、`maya`（変更後）、`reason`（`budget` / `bonus` / `sell` / `landing` / `areaBonus` / `cost` / `effect` / `cashOut` ほか）、`reason_label`（i18n） | 正: `${player_name} gains ${amount} Maya (${reason_label})`、負: `${player_name} pays ${amount} Maya (${reason_label})` | マヤの増減。メッセージは `delta` の符号でサーバーが選ぶ |
@@ -633,15 +636,17 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | N30 | `handCashedOut` | 全員 | `player_id`、`player_name`、`cards`（ID 配列）、`maya_gain`、`maya` | `${player_name}'s hand was sold for ${maya_gain} Maya at game end` | 120。換金するカードを公開し、捨て札へ（008 §2-10） |
 | N31 | `gameEndTriggered` | 全員 | `players`（終了条件を満たした ID 配列）、`reasons`（`satellites` / `links`） | `The game ends after this round` | 110 が終了と判定したとき。IX の +3 の対象は公開 |
 | N32 | `finalScore` | 全員 | `player_id`、`player_name`、`fame`、`detail`（§11.2 の JSON）、`missions`（そのプレイヤーのミッション番号と達成状況） | `${player_name} scores ${fame} fame` | 121。全員分を席順に 1 件ずつ。内訳の表（bga-score-sheet 候補。004）を出す。ミッションをここで公開 |
-| N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "drawnCount", "cubesLeft", "rewardValues"}}`。`rewardValues` は使っている褒賞 2 面の今の比較値 `{"T001": 3, ...}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
+| N33 | `countersUpdate` | 全員 | `deck_count`、`discard_count`、`players`（`{ID: {"handCount", "packCount", "drawnCount", "cubesLeft", "rewardValues"}}`。`rewardValues` は使っている褒賞 2 面の今の比較値 `{"T001": 3, ...}`。変更があった者だけ） | `''` | 各 GAME 状態の処理の最後とアクションの最後。山と手札の枚数カウンターを再同期 |
 | N34 | `effectQuestions` | 本人 | 31 の args の `_private[playerId]` と同じ形（`windowId`、`pending`、`questions`、`hand`、`sellValue`）。答えた後で問いが無ければ `questions` は空 | `''` | 31 の `actUseEffect` / `actSkipEffect` / `actOrderEffects` の直後。31 の args は入場時のものなので、クライアントが残りの問い（ORDER の次の EFFECT、二段階の効果の二段目など）を知る。保留に積まず即時に送る（本人の問いは公開情報ではない） |
 | N35 | `effectWaiting` | 全員 | `waiting`（`[{ "player_id", "sources": [カードキー] }]`。31 の args の公開部分と同じ） | `''` | N34 と同時、および zombie の処理の後。待機表示「Waiting for X (CARD_NAME)」（008 §5-1）を更新する。カードは公開情報 |
 | N36 | `publicFameUpdated` | 全員 | `fame`（`{ID: {"total", "detail"}}`。`getAllDatas.publicFame` と同じ形。ミッション V を除く） | `''` | ゲームオプション 105 が Visible のときだけ。N33 を送る箇所（各 GAME 状態の処理の最後とアクションの最後、予算ボーナスの後）で、値が変わりうるとき N33 の直後に送る。窓の最中は送らず、バリアの公開（N26 windowClosed）の後の N33 と同時に最新値を送る。Hidden では送らない |
 | N37 | `bonusDeclared` | 全員 | `player_id`、`player_name`、`action_no`、`action_name` | `${player_name} declares the ${action_name} action bonus` | 効果（EUROPA）がアクション選択ボーナスを宣言したとき（ジャーナル `bonus`）。窓の保留の通知としてバリアで公開。`bonus_holders` に保持者を加える（重ねて届いても同じ） |
+| N38 | `draftPassed` | 全員 | `pick_no`（今終えた回。1〜4）、`pick_total`（4）、`last`（最後の 1 枚の配布なら真） | 通常: `Everyone kept a card and passed the rest to the left (pick ${pick_no} of ${pick_total})`、`last`: `Everyone received the last card passed to them` | ドラフトの 16。公開ログ。カード ID は載せない（013 §5.1） |
+| N39 | `draftPackReceived` | 本人 | `pack`（新しく前に来たパックの ID。並び順）、`pick_no`（次の回） | `''` | ドラフトの 16（最後の 1 枚のときは送らない）。クライアントの `myPack` を更新する（013 §5.1） |
 
 - 窓の外の GAME 状態（コミット）で出す通知は、その場で `notify->all` を呼ぶ（リクエストの終わりに順序どおり届く）。**窓の中（状態 31）の他人に見える通知**は §10.5 の規則に従う。
 - N36 は全員宛て。ゲームオプション 105 が Visible のときだけ送る。
-- 通知のうち「本人」宛てなのは N3・N9・N22・N25・N34 の 5 種。他は全員宛て。
+- 通知のうち「本人」宛てなのは N3・N9・N22・N25・N34・N39 の 6 種。他は全員宛て。
 - N8 + N9 の対、N10、N12 は他の通知と一緒に使われる共通部品（例: 山岳ボーナス = N8 + N9、森林ボーナス = N12、深海 = N19）。区域ボーナスを個別の通知にしない。
 
 #### 10.3 公開通知に載せてはいけない項目
@@ -784,6 +789,7 @@ D6 の API に保存する。キーは snake_case、50 文字以内。「書く�
 | --- | --- | --- | --- |
 | 11 `SetupLaunchPadPlace` | `vacantCells`（空いている陸系の区域 ID。公開情報） | なし | |
 | 13 `SetupMulligan` | `participants`、`confirmed`（確定済みの ID。内容なし） | `myChoice`（`{"discard": […]}`／null）、`hand`（手札 ID） | |
+| 15 `SetupDraftPick` | `participants`、`confirmed`、`pickNo`（何回目か 1〜4）、`pickTotal`（4）、`packSize`（各自のパックの枚数。全員同じ） | `myChoice`（`{"card": ID}`／null）、`pack`（本人のパックの ID。並び順で先頭が zombie の既定）、`hand`（手札 ID。売却の候補）、`sellValue` | 013 §5.3 |
 | 22 `PlanningPlot` | `participants`、`confirmed` | `myChoice`（`{"action": n}`／null）、`selectable`（手札のアクション番号の配列） | |
 | 61 配備 | `participants`、`confirmed` | `myChoice`、`hand`、`targets`（カード番号 → 配備先の候補 `[{ satId, tier〔配備後の段〕, cost〔稼働中 +5、効果による修正後〕, blocked〔満杯 / 禁止の理由〕, minSales, selectable, useMods?, next? }]`）、`sellValue`（1 枚あたりの売却額）、`bonus`（配備のボーナス保持者か）、`canDraw`（保持者のみ。引けるか） | コストはサーバーが計算（008 §3-6）。保持者の各候補の `next` は、通常の配備で先に同じ衛星へ 1 枚配備した後の `{ tier, cost, blocked, useMods? }`（追加の配備を同じ衛星にするときに使う。クライアントは 2 枚のコストを足すだけ） |
 | 71・72 打ち上げ / 転回 | 同上 | `myChoice`、`launchable`（打ち上げ可能な衛星とコスト）、`turnable`（転回可能な衛星と現在の向き）、`sellValue` | |

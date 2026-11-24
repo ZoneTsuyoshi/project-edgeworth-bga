@@ -15,6 +15,7 @@ use Bga\Games\projectedgeworth\Effects\Runtime\StepMods;
 use Bga\Games\projectedgeworth\Flow\Action\Payability;
 use Bga\Games\projectedgeworth\Flow\Action\StepMode;
 use Bga\Games\projectedgeworth\Flow\StateId;
+use Bga\Games\projectedgeworth\Setup\DraftPickStep;
 
 /**
  * 同時選択の状態の getArgs（010 §13）。公開部分は「参加者」と「確定済みのプレイヤー ID」だけ（選択内容を入れない）。
@@ -61,6 +62,13 @@ final class ChoiceArgs
                 $args['keepCount'][$playerId] = $this->ctx->phases->proposal()->keepCount($playerId);
             }
         }
+        if ($flow->stateId === StateId::SETUP_DRAFT_PICK) {
+            // 何回目か・総回数・各自のパックの枚数は公開（全員同じ。中身は載せない）
+            $draft = new DraftPickStep($services);
+            $args['pickNo'] = $draft->pickNo();
+            $args['pickTotal'] = DraftPickStep::PICKS;
+            $args['packSize'] = $draft->packSize();
+        }
         $private = [];
         foreach ($participants as $playerId) {
             $private[$playerId] = $this->privateFor($flow, $playerId, $pendingAuto[$playerId] ?? null);
@@ -98,6 +106,7 @@ final class ChoiceArgs
         $phases = $this->ctx->phases;
         return match ($flow->stateId) {
             StateId::SETUP_MULLIGAN => ['hand' => $hand],
+            StateId::SETUP_DRAFT_PICK => $sell + ['pack' => $services->cards->idsIn(CardLocation::Pack, $playerId)],
             StateId::PLANNING_PLOT => ['selectable' => $phases->planning()->selectable($playerId)],
             StateId::DEPLOY_MAIN_CHOOSE => $sell + $this->deploy($playerId),
             StateId::LAUNCH_MAIN_CHOOSE, StateId::LAUNCH_BONUS_CHOOSE => $sell + $this->launch($playerId, $flow->mode),

@@ -203,6 +203,8 @@ final class StateWalker
                 return $m->setup()->route($this->hand);
             case StateId::SETUP_MULLIGAN_APPLY:
                 return $this->driver($m->setup()->applyMulligan());
+            case StateId::SETUP_DRAFT_PASS:
+                return $this->driver($m->setup()->applyDraftPass());
             case StateId::SETUP_FINISH:
                 return $this->driver($m->setup()->finish());
             case StateId::ROUND_START:

@@ -240,6 +240,36 @@ final class GameSetupTest extends SetupTestCase
         $this->assertSame(0, $cards->countIn(CardLocation::Discard));
     }
 
+    #[DataProvider('playerCounts')]
+    public function testDraftOptionDealsIntoPacks(int $count): void
+    {
+        $this->runSetup($count, [104 => 3]);
+        $cards = new ProjectCardRepository($this->db, new SeededRandom(0));
+        $dealt = [];
+        foreach ($this->players as $p) {
+            $this->assertSame(5, $cards->countIn(CardLocation::Pack, $p->id));
+            $this->assertSame(0, $cards->countIn(CardLocation::Hand, $p->id));
+            array_push($dealt, ...$cards->idsIn(CardLocation::Pack, $p->id));
+        }
+        $this->assertCount(5 * $count, array_unique($dealt));
+        $this->assertSame(99 - 5 * $count, $cards->countIn(CardLocation::Deck));
+        $this->runSetup($count, [104 => 2]);
+        $this->assertSame(0, (int) $this->db->value("SELECT COUNT(*) FROM `project_card` WHERE `card_location` = 'pack'"));
+    }
+
+    public function testDraftDealsTheSameCardsAsAHandWouldGet(): void
+    {
+        $this->runSetup(3, [104 => 3], 9);
+        $pack = [];
+        foreach ($this->players as $p) {
+            $pack[$p->id] = (new ProjectCardRepository($this->db, new SeededRandom(0)))->idsIn(CardLocation::Pack, $p->id);
+        }
+        $this->runSetup(3, [], 9);
+        foreach ($this->players as $p) {
+            $this->assertSame($pack[$p->id], (new ProjectCardRepository($this->db, new SeededRandom(0)))->idsIn(CardLocation::Hand, $p->id));
+        }
+    }
+
     public function testRewardsAreSavedAccordingToTheOption(): void
     {
         $this->runSetup(2, [100 => 4, 102 => 2], 5);

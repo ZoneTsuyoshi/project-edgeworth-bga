@@ -22,6 +22,6 @@
 | 010 | [データモデル・通知の設計](010-data-model.md) | Approved | T-010 |
 | 011 | [カード効果の実装方針](011-card-effects.md) | Approved | T-011 |
 | 012 | [UI・アセットの設計](012-ui-assets.md) | Approved | T-012 |
-| 013 | [初期手札のドラフト](013-starting-hand-draft.md) | Draft | I-22 |
+| 013 | [初期手札のドラフト](013-starting-hand-draft.md) | Approved | I-22 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。

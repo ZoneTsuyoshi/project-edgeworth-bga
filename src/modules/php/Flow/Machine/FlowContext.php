@@ -107,6 +107,7 @@ final class FlowContext
             $players[$playerId] = [
                 'rewardValues' => $rewardValues[$playerId] ?? [],
                 'handCount' => $this->services->cards->countIn(CardLocation::Hand, $playerId),
+                'packCount' => $this->services->cards->countIn(CardLocation::Pack, $playerId),
                 'drawnCount' => $this->services->cards->countIn(CardLocation::Drawn, $playerId),
                 'cubesLeft' => LinkRepository::CUBES_PER_PLAYER - $this->services->links->countFor($playerId),
             ];
