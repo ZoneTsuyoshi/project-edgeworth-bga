@@ -39,13 +39,13 @@ BGA での表示に合わせた制約（minimum-journey-bga と同じ）。
 - 対局画面では h2 の節ごとに枠が分かれるので、節単位で読んで完結させる。
 - 外部リンクは公式サイトだけにし、最後に 1 か所入れる。
 - 先頭に `__NOTOC__` を置き、自動の目次を出さない。
-- 分量は英語版で 900〜1,500 語を目安にする。全カードの効果は載せない（ゲーム中にカードのツールチップで見られる）。
+- 分量は英語版で 1,000〜1,600 語を目安にする（MINIMUM JOURNEY より規則が多いため）。全カードの効果は載せない（ゲーム中にカードのツールチップで見られる）。
 
 ## 英語版
 
 ```text
 __NOTOC__
-'''PROJECT EDGEWORTH''' is a game for 2 to 4 players (40-60 minutes). You run an organization that builds a network of communications satellites: equip satellites with Project cards, launch them, and establish links with the areas beneath them. When the game ends, the player with the most fame wins.
+'''PROJECT EDGEWORTH''' is a game for 2 to 4 players (40-60 minutes). You run an organization that builds a network of communications satellites: equip satellites with Project cards, launch them, and establish links with the areas beneath them.
 
 == Goal ==
 
@@ -53,7 +53,7 @@ At the end of the game, each player adds up fame from Budget, Maya, linked areas
 
 == What you see ==
 
-• '''Board.''' Double-sided region boards (A to H, 3x3 areas each) form the map, normally 2x4. The left and right edges connect around the globe, and satellites bounce off the top and bottom edges. A Sea area costs 2 Maya to link and gives 1 fame. A Land area costs 5 Maya and gives 2 fame. On the Advanced (back) side, areas also give bonuses to the first players to link them: Deep sea recovers fuel, Forest gives Maya, Mountain draws a card, Snowfield raises your Budget, and a Reef lowers the cost of neighboring Land areas.
+• '''Board.''' Double-sided region boards (A to H, 3x3 areas each) form the map, normally 2x4. The left and right edges connect around the globe, and satellites bounce off the top and bottom edges. A Sea area costs 2 Maya to link and gives 1 fame. A Land area costs 5 Maya and gives 2 fame. On the Advanced (back) side, some areas give a bonus when you link them: Deep sea recovers 2 fuel for the first link and 1 for the second, Forest gives 5 Maya and Mountain draws 1 Project card for the first link, Snowfield raises your Budget by 1 for every link, and a Reef lowers your cost for neighboring Land areas by 1.
 
 • '''Satellites.''' Each player has 5 satellite cards. A satellite is '''active''' when its piece is on the board and on '''standby''' when the piece is on its card. Up to 4 Project cards can be deployed to each satellite.
 
@@ -79,11 +79,11 @@ Each round has four steps: Planning, the Action phases, the Orbit phase and the 
 
 Everyone secretly chooses 1 Action Card and presses [Confirm]. You can use [Change my choice] until the last player confirms. Then all choices are revealed.
 
-You cannot choose the card you played last round, except I Budget, which can be chosen every round. A used card is shown as unavailable and returns automatically the round after.
+You cannot choose the card you played last round, except I Budget, which can be chosen every round. Such a card is shown sideways as unavailable for one round, then returns automatically.
 
 == 2. Action phases ==
 
-Only the actions chosen by at least one player take place, in order from I to V. '''Everyone''' performs the main action of every chosen phase, even if they did not choose it. Only players who chose that action also get its '''Action selection bonus'''. An action nobody chose does not happen and gives no bonus.
+Only the actions chosen by at least one player take place, in order from I to V. '''Everyone''' performs the main action of every chosen phase, even if they did not choose it. Only players who chose that action also get its '''Action selection bonus'''.
 
 When a phase asks for choices, all players decide at the same time and can change their minds until all have confirmed. Their effects are then resolved together.
 
@@ -121,7 +121,7 @@ All active satellites are affected, including those launched this round. In orde
 
 == 4. End of the game ==
 
-At the end of the Orbit phase, the game ends if any player has all 5 satellites active, or has placed all 16 cubes (cubes passed off the board do not count). The player who meets a condition gets the end condition bonus. Cards left in hand are sold automatically for 3 Maya each before scoring.
+At the end of the Orbit phase, the game ends if any player has all 5 satellites active or has placed all 16 cubes on the board. Each player who meets a condition gets the end condition bonus. Cards left in hand are sold automatically for 3 Maya each before scoring.
 
 == Scoring ==
 
@@ -133,11 +133,11 @@ At the end of the Orbit phase, the game ends if any player has all 5 satellites 
 
 • '''IV Linked regions:''' for the number of regions (A to H) where you have a linked area: 1 / 3 / 6 / 10 / 15 / 21 / 28 / 36 for 1 to 8 regions.
 
-• '''V Missions:''' each Mission scores if your cubes form its shape (it can be rotated, not flipped). Only the harder version scores, and one cube cannot count for both Missions.
+• '''V Missions:''' a Mission scores if your linked areas (cubes and launch base) form its shape; it can be rotated but not flipped. The light hexes alone give the lower value; light and dark hexes together give the higher value instead. One cube or launch base cannot count for both Missions.
 
 • '''VI Active satellites:''' the fame on each active satellite card.
 
-• '''VII Project cards:''' cards on active satellites give full fame; those on standby satellites give half of their total, rounded down. A satellite with Crew, Device and Software gives 5 more.
+• '''VII Project cards:''' cards on active satellites give their full fame; cards on standby satellites give half of their total, rounded down. Each satellite (active or not) with Crew, Device and Software gives 5 more.
 
 • '''VIII Rewards:''' two Reward cards rank players by a comparison. Ranks give 18, 12, 6 and 0 fame. Tied players split the sum of their ranks, rounded down. A player scoring 0 on the comparison gets nothing.
 
@@ -151,11 +151,11 @@ At the end of the Orbit phase, the game ends if any player has all 5 satellites 
 
 == Game options ==
 
-• '''Board layout:''' Standard (Earth, default), Standard (Random), Advanced (Earth) or Advanced (Random). Standard is the front side; Advanced is the back side with area bonuses.
+• '''Board layout:''' Standard (Earth, default), Standard (Random), Advanced (Earth) or Advanced (Random). Standard is the front side; Advanced is the back side with area bonuses. Earth places the region boards in the recommended order A to H; Random shuffles them (some may be rotated).
 
 • '''Board size:''' 2x4 (default), 2x3 (up to 3 players) or 2x2 (2 players).
 
-• '''Award cards:''' Initial Game (default), Random (1: Link, 1: Other) or Random.
+• '''Award cards:''' Initial Game (default; one ★ card and one ★★ card, for a first game), Random (1: Link, 1: Other) (one link-related card and one other) or Random.
 
 • '''Satellite plan:''' MOON (default, shared plan) or Player-variable (a plan for each color).
 
@@ -167,8 +167,6 @@ At the end of the Orbit phase, the game ends if any player has all 5 satellites 
 
 • Simultaneous choices are hidden from other players until everyone has pressed [Confirm]. Use [Change my choice] to pick again before then.
 
-• Tooltips show a card's full text.
-
 • In the preferences you can show player marks on pieces and choose Compact or As printed satellite cards.
 
 Official site: https://danjiri-concerto.github.io/project-edgeworth/
@@ -178,7 +176,7 @@ Official site: https://danjiri-concerto.github.io/project-edgeworth/
 
 ```text
 __NOTOC__
-'''PROJECT EDGEWORTH''' は 2〜4 人で遊ぶゲームです（40〜60 分）。通信衛星のネットワークをつくる組織を率い、衛星にプロジェクトカードを配備し、打ち上げ、真下の区域を通信確立します。ゲーム終了時に名声がもっとも多い人の勝ちです。
+'''PROJECT EDGEWORTH''' は 2〜4 人で遊ぶゲームです（40〜60 分）。通信衛星のネットワークをつくる組織を率い、衛星にプロジェクトカードを配備し、打ち上げ、真下の区域を通信確立します。
 
 == 目的 ==
 
@@ -186,7 +184,7 @@ __NOTOC__
 
 == 画面にあるもの ==
 
-• '''ボード。''' 両面の地域ボード（A〜H、各 3×3 区域）を並べて盤面にします（標準は 2×4）。左右の端はつながっていて、衛星は上下の端で反射します。海区域の通信確立コストは 2 マヤで名声 1、陸区域は 5 マヤで名声 2 です。裏面（Advanced）では、区域に最初に通信確立した人たちがボーナスを得ます。深海は燃料回復、森林はマヤ、山岳はドロー、雪原は予算上昇、岩礁は隣の陸区域のコスト減です。
+• '''ボード。''' 両面の地域ボード（A〜H、各 3×3 区域）を並べて盤面にします（標準は 2×4）。左右の端はつながっていて、衛星は上下の端で反射します。海区域の通信確立コストは 2 マヤで名声 1、陸区域は 5 マヤで名声 2 です。裏面（Advanced）では、通信確立すると区域ボーナスを得られる区域があります。深海は 1 番目の通信確立で燃料 2 回復・2 番目で 1 回復、森林は 1 番目で 5 マヤ、山岳は 1 番目でプロジェクトカードを 1 枚引き、雪原は順番を問わず予算 +1、岩礁は隣の陸区域の区域コストが自分だけ 1 下がります。
 
 • '''衛星。''' 各プレイヤーは衛星カードを 5 枚持ちます。衛星コマが盤面にあれば'''稼働中'''、衛星カードの上にあれば'''非稼働'''です。1 機に配備できるプロジェクトカードは最大 4 枚です。
 
@@ -212,11 +210,11 @@ __NOTOC__
 
 全員が秘密裏にアクションカードを 1 枚選び、[Confirm] で確定します。最後の 1 人が確定するまでは [Change my choice] で選び直せます。全員が確定すると一斉に公開されます。
 
-前のラウンドに選んだカードは選べません。ただし I 予算発行は毎ラウンド選べます。使ったカードは選べない状態で表示され、次のラウンドに自動で手札へ戻ります。
+前のラウンドに選んだカードは選べません。ただし I 予算発行は毎ラウンド選べます。選べないカードは 1 ラウンドの間、横向きで表示され、その後は自動で手札へ戻ります。
 
 == 2. アクションフェイズ ==
 
-誰かが選んだアクションだけが、I から V の順に行われます。選ばれたフェイズのメインアクションは、そのアクションを選んでいない人も'''全員が'''行います。'''アクション選択ボーナス'''を得られるのは、そのアクションを自分で選んだ人だけです。誰も選ばなかったアクションは行われず、ボーナスもありません。
+誰かが選んだアクションだけが、I から V の順に行われます。選ばれたフェイズのメインアクションは、そのアクションを選んでいない人も'''全員が'''行います。'''アクション選択ボーナス'''を得られるのは、そのアクションを自分で選んだ人だけです。
 
 選択を求められるときは全員が同時に決め、全員が確定するまで選び直せます。その後、効果は一斉に処理されます。
 
@@ -254,7 +252,7 @@ __NOTOC__
 
 == 4. ゲームの終了 ==
 
-循環フェイズの終了時に、5 機とも稼働中のプレイヤーがいる、またはキューブ 16 個をすべて置いた（ボード外に置いたキューブは数えません）プレイヤーがいれば、ゲームが終わります。手札に残ったカードは、得点計算の前に 1 枚 3 マヤで自動的に換金されます。
+循環フェイズの終了時に、5 機とも稼働中のプレイヤーがいる、またはキューブ 16 個をすべて盤面に置いたプレイヤーがいれば、ゲームが終わります。条件を満たした人はそれぞれ終了条件の名声を得ます。手札に残ったカードは、得点計算の前に 1 枚 3 マヤで自動的に換金されます。
 
 == 名声の計算 ==
 
@@ -266,11 +264,11 @@ __NOTOC__
 
 • '''IV 通信確立した地域:''' 通信確立した区域がある地域（A〜H）の数が 1〜8 のとき、1 / 3 / 6 / 10 / 15 / 21 / 28 / 36。
 
-• '''V ミッション:''' キューブが形状どおりに並んでいれば得点します（回転可、反転不可）。得点するのは難しい方だけで、同じキューブを両方のミッションには使えません。
+• '''V ミッション:''' 通信確立した区域（キューブと発射拠点）が形状どおりに並んでいれば得点します（回転可、反転不可）。薄い色の六角形だけなら低い方、薄い色と濃い色を合わせた形なら高い方の名声を得ます（両方は得ません）。同じキューブや発射拠点を 2 枚のミッションに使うことはできません。
 
 • '''VI 稼働中の衛星:''' 稼働中の衛星カードに書かれた名声。
 
-• '''VII プロジェクトカード:''' 稼働中の衛星のカードは名声の全部、非稼働の衛星のカードは名声の合計の半分（切り捨て）。CREW・DEVICE・SOFTWARE がそろった衛星 1 機につき 5。
+• '''VII プロジェクトカード:''' 稼働中の衛星のカードは名声の全部、非稼働の衛星のカードは名声の合計の半分（切り捨て）。CREW・DEVICE・SOFTWARE がそろった衛星 1 機につき 5（稼働・非稼働を問わない）。
 
 • '''VIII 褒賞:''' 褒賞カード 2 枚の比較内容で順位を決め、順位ごとに 18・12・6・0 の名声。同順位は順位の名声を合計して人数で割ります（切り捨て）。比較内容が 0 の人は名声を得られません。
 
@@ -284,11 +282,11 @@ __NOTOC__
 
 == ゲームオプション ==
 
-• '''Board layout（ボードの配置）:''' Standard (Earth)（初期設定）、Standard (Random)、Advanced (Earth)、Advanced (Random)。Standard は区域ボーナスのない表面、Advanced は区域ボーナスのある裏面です。
+• '''Board layout（ボードの配置）:''' Standard (Earth)（初期設定）、Standard (Random)、Advanced (Earth)、Advanced (Random)。Standard は区域ボーナスのない表面、Advanced は区域ボーナスのある裏面です。Earth は地域ボードを推奨の A〜H の順に、Random はランダムに並べます（180° 回転することがあります）。
 
 • '''Board size（ボードの大きさ）:''' 2x4（初期設定）、2x3（3 人まで）、2x2（2 人のみ）。
 
-• '''Award cards（褒賞カード）:''' Initial Game（初期設定）、Random (1: Link, 1: Other)、Random。
+• '''Award cards（褒賞カード）:''' Initial Game（初期設定。★ と ★★ から 1 枚ずつ。初回プレイ向け）、Random (1: Link, 1: Other)（通信確立系から 1 枚、それ以外から 1 枚）、Random。
 
 • '''Satellite plan（衛星プラン）:''' MOON（初期設定。全員共通）、Player-variable（色ごとのプラン）。
 
@@ -299,8 +297,6 @@ __NOTOC__
 == BGA での遊び方 ==
 
 • 同時選択の内容は、全員が [Confirm] するまで他のプレイヤーには見えません。それまでは [Change my choice] で選び直せます。
-
-• カードの全文はツールチップで読めます。
 
 • 設定で、コマに席順の数字を重ねる表示と、衛星カードの表示（Compact / As printed）を選べます。
 
