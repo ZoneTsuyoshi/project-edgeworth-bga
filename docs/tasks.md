@@ -19,6 +19,7 @@
 | 7 | 英語のカード文（プロジェクト 99 枚・衛星 40 面・褒賞・ミッション・アクション）の確認 | アルファ申請まで | 未着手（T-002 で案を作成） |
 | 8 | メタ画像の素材: Icon（PNG 50×50）の図柄、Title（PNG 2000×2000 の透過ロゴ）、Banner（JPG 1386×400、文字なし、2MB 以下）、Display（JPG、高さ 400〜760px・幅は高さの 1.5 倍まで、最大 10 枚。BGA のスクリーンショット不可）、出版社ロゴ（PNG 280×280、任意）。Box（PNG 280×280）は `data/box/` からエージェントが作る（specs/012 §9） | ベータ〜正式リリースまで | 未着手 |
 | 9 | Studio の Manage game で gameinfos とゲームの設定（gamepreferences）を再読み込みする（I-21 の PR がマージされて同期された後。`game_interface_width.min` と設定 101 の反映に必要） | I-21 の PR のマージ後 | 未着手 |
+| 10 | BGA の wiki にルール概要のページ（`Gamehelpprojectedgeworth`）を作る（文面と手順は [publishing/rules-summary.md](publishing/rules-summary.md)） | アルファ申請まで | 文面を用意済み（2026-11-24）。wiki への掲載は未 |
 
 ## フェーズ 1: 仕様の整備
 
