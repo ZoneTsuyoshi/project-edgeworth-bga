@@ -174,7 +174,7 @@
 | PHPUnit Integration（新規 `DraftTest`） | `DraftPickStep`・`SetupFlow` | 検証: パックにないカード・手札のカード・重複・未指定を拒否。zombie と確定のない参加者は先頭。2・3・4 人で、`(i − (k − 1)) mod N` のパックから選ぶこと（k = 1〜4）と、最後の 1 枚が `(i − 4) mod N` のパックから来ること。全員が最後は手札 5 枚、`pack` は 0 枚、カードの総数が保存される。ドラフト中に手札を全部売っても進み、最後の手札が 5 枚より少ないだけ。売却は 15 の参加者だけ可、パックのカードは売れない |
 | PHPUnit Integration | `StateWalker`・`MachineRoundTest` | `StateWalker::enter` に `SETUP_DRAFT_PASS => applyDraftPass()` を足し、オプション 3 で 12 → 15 → 16 → 15 → … → 17 まで通る（15 は 4 回、16 は 4 回、`SETUP_MULLIGAN` は通らない）。既存のマリガンのテストは変えない |
 | PHPUnit Integration | `PublicView` | 本人の `myPack` は ID、他人・観戦者は `[]` と `packCount` だけ。`getArgs` の公開部分にパックの中身がない。N38・N33 に ID がない（`handCardsAdded` は本人宛て 1 件だけ） |
-| JS（`tests/Js/state-logic.test.mjs`） | `logic/draft.js` | `draftNeighbors`（2 人のときは同じ相手、3・4 人、最後の人の次は先頭）、`draftPicks`（パックにないカードを落とす）、`draftActionArgs`、`draftSelectionFrom`、`draftHeading`（最後の回の添え書き） |
+| JS（`tests/js/state-logic.test.mjs`） | `logic/draft.js` | `draftNeighbors`（2 人のときは同じ相手、3・4 人、最後の人の次は先頭）、`draftPicks`（パックにないカードを落とす）、`draftActionArgs`、`draftSelectionFrom`、`draftHeading`（最後の回の添え書き） |
 | 手動（Studio） | 実装 PR の後 | 2・3・4 人で通す。ドラフト中の再読み込み、zombie、売却（V-3・V-4 と合わせて確認） |
 
 ### 9. 影響を受ける既存の仕様書の注記
@@ -195,7 +195,7 @@ Studio は `main` へのマージごとに自動同期される。画面がで�
 
 ### 11. wiki のルール概要への申し送り
 
-`docs/publishing/rules-summary.md`（別 PR で作成中）の「オプション」の節に、ドラフトを足す: 「最初の 5 枚のプロジェクトカードをドラフトで選ぶ（ルールブック p.28）。5 枚から全員が 1 枚選び、残りを左隣へ回し、4 枚・3 枚・2 枚と繰り返す。最後の 1 枚は左隣から回ってくる。BGA ではマリガンとどちらか一方を選べる」。実装 PR（2/2）で、その PR のマージ後に追記する。
+`docs/publishing/rules-summary.md`（PR #43 で作成中）の英語版・日本語版の「ゲームオプション」の節に、ドラフトを足す: 「最初の 5 枚のプロジェクトカードをドラフトで選ぶ（ルールブック p.28）。5 枚から全員が 1 枚選び、残りを左隣へ回し、4 枚・3 枚・2 枚と繰り返す。最後の 1 枚は左隣から回ってくる。BGA ではマリガンとどちらか一方を選べる」。追記は実装 PR（2/2）で行う（PR #43 がマージされていることが前提）。同じ文書の冒頭の注記と手順 8（「ドラフトの実装後に足す」）も消す。
 
 ## エッジケース
 
