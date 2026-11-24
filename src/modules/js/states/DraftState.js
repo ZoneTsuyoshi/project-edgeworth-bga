@@ -67,7 +67,7 @@ export class DraftState extends ActionState {
         return {
             title: format(_('Pick ${pickNo} of ${pickTotal}'), { pickNo: h.pickNo, pickTotal: h.pickTotal }),
             label: h.same
-                ? format(_('Keep 1 of ${count} cards and pass the rest to ${name}. Next, you receive cards from ${name}'), vars)
+                ? format(_('Keep 1 of ${count} cards and exchange the rest with ${name}'), vars)
                 : format(_('Keep 1 of ${count} cards and pass the rest to ${passTo}. Next, you receive cards from ${receiveFrom}'), vars),
             note: h.last ? _('The last card passed to you goes to your hand automatically') : '',
         };

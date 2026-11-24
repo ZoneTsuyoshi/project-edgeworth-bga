@@ -146,7 +146,7 @@
 | 要素 | 内容 |
 | --- | --- |
 | 手元のカード | パネル（`view.panel`。企画 91 の `keepPicker` と同じ作り）の中の `CardPicker`（`ids` = args の `pack`、`max: 1`、カード画像と名前）。前例は 012 未確定 17（引いたカードは手札のゾーンではなく `CardPicker`。作者回答 2026-11-15）。選べるカードは手札にないため。**画面（ログ・ボタン・ツールチップ）の英語に `pack` の語は使わない**（作者の指摘 2026-11-24。ブースターパックの意味に受け取られる。内部の識別子 `pack`・`myPack` などはそのまま） |
-| 見出し | パネルの見出しが `Pick ${pickNo} of ${pickTotal}`、その下の欄ラベルが `Keep 1 of ${count} cards and pass the rest to ${passTo}. Next, you receive cards from ${receiveFrom}`（`count` は args の `packSize`）。2 人のときは相手が同じなので `…pass the rest to ${name}. Next, you receive cards from ${name}` と 1 人の名前に畳む。最後の回（`pickNo == pickTotal`）にはパネルの添え書きに `The last card passed to you goes to your hand automatically` を出す |
+| 見出し | パネルの見出しが `Pick ${pickNo} of ${pickTotal}`、その下の欄ラベルが `Keep 1 of ${count} cards and pass the rest to ${passTo}. Next, you receive cards from ${receiveFrom}`（`count` は args の `packSize`）。2 人のときは相手が同じなので `Keep 1 of ${count} cards and exchange the rest with ${name}` と 1 人の名前に畳む。最後の回（`pickNo == pickTotal`）にはパネルの添え書きに `The last card passed to you goes to your hand automatically` を出す |
 | ステータスバー（タイトル） | `${you} must keep 1 card. Click the card you want to keep`（`setTitle`） |
 | ボタン | **[Confirm]**（`primary`）。何も選んでいないときは押せない（`disabled`。U-1 の「今は使えない = 灰」）。確定後は共通パターン: [Change my choice]（`alert`）。選び直したときは U-1 の 22 と同じく [Confirm the new choice] |
 | 確定済み | パネルのカードは残し、選んだカードを選択状態（`pe-planned`）のまま操作不可にして `Picked` の札を付ける（`showPlan`。本人の画面だけ）。タイトルは共通の `You have confirmed: keep ${name}. Waiting for other players` |
