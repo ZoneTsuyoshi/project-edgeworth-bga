@@ -1,0 +1,34 @@
+{
+ "sample": "three-players-advanced",
+ "state": "SetupDraftPick",
+ "active": false,
+ "args": {
+  "participants": [
+   2310001,
+   2310002,
+   2310003
+  ],
+  "confirmed": [
+   2310002
+  ],
+  "pickNo": 1,
+  "pickTotal": 4,
+  "packSize": 5,
+  "_private": {
+   "myChoice": {
+    "card": 41
+   },
+   "sellValue": 3,
+   "pack": [
+    12,
+    27,
+    41,
+    63,
+    95
+   ],
+   "hand": []
+  }
+ },
+ "myHand": [],
+ "steps": []
+}

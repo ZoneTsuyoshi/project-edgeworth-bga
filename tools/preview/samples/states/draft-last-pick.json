@@ -1,0 +1,38 @@
+{
+ "sample": "two-players-standard-6col",
+ "state": "SetupDraftPick",
+ "active": true,
+ "args": {
+  "participants": [
+   2320001,
+   2320002
+  ],
+  "confirmed": [],
+  "pickNo": 4,
+  "pickTotal": 4,
+  "packSize": 2,
+  "_private": {
+   "myChoice": null,
+   "pack": [
+    33,
+    80
+   ],
+   "hand": [
+    5,
+    19,
+    48
+   ],
+   "sellValue": 3
+  }
+ },
+ "myHand": [
+  5,
+  19,
+  48
+ ],
+ "steps": [
+  {
+   "click": ".pe-picker-slot:nth-child(1) .pe-picker-card"
+  }
+ ]
+}

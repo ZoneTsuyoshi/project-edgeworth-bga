@@ -37,6 +37,39 @@ sample('mulligan-confirmed', {
   args: choice({ hand: HAND, myChoice: { discard: [18, 70] } }),
   steps: [],
 });
+// ---- 15 初期手札のドラフト（5 枚から選んで残りを左隣へ。4 回。013）----
+const DRAFT_PACK = [12, 27, 41, 63, 95];
+const draftArgs = (mine, extra = {}) => choice({ sellValue: 3, ...mine }, { pickNo: 1, pickTotal: 4, packSize: 5, ...extra });
+sample('draft', {
+  state: 'SetupDraftPick',
+  active: true,
+  args: draftArgs({ pack: DRAFT_PACK, hand: [] }),
+  myHand: [],
+  steps: [{ click: '.pe-picker-slot:nth-child(2) .pe-picker-card' }],
+});
+sample('draft-confirmed', {
+  state: 'SetupDraftPick',
+  active: false,
+  args: draftArgs({ pack: DRAFT_PACK, hand: [], myChoice: { card: 41 } }, { pickNo: 1 }),
+  myHand: [],
+  steps: [],
+});
+// 4 回目（2 枚）。2 人プレイなので渡す相手と受け取る相手が同じ。手札は 3 枚
+sample('draft-last-pick', {
+  sample: 'two-players-standard-6col',
+  state: 'SetupDraftPick',
+  active: true,
+  args: {
+    participants: [2320001, 2320002],
+    confirmed: [],
+    pickNo: 4,
+    pickTotal: 4,
+    packSize: 2,
+    _private: { myChoice: null, pack: [33, 80], hand: [5, 19, 48], sellValue: 3 },
+  },
+  myHand: [5, 19, 48],
+  steps: [{ click: '.pe-picker-slot:nth-child(1) .pe-picker-card' }],
+});
 sample('planning-confirmed', {
   state: 'PlanningPlot',
   active: false,

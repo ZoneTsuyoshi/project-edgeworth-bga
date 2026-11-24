@@ -11,12 +11,16 @@ import { DeployState } from '../../src/modules/js/states/DeployState.js';
 import { EffectWindowState } from '../../src/modules/js/states/EffectWindowState.js';
 import { LaunchState } from '../../src/modules/js/states/LaunchState.js';
 import { LinkState } from '../../src/modules/js/states/LinkState.js';
+import { DraftState } from '../../src/modules/js/states/DraftState.js';
 import { MulliganState } from '../../src/modules/js/states/MulliganState.js';
 import { PlanningPlot, SetupLaunchPadPlace } from '../../src/modules/js/states/PlacementStates.js';
 import { ProposalState } from '../../src/modules/js/states/ProposalState.js';
 
 const params = new URLSearchParams(location.search);
-const sampleName = params.get('sample') ?? 'three-players-advanced';
+const stateName = params.get('state');
+/** 状態の見本（?state=）。見本の JSON の `sample` は、?sample= が無いときに使う盤面の見本 */
+const statePlan = stateName === null ? null : await (await fetch(`./samples/states/${stateName}.json`)).json();
+const sampleName = params.get('sample') ?? statePlan?.sample ?? 'three-players-advanced';
 if (params.get('theme') === 'dark') {
     document.documentElement.dataset.theme = 'dark';
 }
@@ -125,9 +129,8 @@ if (demo !== null && demo in demos) {
 }
 
 // ---- 状態の操作 UI（?state=<見本名>） ----
-const stateName = params.get('state');
-if (stateName !== null) {
-    const plan = await (await fetch(`./samples/states/${stateName}.json`)).json();
+if (statePlan !== null) {
+    const plan = statePlan;
     const titleBox = /** @type {HTMLElement} */ (document.getElementById('pv-title'));
     const buttonBox = /** @type {HTMLElement} */ (document.getElementById('pv-buttons'));
     const logBox = /** @type {HTMLElement} */ (document.getElementById('pv-log'));
@@ -184,6 +187,7 @@ if (stateName !== null) {
     const classes = {
         SetupLaunchPadPlace: () => new SetupLaunchPadPlace(game, bga),
         SetupMulligan: () => new MulliganState(game, bga),
+        SetupDraftPick: () => new DraftState(game, bga),
         PlanningPlot: () => new PlanningPlot(game, bga),
         EffectWindowResolve: () => new EffectWindowState(game, bga),
         DeployMainChoose: () => new DeployState(game, bga),
@@ -196,6 +200,13 @@ if (stateName !== null) {
     if (plan.maya !== undefined && view.m.me !== null) {
         view.m.players[view.m.me].maya = plan.maya;
         view.panels.get(view.m.me)?.update({});
+    }
+    if (plan.myHand !== undefined && view.m.me !== null) {
+        // 手札の見本の差し替え（ドラフトの途中など）
+        view.m.myHand = plan.myHand;
+        view.m.players[view.m.me].handCount = plan.myHand.length;
+        view.areas.get(view.m.me)?.hand.setCards(plan.myHand);
+        view.refreshPlayer(view.m.me);
     }
     const sleep = (/** @type {number} */ ms) => new Promise((resolve) => setTimeout(resolve, ms));
     if (plan.state !== null) {

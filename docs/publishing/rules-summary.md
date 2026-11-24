@@ -2,8 +2,6 @@
 
 BGA のゲームページと対局画面に表示される「ルール概要（Rules summary）」の文面。中身は BGA の wiki のページ `Gamehelpprojectedgeworth` で、読者の言語のページがあればそれを、なければ英語版を表示する。このファイルを原本とし、wiki へは貼り付けて掲載する。
 
-ドラフト（I-22）の実装後に、「ゲームオプション」の節へ Starting hand の Draft を足す（それまでは書かない）。
-
 根拠（確認日 2026-11-10。minimum-journey-bga の同じ文書の確認を流用）:
 
 - <https://en.doc.boardgamearena.com/Help>（wiki のヘルプ一覧）
@@ -27,7 +25,6 @@ BGA のゲームページと対局画面に表示される「ルール概要（R
 5. 日本語版の URL でも同様に、「日本語版」の中身を貼って保存する。
 6. ゲームページの「ルール概要」と対局画面で表示を確認する。
 7. ルールや画面の用語が変わったら、このファイルを先に直してから wiki を更新する。
-8. ドラフト（I-22）の実装後は、このファイルのゲームオプションの節に Draft を足してから wiki を更新する。
 
 ## 書き方の決まり
 
@@ -69,7 +66,7 @@ At the end of the game, each player adds up fame from Budget, Maya, linked areas
 
 • '''Launch bases.''' In seat order, starting with the base player (the first seat), each player chooses a Land area that holds no launch base yet and places their launch base there. It gives no area bonus, but counts as one of your linked areas.
 
-• '''Starting hand.''' With the Mulligan option, all players at the same time discard any number of their 5 cards and draw the same number, once.
+• '''Starting hand.''' With the Mulligan option, all players at the same time discard any number of their 5 cards and draw the same number, once. With the Draft option, everyone keeps 1 of the 5 cards dealt to them and passes the rest to the left, all at the same time. Then everyone keeps 1 of the cards passed to them and passes the rest again. After 4 choices, the last card passed to you goes to your hand automatically, so you end with 5 cards.
 
 • '''Setup Deploy phase.''' Everyone performs one Deploy phase at the same time, with the Action selection bonus. It does not use up your Deploy Action Card, and there is no extra cost because no satellite is active yet.
 
@@ -159,7 +156,7 @@ At the end of the Orbit phase, the game ends if any player has all 5 satellites 
 
 • '''Satellite plan:''' MOON (default, shared plan) or Player-variable (a plan for each color).
 
-• '''Starting hand:''' None (default) or Mulligan.
+• '''Starting hand:''' None (default), Mulligan or Draft (see Setup).
 
 • '''Public fame (except missions):''' Hidden (default) or Visible.
 
@@ -200,7 +197,7 @@ __NOTOC__
 
 • '''発射拠点。''' 基準プレイヤー（席順の 1 番手）から順に 1 人ずつ、まだ誰の発射拠点もない陸区域に自分の発射拠点を置きます。区域ボーナスは得られませんが、通信確立した区域として数えます。
 
-• '''初期手札。''' オプションがマリガンのときは、全員が同時に、5 枚のうち好きな枚数を捨てて同じ枚数を引き直します（1 回だけ）。
+• '''初期手札。''' オプションがマリガンのときは、全員が同時に、5 枚のうち好きな枚数を捨てて同じ枚数を引き直します（1 回だけ）。ドラフトのときは、全員が同時に、配られた 5 枚から 1 枚を手札に残し、残りを左隣のプレイヤーへ回します。次は回ってきたカードから 1 枚を残し、残りをまた回します。4 回選ぶと、最後に回ってきた 1 枚が自動で手札に入り、手札は 5 枚になります。
 
 • '''セットアップの配備フェイズ。''' 全員が同時に、アクション選択ボーナス付きの配備フェイズを 1 回行います。アクションカードの II 配備は使ったことにならず、稼働中の衛星がないので追加コストもありません。
 
@@ -290,7 +287,7 @@ __NOTOC__
 
 • '''Satellite plan（衛星プラン）:''' MOON（初期設定。全員共通）、Player-variable（色ごとのプラン）。
 
-• '''Starting hand（初期手札）:''' None（初期設定）、Mulligan。
+• '''Starting hand（初期手札）:''' None（初期設定）、Mulligan、Draft（内容は「準備」を参照）。
 
 • '''Public fame (except missions)（名声の公開）:''' Hidden（初期設定）、Visible。
 
