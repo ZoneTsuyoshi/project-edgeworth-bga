@@ -211,6 +211,10 @@ export const HANDLERS = {
       m.myDrawn = [...m.myDrawn, ...ids];
     } else {
       m.myHand = [...m.myHand, ...ids];
+      if (a.reason === 'draft') {
+        // ドラフトで取ったカードは手元のカードから除く（最後の 1 枚の auto は元々手元にない）
+        m.myPack = m.myPack.filter((id) => !ids.includes(id));
+      }
       if (m.me !== null) {
         m.players[m.me].handCount = m.myHand.length;
       }
@@ -550,6 +554,19 @@ export const HANDLERS = {
     view.refreshFame();
   },
 
+  // N38（全員）: ドラフトの 1 回が終わり、残りを左隣へ回した。公開ログだけ。確定の印を外す（次の回の選択へ）
+  draftPassed(view) {
+    for (const p of Object.values(view.m.players)) {
+      p.confirmed = false;
+    }
+    view.refreshMarks();
+  },
+
+  // N39（本人）: 左隣から回ってきたカード（次の回に選ぶカード）
+  draftPackReceived(view, a) {
+    view.m.myPack = (a.pack ?? []).map((/** @type {unknown} */ v) => int(v));
+  },
+
   // N33: 山と手札の枚数カウンターを再同期（変更があった者だけ）
   countersUpdate(view, a) {
     const m = view.m;
@@ -564,9 +581,12 @@ export const HANDLERS = {
       if (p === undefined) {
         continue;
       }
-      const counters = /** @type {{ handCount?: number, drawnCount?: number, cubesLeft?: number, rewardValues?: Record<string, number> }} */ (c);
+      const counters = /** @type {{ handCount?: number, drawnCount?: number, cubesLeft?: number, rewardValues?: Record<string, number>, packCount?: number }} */ (c);
       if (counters.handCount !== undefined && p.id !== m.me) {
         p.handCount = int(counters.handCount);
+      }
+      if (counters.packCount !== undefined) {
+        p.packCount = int(counters.packCount);
       }
       if (counters.drawnCount !== undefined) {
         p.drawnCount = int(counters.drawnCount);

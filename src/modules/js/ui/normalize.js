@@ -58,6 +58,7 @@ export function colorOfSatelliteCard(card) {
  * @property {number} budget
  * @property {number | null} padCell
  * @property {number} handCount
+ * @property {number} packCount ドラフト中に手元にあるカードの枚数（ドラフトの 15 のあいだだけ 0 でない）
  * @property {number} drawnCount
  * @property {number} missionCount
  * @property {number} cubesLeft
@@ -82,6 +83,7 @@ export function colorOfSatelliteCard(card) {
  * @property {number[]} discard
  * @property {number[]} myHand
  * @property {number[]} myDrawn
+ * @property {number[]} myPack ドラフトで今選べるカード（本人だけ。他人・観戦者は空）
  * @property {number[]} myMissions
  * @property {Record<number, PlayerModel>} players
  * @property {Record<string, number[]>} bonusHolders アクション番号 → 保持者（キーがある = 選ばれたアクション）
@@ -125,6 +127,7 @@ export function normalizeGamedatas(raw, me) {
       budget: int(data.budget ?? base.budget),
       padCell: data.padCell === null || data.padCell === undefined ? null : int(data.padCell),
       handCount: int(data.handCount),
+      packCount: int(data.packCount),
       drawnCount: int(data.drawnCount),
       missionCount: int(data.missionCount),
       cubesLeft: int(data.cubesLeft, 16),
@@ -158,6 +161,7 @@ export function normalizeGamedatas(raw, me) {
     discard: (raw.discard ?? []).map((/** @type {unknown} */ v) => int(v)),
     myHand: (raw.myHand ?? []).map((/** @type {unknown} */ v) => int(v)),
     myDrawn: (raw.myDrawn ?? []).map((/** @type {unknown} */ v) => int(v)),
+    myPack: (raw.myPack ?? []).map((/** @type {unknown} */ v) => int(v)),
     myMissions: (raw.myMissions ?? []).map((/** @type {unknown} */ v) => int(v)),
     players,
     bonusHolders: Object.fromEntries(Object.entries(raw.bonusHolders ?? {}).map(([k, v]) => [k, /** @type {unknown[]} */ (v).map((x) => int(x))])),

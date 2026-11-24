@@ -6,6 +6,7 @@
  */
 import { dispatchNotification, HANDLERS } from './notifications.js';
 import { DeployState } from './states/DeployState.js';
+import { DraftState } from './states/DraftState.js';
 import { EffectWindowState } from './states/EffectWindowState.js';
 import { LaunchState } from './states/LaunchState.js';
 import { LinkState } from './states/LinkState.js';
@@ -30,6 +31,7 @@ export class Game {
         // 状態クラスはサーバー側の States/ のクラス名で登録する（状態 11・13・22・31・61・71・72・81・82・91 の操作 UI）
         this.bga.states.register('SetupLaunchPadPlace', new SetupLaunchPadPlace(this, bga));
         this.bga.states.register('SetupMulligan', new MulliganState(this, bga));
+        this.bga.states.register('SetupDraftPick', new DraftState(this, bga));
         this.bga.states.register('PlanningPlot', new PlanningPlot(this, bga));
         this.bga.states.register('EffectWindowResolve', new EffectWindowState(this, bga));
         this.bga.states.register('DeployMainChoose', new DeployState(this, bga));

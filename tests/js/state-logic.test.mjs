@@ -1,5 +1,6 @@
 // 操作 UI の純粋関数（args の解釈、選択の検証、送信する引数の組み立て）の単体テスト。スプライトの生成物（sprites.js）に依存しない。実行: npm run test:js
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { keyOfNameId, nameOfNameId, parseHostKey } from '../../src/modules/js/cards/name-id.js';
 import {
@@ -10,6 +11,7 @@ import {
 } from '../../src/modules/js/states/logic/deploy.js';
 import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from '../../src/modules/js/states/logic/launch.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, parseLinkable, validateLink } from '../../src/modules/js/states/logic/link.js';
+import { draftActionArgs, draftHeading, draftNeighbors, draftPicks, draftSelectionFrom } from '../../src/modules/js/states/logic/draft.js';
 import { mulliganActionArgs, mulliganButton, mulliganPicks } from '../../src/modules/js/states/logic/mulligan.js';
 import {
   keepComplete, optionPayment, parseProposal, proposalActionArgs, proposalMode, proposalSelectionFrom, pruneExtraUses, requiredKeep, reservedHand, validateProposal,
@@ -265,6 +267,40 @@ test('マリガンの選択とボタン', () => {
   assert.deepEqual(mulliganPicks([1, 2, 9], [1, 2, 3]), [1, 2]);
   assert.deepEqual(mulliganActionArgs([]), {}, '空配列は送信で落ちるので省く');
   assert.deepEqual(mulliganActionArgs([3, 4]), { discard: [3, 4] });
+});
+
+test('ドラフトの渡す相手と受け取る相手（席順の次と前。最後の人の次は先頭）', () => {
+  assert.deepEqual(draftNeighbors([1, 2], 1), { passTo: 2, receiveFrom: 2 }, '2 人は同じ相手');
+  assert.deepEqual(draftNeighbors([1, 2], 2), { passTo: 1, receiveFrom: 1 });
+  assert.deepEqual(draftNeighbors([1, 2, 3], 1), { passTo: 2, receiveFrom: 3 });
+  assert.deepEqual(draftNeighbors([1, 2, 3], 3), { passTo: 1, receiveFrom: 2 });
+  assert.deepEqual(draftNeighbors([5, 6, 7, 8], 8), { passTo: 5, receiveFrom: 7 });
+  assert.deepEqual(draftNeighbors([5, 6, 7, 8], 6), { passTo: 7, receiveFrom: 5 });
+  assert.equal(draftNeighbors([1, 2, 3], null), null, '観戦者');
+  assert.equal(draftNeighbors([1, 2, 3], 9), null);
+});
+
+test('ドラフトの選択の整理・引数・復元', () => {
+  assert.equal(draftPicks(3, [1, 3, 5]), 3);
+  assert.equal(draftPicks(9, [1, 3, 5]), null, '手元にないカードは落とす');
+  assert.equal(draftPicks(null, [1, 3, 5]), null);
+  assert.deepEqual(draftActionArgs(3), { card: 3 });
+  assert.equal(draftSelectionFrom({ card: 7 }), 7);
+  assert.equal(draftSelectionFrom({ card: '7' }), 7);
+  assert.equal(draftSelectionFrom(null), null);
+  assert.equal(draftSelectionFrom({}), null);
+});
+
+test('ドラフトの見出し（4 回目の添え書き）と、画面の英語に pack の語を使わない', () => {
+  const first = draftHeading({ pickNo: 1, pickTotal: 4, packSize: 5 }, [1, 2, 3], 2);
+  assert.deepEqual(first, { pickNo: 1, pickTotal: 4, packSize: 5, passTo: 3, receiveFrom: 1, same: false, last: false });
+  const last = draftHeading({ pickNo: '4', pickTotal: 4, packSize: 2 }, [1, 2], 1);
+  assert.deepEqual(last, { pickNo: 4, pickTotal: 4, packSize: 2, passTo: 2, receiveFrom: 2, same: true, last: true });
+  assert.equal(draftHeading({ pickNo: 1, pickTotal: 4, packSize: 5 }, [1, 2], null), null);
+  const source = readFileSync(new URL('../../src/modules/js/states/DraftState.js', import.meta.url), 'utf8');
+  const texts = [...source.matchAll(/_\('((?:[^'\\]|\\.)*)'\)/g)].map((m) => m[1]);
+  assert.ok(texts.length >= 8, '文面を取り出せている');
+  assert.deepEqual(texts.filter((t) => /pack/i.test(t)), []);
 });
 
 const proposalPrivate = {
