@@ -145,17 +145,17 @@
 
 | 要素 | 内容 |
 | --- | --- |
-| パック | パネル（`view.panel`。企画 91 の `keepPicker` と同じ作り）の中の `CardPicker`（`ids` = `pack`、`max: 1`、カード画像と名前）。前例は 012 未確定 17（引いたカードは手札のゾーンではなく `CardPicker`。作者回答 2026-11-15）。パックのカードは手札にないため |
-| 見出し（パネルの欄ラベル） | `Pick ${pickNo} of ${pickTotal}: choose 1 of ${packSize} cards. You pass the rest to ${passTo}, and receive a pack from ${receiveFrom}`。2 人のときは相手が同じなので `…pass the rest to ${name} (and receive a pack from ${name})` と 1 人の名前に畳む。最後の回（`pickNo == pickTotal`）には `The last card of the next pack goes to your hand automatically` を添える |
-| ステータスバー（タイトル） | `${you} must pick a card from your pack. Click the card you want to keep`（`setTitle`） |
+| 手元のカード | パネル（`view.panel`。企画 91 の `keepPicker` と同じ作り）の中の `CardPicker`（`ids` = args の `pack`、`max: 1`、カード画像と名前）。前例は 012 未確定 17（引いたカードは手札のゾーンではなく `CardPicker`。作者回答 2026-11-15）。選べるカードは手札にないため。**画面（ログ・ボタン・ツールチップ）の英語に `pack` の語は使わない**（作者の指摘 2026-11-24。ブースターパックの意味に受け取られる。内部の識別子 `pack`・`myPack` などはそのまま） |
+| 見出し | パネルの見出しが `Pick ${pickNo} of ${pickTotal}`、その下の欄ラベルが `Keep 1 of ${count} cards and pass the rest to ${passTo}. Next, you receive cards from ${receiveFrom}`（`count` は args の `packSize`）。2 人のときは相手が同じなので `…pass the rest to ${name}. Next, you receive cards from ${name}` と 1 人の名前に畳む。最後の回（`pickNo == pickTotal`）にはパネルの添え書きに `The last card passed to you goes to your hand automatically` を出す |
+| ステータスバー（タイトル） | `${you} must keep 1 card. Click the card you want to keep`（`setTitle`） |
 | ボタン | **[Confirm]**（`primary`）。何も選んでいないときは押せない（`disabled`。U-1 の「今は使えない = 灰」）。確定後は共通パターン: [Change my choice]（`alert`）。選び直したときは U-1 の 22 と同じく [Confirm the new choice] |
-| 確定済み | パネルのパックは残し、選んだカードを選択状態のまま操作不可にして `Picked` の札を付ける（`showPlan`。本人の画面だけ）。タイトル `Waiting for other players` |
+| 確定済み | パネルのカードは残し、選んだカードを選択状態（`pe-planned`）のまま操作不可にして `Picked` の札を付ける（`showPlan`。本人の画面だけ）。タイトルは共通の `You have confirmed: keep ${name}. Waiting for other players` |
 | 手札の欄 | 既存の `ActionState` のまま（取ったカードが手札のゾーンに入る。0 枚のときは空）。[Sell cards] は手札の見出しの行（U-1 の 5）。売却中・全部売る確認も既存どおり。手札が 0 枚なら [Sell cards] は出さない（既存の挙動で確認する） |
-| 他プレイヤー | タイトル `Waiting for ${names} to pick a card`（BGA 標準の待機表示）。パネルの確定の印は既存の N2 の処理。中身は何も見えない |
-| プレイヤーパネル | 手札の枚数（既存）。パックの枚数は全員同じなので出さない（見出しに `packSize` がある） |
-| 観戦者 | パックは出さない。`Waiting for players to pick a card` と確定の印だけ |
-| 通知ハンドラ | `notifications.js` に `draftPassed`（全員の確定の印を外す。`pickNo` の更新はしない）と `draftPackReceived`（`m.myPack` を更新）。`handCardsAdded` は `reason` を見ない（既存どおり手札に足す）。`countersUpdate` は `packCount` を `m.players[pid].packCount` に入れる。モデルに `myPack`・`packCount` を足す |
-| ロジック（`logic/draft.js`） | `draftNeighbors(order, me)`（渡す相手・受け取る相手）、`draftSelectionFrom(choice)`、`draftActionArgs(card)`（`{ card }`）、`draftPicks(picked, pack)`（パックにあるカードだけ残す）、`draftHeading(args, order, me)` |
+| 他プレイヤー | タイトルは共通の `Waiting for other players`（`ActionState` の待機表示。BGA 標準の「誰を待つか」の表示は args の `participants` から BGA が出す）。パネルの確定の印は既存の N2 の処理。中身は何も見えない |
+| プレイヤーパネル | 手札の枚数（既存）。手元のカードの枚数は全員同じなので出さない（見出しに `packSize` から作った枚数がある）。モデルの `packCount` は持つが表示しない |
+| 観戦者 | 手元のカードは出さない。`Waiting for other players` と確定の印だけ |
+| 通知ハンドラ | `notifications.js` に `draftPassed`（全員の確定の印を外す。`pickNo` の更新はしない）と `draftPackReceived`（`m.myPack` を更新）。`handCardsAdded` は `reason: 'draft'` のとき、手札に足したカードを `m.myPack` から除く（最後の 1 枚の `auto` は元々ない）。`countersUpdate` は `packCount` を `m.players[pid].packCount` に入れる。モデルに `myPack`・`packCount` を足す（`getAllDatas` の値から復元する） |
+| ロジック（`logic/draft.js`） | `draftNeighbors(order, me)`（渡す相手・受け取る相手）、`draftSelectionFrom(choice)`、`draftActionArgs(card)`（`{ card }`）、`draftPicks(picked, cards)`（手元にあるカードだけ残す）、`draftHeading(args, order, me)`（見出しの材料。文面は `DraftState` が `_()` で組む。テストは `DraftState.js` の `_()` の文字列に `pack` が無いことも検査する） |
 | 012 の表 | 012 の「手札を使う選択の洗い出し」（B-1）にドラフトの行、U-1 の状態ごとのボタンの表に `15 ドラフト` の行を足した（本書の追記） |
 | プレビュー | `tools/preview/make-state-samples.mjs` に `draft`（5 枚から選択中。クリックのステップ付き）、`draft-confirmed`（確定済み）、`draft-last-pick`（4 回目・2 枚・2 人プレイで相手の名前が 1 つ）を足し、`tools/preview/samples/states/` に生成物をコミットする |
 
