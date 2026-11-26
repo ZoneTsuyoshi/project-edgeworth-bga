@@ -16,6 +16,7 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 | [publishing/game-description.md](publishing/game-description.md) | 英語のゲーム紹介文と BGG 登録の手順 |
 | [publishing/bga-license.md](publishing/bga-license.md) | BGA のライセンス申請（作者が権利者として許諾する）の手順とメールの文面 |
 | [publishing/rules-summary.md](publishing/rules-summary.md) | BGA のルール概要（wiki の Gamehelp）の英語・日本語の文面と掲載手順 |
+| [publishing/rulebook-en.md](publishing/rulebook-en.md) | 英語版ルールブック（PDF）の翻訳の方針・用語集・作り方（原稿とビルドは `tools/rulebook-en/`） |
 
 ## 一次情報
 

@@ -56,9 +56,15 @@ export default defineConfig([
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: { ...globals.browser, _: 'writable' } },
   },
 
+  // 英語版ルールブックのブラウザ内スクリプト（ヘッドレス Chrome で動く。モジュールではなく即時関数）
+  {
+    files: ['tools/rulebook-en/fit.js'],
+    languageOptions: { ecmaVersion: 'latest', sourceType: 'script', globals: globals.browser },
+  },
+
   // Node スクリプトと設定ファイル
   {
-    files: ['scripts/**/*.mjs', 'tools/preview/*.mjs', 'tests/js/*.mjs', '*.config.mjs'],
+    files: ['scripts/**/*.mjs', 'tools/preview/*.mjs', 'tools/rulebook-en/*.mjs', 'tests/js/*.mjs', '*.config.mjs'],
     languageOptions: { globals: globals.node },
   },
 

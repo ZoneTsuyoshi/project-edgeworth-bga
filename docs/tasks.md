@@ -21,6 +21,7 @@
 | 9 | Studio の Manage game で gameinfos とゲームの設定（gamepreferences）を再読み込みする（I-21 の PR がマージされて同期された後。`game_interface_width.min` と設定 101 の反映に必要） | I-21 の PR のマージ後 | 未着手 |
 | 10 | BGA の wiki にルール概要のページ（`Gamehelpprojectedgeworth`）を作る（文面と手順は [publishing/rules-summary.md](publishing/rules-summary.md)） | アルファ申請まで | 文面を用意済み（2026-11-24）。wiki への掲載は未 |
 | 11 | Studio の Manage game でゲームオプション（gameoptions）を再読み込みし、Starting hand: Draft でテーブルを作って 2〜4 人で通す（I-22 の PR 2/2 がマージされて同期された後） | I-22 のマージ後 | 未着手 |
+| 12 | 英語版ルールブック（PDF）の確認。手元で `npm run build:rulebook-en` を実行すると `build/rulebook-en/PROJECT-EDGEWORTH-Rulebook-EN.pdf` ができる（原本の図版を含むため PDF はコミットしていない）。確認してほしい点は [publishing/rulebook-en.md](publishing/rulebook-en.md) の「作者に確認したい点」 | 公開するとき | 初版を作成（2026-11-26）。作者の確認待ち |
 
 ## フェーズ 1: 仕様の整備
 
