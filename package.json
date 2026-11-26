@@ -21,6 +21,7 @@
     "test:integration": "bash tests/run-integration.sh",
     "build:sprites": "node scripts/build-sprites.mjs",
     "build:background": "node scripts/build-background.mjs",
+    "build:rulebook-en": "node scripts/build-rulebook-en.mjs",
     "check:sprites": "node scripts/check-sprites.mjs",
     "build:card-info": "node scripts/build-card-info.mjs",
     "check:card-info": "node scripts/build-card-info.mjs --check"

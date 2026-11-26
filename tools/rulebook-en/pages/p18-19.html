@@ -1,0 +1,63 @@
+<!-- p18-19 循環フェイズ（見開き）。座標は原本 PNG の px。ページの境目は x=1713。 -->
+<!-- ===== 左ページ ===== -->
+<!-- 見出しの札（薄い水色）。札と ▼ は原本のまま -->
+<div class="t e flat fh dk vm" style="--x:96;--y:154;--w:300;--h:55;--c:#ceeaee;--fs:40;--lh:1.1">Orbit Phase</div>
+<!-- 冒頭（縞の地） -->
+<div class="e" style="--x:92;--y:226;--w:1558;--h:180"></div>
+<div class="t" style="--x:98;--y:226;--w:1546;--h:180;--fs:32;--lh:1.55">In the Orbit Phase, all active satellites are subject to <span class="cy">“orbit.”</span> Orbit is carried out in the order <span class="cy">“Satellite Movement,” “Fuel Consumption,” “Near Miss Check,”</span> and <span class="cy">“Landing / Splashdown Check.”</span> Also, if the game end condition is met at the end of the Orbit Phase, the game ends immediately.</div>
+<!-- 青い箱: 衛星コマの移動 -->
+<div class="e flat" style="--x:188;--y:466;--w:324;--h:55;--c:#214fa2"></div>
+<div class="t fh wh c vm nw" style="--x:150;--y:466;--w:400;--h:55;--fs:29;--lh:1.1">Satellite Movement</div>
+<div class="e flat" style="--x:143;--y:545;--w:1490;--h:758;--c:#6688af"></div>
+<div class="t" style="--x:148;--y:548;--w:1482;--h:752;--fs:30;--lh:1.7;--pg:0.5">
+<p>Move each satellite piece 1 area in the direction its satellite is heading, all at the same time. If a satellite would move off the game board from an area at the top, bottom, left, or right edge, determine the area it moves to using the following boundary conditions.</p>
+<div class="li" style="--ind:2.4"><span class="n">a.</span>Off the left or right edge: <span class="pk">Treat the left and right edges of the game board as connected,</span> move the satellite piece to the opposite side, and continue in the same heading.</div>
+<div class="li" style="--ind:2.4"><span class="n">b.</span>Off the top or bottom edge: <span class="pk">Flip the satellite piece’s heading up or down to perform a “bounce,”</span> then move the satellite piece 1 area after the bounce. A “bounce” is distinct from a “turn,” so effects triggered by a “turn” are not triggered by a bounce.</div>
+<p>On very rare occasions, several players may each have a satellite with a card effect that moves it additional areas, and whether each one moves depends on the other player’s choice. In that case, process them in order, starting with the player closest to the base player in clockwise order.</p>
+</div>
+<!-- 例 1 -->
+<div class="e flat f-numgray" style="--x:180;--y:1366;--w:1390;--h:100"></div>
+<div class="t" style="--x:187;--y:1366;--w:1385;--h:100;--fs:28;--lh:1.55">Example 1: <span class="jessie">Jessie (green)</span>’s satellite “CONCORDE” is in an area on the right edge, heading toward the upper right. This satellite moves to the area on the left edge of the row above, still facing the upper right.</div>
+<div class="e flat f-numgray" style="--x:168;--y:1529;--w:70;--h:38"></div>
+<div class="t c nw" style="--x:162;--y:1517;--w:84;--h:62;--fs:28;--lh:1.05">Left<br>edge</div>
+<div class="e flat f-numgray" style="--x:1500;--y:1609;--w:70;--h:38"></div>
+<div class="t c nw" style="--x:1494;--y:1597;--w:84;--h:62;--fs:28;--lh:1.05">Right<br>edge</div>
+<!-- 例 2 -->
+<div class="e flat f-numgray" style="--x:180;--y:1768;--w:366;--h:306"></div>
+<div class="t" style="--x:187;--y:1772;--w:358;--h:340;--fs:28;--lh:1.55">Example 2: <span class="teresa">Teresa (blue)</span>’s satellite “SCALLOP” is in an area on the top edge, heading toward the upper right. This satellite flips to face the lower right and moves to the area to its lower right.</div>
+<div class="e flat f-numgray" style="--x:638;--y:1779;--w:68;--h:36"></div>
+<div class="t c nw" style="--x:622;--y:1754;--w:100;--h:64;--fs:28;--lh:1.05">Top<br>edge</div>
+<!-- 例 3 -->
+<div class="e flat f-numgray" style="--x:855;--y:1768;--w:366;--h:412"></div>
+<div class="t" style="--x:862;--y:1772;--w:376;--h:432;--fs:28;--lh:1.55">Example 3: <span class="luna">Luna (red)</span>’s satellite “STEALTH” is in the area at the bottom-right corner, heading toward the lower right. First, the satellite bounces to face the upper right; then it moves to the area on the left edge of the row above, still facing the upper right.</div>
+<div class="e flat f-numgray" style="--x:1406;--y:1782;--w:70;--h:37"></div>
+<div class="t nw" style="--x:1409;--y:1782;--w:130;--h:37;--fs:28;--lh:1.3">Right edge</div>
+<div class="e flat f-numgray" style="--x:1317;--y:1949;--w:67;--h:36"></div>
+<div class="t r nw" style="--x:1231;--y:1949;--w:146;--h:36;--fs:28;--lh:1.3">Bottom edge</div>
+<div class="e flat f-numgray" style="--x:1336;--y:2123;--w:70;--h:36"></div>
+<div class="t r nw" style="--x:1270;--y:2123;--w:135;--h:36;--fs:28;--lh:1.3">Left edge</div>
+<div class="e flat f-numgray" style="--x:1530;--y:2148;--w:68;--h:36"></div>
+<div class="t c nw" style="--x:1524;--y:2128;--w:84;--h:62;--fs:28;--lh:1.05">Bottom<br>edge</div>
+
+<!-- ===== 右ページ ===== -->
+<!-- 燃料消費 -->
+<div class="e flat" style="--x:1900;--y:170;--w:205;--h:55;--c:#214fa2"></div>
+<div class="t fh wh c vm nw" style="--x:1800;--y:170;--w:400;--h:55;--fs:29;--lh:1.1">Fuel Consumption</div>
+<div class="e flat" style="--x:1790;--y:248;--w:950;--h:250;--c:#6688af"></div>
+<div class="t" style="--x:1797;--y:250;--w:945;--h:246;--fs:30;--lh:1.55">Each satellite uses 1 fuel. Fuel consumption is shown by moving the fuel marker on that satellite’s satellite card and on its deployed Project cards up by one fuel slot.</div>
+<div class="e flat f-numgray" style="--x:1822;--y:534;--w:960;--h:150"></div>
+<div class="t vm" style="--x:1828;--y:534;--w:950;--h:150;--fs:28;--lh:1.55">Example 4: In <span class="lily">Lily (yellow)</span>’s satellite “STEALTH,” <span class="lily">Lily</span> moves the fuel marker from the top fuel slot on the satellite card to the bottom fuel slot of the first Project card deployed.</div>
+<!-- ニアミス判定 -->
+<div class="e flat" style="--x:1862;--y:767;--w:290;--h:55;--c:#214fa2"></div>
+<div class="t fh wh c vm nw" style="--x:1800;--y:767;--w:400;--h:55;--fs:29;--lh:1.1">Near Miss Check</div>
+<div class="e flat" style="--x:1790;--y:846;--w:1460;--h:116;--c:#6688af"></div>
+<div class="t" style="--x:1797;--y:848;--w:1450;--h:112;--fs:30;--lh:1.55">If, after all satellite pieces have moved, there are several satellites in the same area, those satellites are considered to have had a <span class="pk">“near miss.”</span> Each satellite that had a near miss uses 2 fuel.</div>
+<div class="e flat f-numgray" style="--x:1822;--y:1008;--w:1420;--h:96"></div>
+<div class="t vm" style="--x:1828;--y:1008;--w:1410;--h:96;--fs:28;--lh:1.55">Example 5: After the satellite pieces move, <span class="jessie">Jessie (green)</span>’s satellite “SCALLOP” and <span class="teresa">Teresa (blue)</span>’s satellite “HAMMER” are in the same area. Therefore, each of the 2 satellites uses 2 fuel.</div>
+<!-- 着陸 / 着水判定 -->
+<div class="e flat" style="--x:1845;--y:1171;--w:315;--h:55;--c:#214fa2"></div>
+<div class="t fh wh c vm nw" style="--x:1800;--y:1171;--w:400;--h:55;--fs:29;--lh:1.1">Landing / Splashdown Check</div>
+<div class="e flat" style="--x:1790;--y:1248;--w:1470;--h:252;--c:#6688af"></div>
+<div class="t" style="--x:1797;--y:1250;--w:1455;--h:246;--fs:30;--lh:1.55">If the fuel marker moves off the top fuel slot of the Project card placed highest on that satellite, the satellite will <span class="pk">land / splash down.</span> A satellite that has landed / splashed down is removed from the game board and placed on its satellite card. Also, <span class="pk">if the area where it splashed down was a Sea area, the player who owns that satellite gains 10 <i class="ic maya"></i></span>.</div>
+<div class="e flat f-numgray" style="--x:1822;--y:1546;--w:1008;--h:622"></div>
+<div class="t" style="--x:1828;--y:1550;--w:975;--h:616;--fs:28;--lh:1.55">Example 6: <span class="teresa">Teresa (blue)</span>’s satellite “CONCORDE” ran out of fuel because of “Fuel Consumption.” That is, its fuel marker moved off the top fuel slot of the top Project card (<span class="cn">1</span>). <span class="teresa">Teresa</span>’s satellite “CONCORDE” and <span class="jessie">Jessie (green)</span>’s satellite “HAMMER” are in the same area, so they are considered to have had a near miss, and <span class="jessie">Jessie</span>’s satellite “HAMMER” uses 2 additional fuel (<span class="cn">2</span>). <span class="teresa">Teresa</span>’s satellite “CONCORDE” is already out of fuel, but since this is before the Landing / Splashdown Check, the 2 satellites are still considered to have had a near miss. Therefore, <span class="jessie">Jessie</span>’s satellite “HAMMER” has used a total of 3 fuel during this Orbit Phase. <span class="teresa">Teresa</span>’s satellite “CONCORDE” ran out of fuel in a Sea area, so it is considered to have splashed down: <span class="teresa">Teresa</span> gains 10 <i class="ic maya"></i> and returns the satellite piece to its satellite card (<span class="cn">3</span>).</div>

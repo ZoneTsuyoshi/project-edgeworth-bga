@@ -1,0 +1,126 @@
+/* 英語版ルールブックの共通スタイル。使い方は tools/rulebook-en/README.md。
+   座標・大きさはすべて「原本 PNG のピクセル」（CSS の px がそのまま原本の px。ページ全体は transform で縮める）。 */
+
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 700; src: url("fonts/BarlowSemiCondensed-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 800; src: url("fonts/BarlowSemiCondensed-ExtraBold.ttf") format("truetype"); }
+@font-face { font-family: "Chakra Petch"; font-weight: 700; src: url("fonts/ChakraPetch-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Black Ops One"; font-weight: 400; src: url("fonts/BlackOpsOne-Regular.ttf") format("truetype"); }
+
+:root {
+  /* 原本の配色（原本 PNG から拾った値） */
+  --white: #fcfcfc;
+  --ink: #201814;      /* 暗い文字（見出しの札・図の箱の中） */
+  --blue: #cce8ec;     /* 強調の水色。プレイヤー「テレサ（青）」の名前もこの色 */
+  --yellow: #f8f8c8;   /* 薄い黄。プレイヤー「リリー（黄）」。I 予算発行の箱 */
+  --green: #c8e4c0;    /* 薄い緑。プレイヤー「ジェシー（緑）」。IV 通信確立の箱 */
+  --red: #f8c8c8;      /* ピンク。プレイヤー「ルーナ（赤）」。III 打ち上げ・転回の箱 */
+  --purple: #e8c8e0;   /* II 配備の箱 */
+  --orange: #f8c898;   /* V 企画の箱 */
+  --gray: #cccccc;     /* 灰色の箱・札 */
+  --tag-cyan: #26a7e1; /* 見出しの札（青）の地 */
+  --num-red: #e60013;  /* 赤い番号札 */
+  --num-blue: #00a0e8; /* 青い番号札 */
+  --num-gray: #656767; /* 灰色の番号札 */
+}
+
+html, body { margin: 0; padding: 0; background: #000; }
+body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ---- ページの入れ物（ビルドが作る。原稿では触らない） ---- */
+.outer { position: relative; overflow: hidden; break-after: page; }
+.outer.single { page: single; width: 420pt; height: 595pt; }
+.outer.spread { page: spread; width: 839pt; height: 595pt; }
+.outer.off { display: none; }
+.page { position: absolute; overflow: hidden; transform-origin: 0 0; }
+.sheet { position: absolute; left: calc(var(--ox) * -1px); top: calc(var(--oy) * -1px); width: calc(var(--sw) * 1px); height: calc(var(--sh) * 1px); overflow: hidden; }
+.sheet > .bg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+body.preview .outer { overflow: visible; }
+body.preview .page { transform: none !important; left: 0 !important; top: 0 !important; overflow: visible; }
+body.preview .sheet { left: 0; top: 0; }
+
+/* ---- 消す四角 .e ----
+   既定は地の縞模様（ページの地の上でだけ使える）。単色の箱の上では class="e flat" と --c（または f-色）。 */
+.e { position: absolute; left: calc(var(--x) * 1px); top: calc(var(--y) * 1px); width: calc(var(--w) * 1px); height: calc(var(--h) * 1px);
+  background-image: var(--stripe-l); background-repeat: no-repeat; background-size: 100% calc(var(--sh) * 1px);
+  background-position: 0 calc(var(--y) * -1px); border-radius: calc(var(--r, 0) * 1px); }
+.e.sr { background-image: var(--stripe-r); }
+.e.flat { background: var(--c, #6b6b6b); }
+.e.f-cyan { --c: var(--tag-cyan); }
+.e.f-gray { --c: var(--gray); }
+.e.f-blue { --c: var(--blue); }
+.e.f-yellow { --c: var(--yellow); }
+.e.f-green { --c: var(--green); }
+.e.f-red { --c: var(--red); }
+.e.f-purple { --c: var(--purple); }
+.e.f-orange { --c: var(--orange); }
+.e.f-numgray { --c: var(--num-gray); }
+
+/* ---- 文字の箱 .t ---- */
+.t { position: absolute; left: calc(var(--x) * 1px); top: calc(var(--y) * 1px); width: calc(var(--w) * 1px); height: calc(var(--h) * 1px);
+  box-sizing: border-box; font-family: "Barlow Semi Condensed", sans-serif; font-weight: 700; color: var(--white);
+  font-size: calc(var(--fs, 31) * 1px); line-height: var(--lh, 1.45); letter-spacing: calc(var(--ls, 0) * 1em);
+  text-align: left; text-wrap: pretty; hyphens: manual; font-kerning: normal; }
+.t > .tin { width: 100%; }
+.t.c { text-align: center; }
+.t.r { text-align: right; }
+.t.j { text-align: justify; }
+.t.vm { display: grid; align-content: center; }
+.t.vb { display: grid; align-content: end; }
+.t.nw > .tin, span.nw { white-space: nowrap; }   /* 文中の <span class="nw"> でも折り返さない */
+.t.vert { writing-mode: vertical-rl; text-align: center; }   /* 縦書き（図の縦長の帯など）。文字は右に 90 度回る */
+.t.vert > .tin { width: auto; height: 100%; }
+.t.e { background-repeat: no-repeat; }
+.t p { margin: 0; }
+.t p + p { margin-top: var(--pg, 0.4em); }
+
+/* 太さ・書体 */
+.b7 { font-weight: 700; } .b8 { font-weight: 800; }
+.fh { font-family: "Chakra Petch", "Barlow Semi Condensed", sans-serif; font-weight: 700; }      /* 小見出し */
+.fband { font-family: "Black Ops One", "Barlow Semi Condensed", sans-serif; font-weight: 400; }  /* 見出しの帯の直し用 */
+.up { text-transform: uppercase; }
+
+/* 色（.t にも文中の <span> にも付けられる） */
+.cy, .teresa, .c-blue { color: var(--blue); }
+.yl, .lily, .c-yellow { color: var(--yellow); }
+.gr, .jessie, .c-green { color: var(--green); }
+.pk, .luna, .c-red { color: var(--red); }
+.pu, .c-purple { color: var(--purple); }
+.or, .c-orange { color: var(--orange); }
+.dk { color: var(--ink); }
+.wh { color: var(--white); }
+.cgray { color: var(--gray); }
+.ct { color: var(--c); }   /* style="--c:#xxxxxx" の任意色 */
+
+/* 箇条書き: <div class="li"><span class="n">1.</span> 本文</div>（折り返しが本文の頭にそろう。字下げは --ind） */
+.li { padding-left: calc(var(--ind, 1.5) * 1em); text-indent: calc(var(--ind, 1.5) * -1em); }
+.li > .n { display: inline-block; width: calc(var(--ind, 1.5) * 1em); text-indent: 0; }
+
+/* ---- 番号札（インライン部品。原本の画像のままで足りる所は画像を残す） ---- */
+.nt { display: inline-block; min-width: 1.18em; padding: 0 0.1em; box-sizing: border-box; text-align: center; font-weight: 800; line-height: 1.18; color: #fff; background: var(--num-red); vertical-align: 0.02em; }
+.nt.red { background: var(--num-red); }
+.nt.blue { background: var(--num-blue); }
+.nt.gray { background: var(--num-gray); box-shadow: inset 0 0 0 0.06em #b9b9b9; }
+.nt.white { background: #fcfcfc; color: var(--ink); }
+/* 丸数字（文中で図の ①②③ を指す）: <span class="cn">1</span>。①②③ の文字は同梱フォントに字形が無く、
+   ビルドする環境のフォントで代用されてしまうので、文字を使わずに丸を CSS で描く。 */
+.cn { display: inline-block; box-sizing: border-box; width: 1.24em; height: 1.24em; border: 0.085em solid currentColor; border-radius: 50%;
+  text-align: center; line-height: 1.07em; font-size: 0.82em; font-weight: 800; vertical-align: 0.08em; margin: 0 0.04em; }
+
+/* ---- インラインのアイコン（assets.mjs から icons.css が生成される） ----
+   <i class="ic maya"></i> / <i class="ic fame">5</i> / <i class="ic region-a"></i>。高さは --ich（既定 1.15em。fame は 1.6em）。 */
+.ic { display: inline-block; height: var(--ich, 1.15em); width: var(--ich, 1.15em); vertical-align: -0.24em; margin: 0 0.06em; font-style: normal;
+  background-repeat: no-repeat; background-position: center; background-size: contain; }
+/* 名声: 五角形 + 数字。高さは --ich（既定 1.6em。本文中で数字が読める大きさ）。style="font-size:1.7em" を付けた原稿は、
+   その font-size を基準に 1.15em の高さになる（従来どおり）。行送りを乱さないよう上下の余白を負にする。
+   数字は fit.js が data-n に移し、::after で重ねる（<i class="ic fame">5</i>）。数字は原本と同じく五角形いっぱいに大きく、
+   書体は 1・7・0 の字形がはっきりした Chakra Petch 700。読みやすさのため紫がかった暗色の薄い縁取りを付ける。 */
+.ic.fame { font-size: calc(var(--ich, 1.6em) / 1.15); width: 1.2em; height: 1.15em; margin: -0.4em 0.06em -0.4em; vertical-align: -0.12em; position: relative; }
+.ic.fame::after { content: attr(data-n); position: absolute; left: -0.1em; right: -0.1em; top: -0.01em; text-align: center; color: #fff;
+  font-family: "Chakra Petch", "Barlow Semi Condensed", sans-serif; font-weight: 700; font-size: 0.95em; line-height: 1.15; letter-spacing: -0.02em;
+  text-shadow: 0 0 0.08em #3a1445, 0 0 0.05em #3a1445, 0 0 0.05em #3a1445; }
+.ic.fame.s2::after { font-size: 0.82em; line-height: 1.35; }   /* 2 桁以上の数字（fit.js が付ける） */
+
+/* ---- 確認用（--debug） ---- */
+body.debug .t { outline: 1px solid rgba(255, 0, 255, 0.9); }
+body.debug .e { outline: 1px dashed rgba(0, 255, 0, 0.9); }
+.t[data-overflow="1"] { outline: 3px solid #f00 !important; }

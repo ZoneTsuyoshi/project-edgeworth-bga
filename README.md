@@ -40,7 +40,7 @@
 ├── docs/              # 開発用ドキュメント
 │   ├── specs/         #   仕様書（実装前に必ず作成）
 │   ├── development/   #   開発ルール（Git 運用・タスクの進め方・作者への質問・FAQ の起票）
-│   ├── publishing/    #   BGG・BGA の紹介文
+│   ├── publishing/    #   BGG・BGA の紹介文、英語版ルールブックの方針
 │   └── tasks.md       #   タスク一覧（作者の作業を含む）
 ├── src/               # BGA Studio のプロジェクトに同期するゲーム本体（今後作成）
 └── .worktrees/        # タスクごとの作業用ワークツリー（Git 管理外）
