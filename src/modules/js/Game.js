@@ -14,6 +14,7 @@ import { MulliganState } from './states/MulliganState.js';
 import { PlanningPlot, SetupLaunchPadPlace } from './states/PlacementStates.js';
 import { ProposalState } from './states/ProposalState.js';
 import { GameView } from './ui/GameView.js';
+import { MARKS_PREF, setMarksOn } from './ui/marks.js';
 
 export class Game {
     /**
@@ -51,6 +52,16 @@ export class Game {
             showMessage: (message) => this.bga.dialogs.showMessage(message, 'info'),
             addButton: (label, callback, opts = {}) => this.bga.statusBar.addActionButton(label, callback, opts),
         };
+        // 設定 100（席順の印）。userPreferences が無い環境でも落ちない
+        const prefs = this.bga.userPreferences;
+        if (prefs !== undefined && prefs !== null) {
+            setMarksOn(Number(prefs.get(MARKS_PREF)) === 1);
+            prefs.onChange = (prefId, prefValue) => {
+                if (Number(prefId) === MARKS_PREF) {
+                    setMarksOn(Number(prefValue) === 1);
+                }
+            };
+        }
         this.view = new GameView(env, this.bga.gameArea.getElement());
         this.view.setup(gamedatas);
         this.bga.notifications.setupPromiseNotifications({});

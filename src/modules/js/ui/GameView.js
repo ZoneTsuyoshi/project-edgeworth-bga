@@ -55,7 +55,7 @@ export class GameView {
 
         this.roundTrack = new RoundTrack(this.roundBox, (id) => {
             const p = this.model?.players[id];
-            return p === undefined ? null : { color: COLOR_LETTERS[p.colorIndex] ?? 'b', name: p.name };
+            return p === undefined ? null : { color: COLOR_LETTERS[p.colorIndex] ?? 'b', name: p.name, order: p.order };
         });
         this.field = new FieldView(env, this.tips, this.supplyBox);
         this.field.onToggleDiscard = () => this.toggleDiscard();
@@ -72,6 +72,8 @@ export class GameView {
                 }
             },
         });
+        // 設定 100 の印: コマの色 → 席順
+        this.pieces.orderOfColor = (colorIndex) => Object.values(this.model?.players ?? {}).find((p) => p.colorIndex === colorIndex)?.order ?? 0;
         this.tray = new Tray(this.trayBox, env);
         this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
         /** 見出しで枠を出す人を選んだか（選んだら自動の切り替えをやめる） */
@@ -321,7 +323,7 @@ export class GameView {
     }
 
     /**
-     * 衛星のコマ・カードのどちらをタップしても対応する区域を強調する（012 §3.9）。
+     * 衛星のコマをタップしたとき、その区域を強調する（012 §3.9）。
      * @param {number} satId
      */
     focusSatellite(satId) {
@@ -329,8 +331,8 @@ export class GameView {
         if (cell === null) {
             return;
         }
+        // 盤面は動かさない（タップしたコマは見えている。スクロールするとツールチップが閉じる）
         this.highlights.set([{ cell, kind: 'selected' }]);
-        this.board.scrollToCell(cell);
         window.setTimeout(() => this.stateFrame.restoreHighlights(), 1500);
     }
 

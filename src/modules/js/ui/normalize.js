@@ -54,6 +54,7 @@ export function colorOfSatelliteCard(card) {
  * @property {number} id
  * @property {string} name
  * @property {number} colorIndex 0〜3
+ * @property {number} order 席順（1 始まり。設定 100 の印）
  * @property {number} maya
  * @property {number} budget
  * @property {number | null} padCell
@@ -123,6 +124,7 @@ export function normalizeGamedatas(raw, me) {
       id,
       name: String(base.name ?? base.player_name ?? data.name ?? `#${id}`),
       colorIndex,
+      order: index + 1,
       maya: int(data.maya ?? base.maya),
       budget: int(data.budget ?? base.budget),
       padCell: data.padCell === null || data.padCell === undefined ? null : int(data.padCell),

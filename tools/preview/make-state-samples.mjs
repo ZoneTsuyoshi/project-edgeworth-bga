@@ -593,4 +593,18 @@ sample('final-score', {
   ],
   steps: [],
 });
+// 4 人の終了時の得点表（名前が長いプレイヤーを含む。narrow の幅の確認用）
+sample('final-score-4p', {
+  sample: 'four-players-advanced',
+  state: null,
+  active: false,
+  args: {},
+  notifications: [
+    ['finalScore', { player_id: ALL[0], fame: 184, detail: detail(184, 1), missions: [{ mission: 1, achieved: false }, { mission: 9, achieved: true }] }],
+    ['finalScore', { player_id: ALL[1], fame: 120, detail: detail(120, 0.5), missions: [{ mission: 3, achieved: true }, { mission: 5, achieved: false }] }],
+    ['finalScore', { player_id: ALL[2], fame: 120, detail: detail(120, 0.5), missions: [{ mission: 2, achieved: false }, { mission: 4, achieved: false }] }],
+    ['finalScore', { player_id: 2310004, fame: 96, detail: detail(96, 0.4), missions: [{ mission: 6, achieved: true }, { mission: 7, achieved: true }] }],
+  ],
+  steps: [],
+});
 console.log('状態の見本を書きました:', DIR);

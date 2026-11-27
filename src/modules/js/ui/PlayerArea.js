@@ -5,6 +5,7 @@
  * 数値・印はプレイヤーパネルにだけ出す（012 追補 U-5）。地域 A〜H の列は出さない（パネルの n/8。014 §4.4）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
+import { seatMark } from './marks.js';
 import { SatelliteView } from '../cards/SatelliteView.js';
 import { ActionRow, HandView } from '../cards/HandView.js';
 import { renderMissions } from '../cards/FieldView.js';
@@ -36,7 +37,7 @@ export class PlayerArea {
             class: `pe-player${opts.mine ? ' pe-player-mine' : ' pe-player-other'}`,
             dataset: { player: player.id, color: COLOR_LETTERS[player.colorIndex] },
         });
-        this.title = el('span', { class: 'pe-player-name' }, [player.name]);
+        this.title = el('span', { class: 'pe-player-name' }, [seatMark(player.order, 'pe-mark-name'), player.name]);
         this.satsBox = el('div', { class: 'pe-sats' });
         this.actionsBox = el('div');
         this.missionsBox = el('div');

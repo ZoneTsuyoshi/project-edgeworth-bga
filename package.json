@@ -25,7 +25,8 @@
     "check:sprites": "node scripts/check-sprites.mjs",
     "build:card-info": "node scripts/build-card-info.mjs",
     "check:card-info": "node scripts/build-card-info.mjs --check",
-    "preview:shots": "node tools/preview/shoot.mjs"
+    "preview:shots": "node tools/preview/shoot.mjs",
+    "check:ui": "node tools/preview/check-ui.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

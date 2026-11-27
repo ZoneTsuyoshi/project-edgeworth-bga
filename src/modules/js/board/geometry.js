@@ -179,19 +179,6 @@ export function boardHeightUnits(rows = ROWS) {
 }
 
 /**
- * 区域の中心（px）。
- * @param {number} row
- * @param {number} col
- * @param {number} rowShift
- * @param {number} w
- * @returns {{ x: number, y: number }}
- */
-export function cellCenter(row, col, rowShift, w) {
-  const o = cellOrigin(row, col, rowShift, w);
-  return { x: o.left + w / 2, y: o.top + hexHeight(w) / 2 };
-}
-
-/**
  * 六角形（pointy-top）の頂点。上から時計回りに v0（上）、v1（右上）、v2（右下）、v3（下）、v4（左下）、v5（左上）。
  * @param {number} left 区域の左端
  * @param {number} top 区域の上端

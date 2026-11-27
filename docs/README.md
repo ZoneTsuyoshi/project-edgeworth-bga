@@ -13,10 +13,12 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 | [development/cicd.md](development/cicd.md) | CI/CD の方針（lint の段階導入、マージの運用、Studio 同期の予定） |
 | [development/rule-questions.md](development/rule-questions.md) | 作者への質問（処理順・同時処理・アナログ特有の操作）と回答 |
 | [development/faq-workflow.md](development/faq-workflow.md) | FAQ（サイト側の `faq.xlsx`）の起票・改修の手順 |
+| [development/ui-conventions.md](development/ui-conventions.md) | UI を変えるときの決まり（使わないもの、5 つのクラス、ツールチップとトレイ、`preview:shots` と `check:ui`） |
 | [publishing/game-description.md](publishing/game-description.md) | 英語のゲーム紹介文と BGG 登録の手順 |
 | [publishing/bga-license.md](publishing/bga-license.md) | BGA のライセンス申請（作者が権利者として許諾する）の手順とメールの文面 |
 | [publishing/rules-summary.md](publishing/rules-summary.md) | BGA のルール概要（wiki の Gamehelp）の英語・日本語の文面と掲載手順 |
 | [publishing/rulebook-en.md](publishing/rulebook-en.md) | 英語版ルールブック（PDF）の翻訳の方針・用語集・作り方（原稿とビルドは `tools/rulebook-en/`） |
+| [publishing/alpha-review-response.md](publishing/alpha-review-response.md) | BGA の Public Alpha の審査への再審査の依頼の文面（英語）と日本語の説明 |
 
 ## 一次情報
 

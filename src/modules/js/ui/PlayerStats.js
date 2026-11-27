@@ -14,8 +14,6 @@ import { sectionLabels } from './ScoreSheet.js';
 
 /** キューブの総数（001） */
 export const CUBES_TOTAL = 16;
-/** 地域の数（A〜H） */
-export const REGIONS_TOTAL = 8;
 
 /**
  * アイコン付きのカウンター 1 つ。

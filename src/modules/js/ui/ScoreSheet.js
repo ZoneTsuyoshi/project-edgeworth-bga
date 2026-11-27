@@ -148,11 +148,11 @@ export class ScoreSheet {
                 scope: 'col',
                 class: `pe-score-player pe-score-selectable${s.playerId === this.selected ? ' pe-score-selected' : ''}`,
                 dataset: { player: s.playerId },
-            }, [
-                model.players[s.playerId]?.name ?? String(s.playerId),
+            }, [el('div', { class: 'pe-score-headbox' }, [
+                el('span', { class: 'pe-score-name' }, [model.players[s.playerId]?.name ?? String(s.playerId)]),
                 el('span', { class: 'pe-score-rank' }, [`#${s.rank}`]),
-            ]);
-            tipText(th, _('Show this player\'s mission areas on the board'));
+            ])]);
+            tipText(th, `${model.players[s.playerId]?.name ?? ''}: ${_('Show this player\'s mission areas on the board')}`);
             th.addEventListener('click', () => this.onSelect(s.playerId));
             return th;
         })]);
@@ -181,7 +181,7 @@ export class ScoreSheet {
         })))]);
         this.root.append(
             el('div', { class: 'pe-rail-label' }, [_('Final fame')]),
-            el('div', { class: 'pe-score-scroll' }, [el('table', { class: 'pe-score-table' }, [el('thead', {}, [head]), el('tbody', {}, [...body, total, missions])])]),
+            el('div', { class: 'pe-score-wrap' }, [el('table', { class: 'pe-score-table' }, [el('colgroup', {}, [el('col'), ...ranked.map(() => el('col'))]), el('thead', {}, [head]), el('tbody', {}, [...body, total, missions])])]),
         );
     }
 }

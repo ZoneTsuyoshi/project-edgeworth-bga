@@ -62,6 +62,8 @@ export class EffectWindowState extends ActionState {
         this.questions = [];
         /** @type {string | null} 注目中の問い（questionKey） */
         this.focus = null;
+        /** 待ち列が出ているか（出ているときは節の先頭のカードを出さない） */
+        this.queueShown = false;
         /** @type {{ playerId: number, sources: string[] }[]} */
         this.waiting = [];
         /** @type {Map<number, { sig: string, values: Record<string, any> }>} */
@@ -250,8 +252,10 @@ export class EffectWindowState extends ActionState {
         this.drivers.clear();
         this.assignDriver = null;
         const q = /** @type {import('./logic/effects.js').Question} */ (this.focusQuestion());
-        const built = q.type === 'ORDER' ? this.orderBlock(q) : this.effectBlock(q);
         const queue = queueQuestions(this.questions);
+        // 待ち列があるとき、注目中の節の先頭の小さなカードは出さない（待ち列の選択中のカードと重複して見える。名前と効果文は出す）
+        this.queueShown = queue.length > 0;
+        const built = q.type === 'ORDER' ? this.orderBlock(q) : this.effectBlock(q);
         const body = queue.length === 0 ? built.body : el('div', { class: 'pe-effect-wrap' }, [this.queueRow(queue), built.body]);
         view.tray.show([{ label: _('Resolve your card effects'), body }]);
         this.bga.statusBar.setTitle(built.title, built.args);
@@ -524,7 +528,7 @@ export class EffectWindowState extends ActionState {
         const changed = () => this.refresh();
 
         const head = el('div', { class: 'pe-effect-head' }, [
-            key === null ? null : this.smallCard(key),
+            key === null || this.queueShown ? null : this.smallCard(key),
             el('div', { class: 'pe-effect-title' }, [
                 el('strong', {}, [name]),
                 q.mandatory ? el('span', { class: 'pe-order-forced' }, [_('Mandatory')]) : null,

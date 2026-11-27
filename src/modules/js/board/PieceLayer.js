@@ -6,6 +6,7 @@
  * コマは区域の外側の絶対配置の箱（CSS 変数の位置）に入れ、位置の変更を transition で動かす。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
+import { seatMark } from '../ui/marks.js';
 import { cellOriginUnits, cellRowCol, cubeStackOffset, nearestAngle, neighbor, SATELLITE_ROTATION, satelliteStackOffset, BASE_CENTER, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
 import { applySprite, COLOR_LETTERS, pieceSprite } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
@@ -55,6 +56,8 @@ export class PieceLayer {
         this.onSatelliteClick = opts.onSatelliteClick ?? (() => {});
         this.playerName = opts.playerName ?? (() => '');
         this.satelliteTip = opts.satelliteTip ?? (() => '');
+        /** @type {(colorIndex: number) => number} 色 → 席順（設定 100 の印。GameView が差し込む） */
+        this.orderOfColor = () => 0;
         /** @type {Map<string, HTMLElement>} */
         this.boxes = new Map();
         /** @type {Map<number, number>} 衛星の表示中の角度（累積） */
@@ -170,6 +173,7 @@ export class PieceLayer {
         });
         tipText(piece, () => `${_('Launch base')}: ${this.playerName(playerId)}`);
         applySprite(piece, pieceSprite(`base_${COLOR_LETTERS[colorIndex] ?? 'b'}`), this.env.imgUrl);
+        piece.append(seatMark(this.orderOfColor(colorIndex), 'pe-mark-base') ?? '');
         box.append(piece);
     }
 
@@ -200,6 +204,7 @@ export class PieceLayer {
                 zIndex: String(link.level + 1),
             },
         });
+        cube.append(seatMark(this.orderOfColor(colorIndex), 'pe-mark-cube') ?? '');
         box.append(cube);
     }
 
@@ -272,6 +277,8 @@ export class PieceLayer {
             });
             applySprite(piece, pieceSprite(`satellite_${(sat.shape ?? 'HAMMER').toLowerCase()}_${COLOR_LETTERS[sat.colorIndex] ?? 'b'}`), this.env.imgUrl);
             box.append(piece);
+            // 印は回るコマの外（箱）に置く。コマの位置（--ox / --oy）に追従する
+            box.append(seatMark(this.orderOfColor(sat.colorIndex), 'pe-mark-sat') ?? '');
         }
         const target = SATELLITE_ROTATION[sat.dir ?? 'NE'] ?? 0;
         const angle = isNew ? target : nearestAngle(this.angles.get(sat.satId) ?? target, target);
