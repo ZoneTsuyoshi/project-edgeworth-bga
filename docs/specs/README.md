@@ -23,6 +23,6 @@
 | 011 | [カード効果の実装方針](011-card-effects.md) | Approved | T-011 |
 | 012 | [UI・アセットの設計](012-ui-assets.md) | Approved | T-012 |
 | 013 | [初期手札のドラフト](013-starting-hand-draft.md) | Approved | I-22 |
-| 014 | [UI の再設計（Public Alpha 審査の指摘への対応）](014-ui-redesign.md) | Draft | I-23 |
+| 014 | [UI の再設計（Public Alpha 審査の指摘への対応）](014-ui-redesign.md) | Approved | I-23 |
 
 各仕様書は別ブランチ（`docs/spec-NNN-<slug>`）で作成し、PR のマージで `main` に入る。
