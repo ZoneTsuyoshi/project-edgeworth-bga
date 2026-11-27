@@ -1,0 +1,112 @@
+{
+ "sample": "three-players-advanced",
+ "state": "EffectWindowResolve",
+ "active": true,
+ "args": {
+  "windowId": "DE",
+  "round": 3,
+  "waiting": [
+   {
+    "player_id": 2310001,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310002,
+    "sources": [
+     "procurement_officer"
+    ]
+   },
+   {
+    "player_id": 2310003,
+    "sources": [
+     "twin_deploy_technician",
+     "juggler"
+    ]
+   }
+  ],
+  "_private": {
+   "windowId": "DE",
+   "pending": [],
+   "questions": [
+    {
+     "type": "EFFECT",
+     "entryId": 50,
+     "cardKey": "acceleration_booster",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "amount",
+       "type": "AMOUNT",
+       "min": 1,
+       "max": 5,
+       "candidates": [],
+       "default": null
+      }
+     ],
+     "preview": {}
+    },
+    {
+     "type": "EFFECT",
+     "entryId": 51,
+     "cardKey": "procurement_officer",
+     "mandatory": false,
+     "cost": {
+      "kind": "NONE"
+     },
+     "fields": [
+      {
+       "key": "amount",
+       "type": "AMOUNT",
+       "min": 0,
+       "max": 20,
+       "candidates": [],
+       "default": null
+      }
+     ],
+     "preview": {}
+    }
+   ],
+   "hand": [
+    3,
+    18,
+    44,
+    51,
+    70,
+    88
+   ],
+   "sellValue": 3
+  }
+ },
+ "steps": [
+  {
+   "click": ".pe-field-opts[data-field=\"amount\"] .bgabutton",
+   "nth": 3
+  },
+  {
+   "clickText": "Use"
+  },
+  {
+   "click": ".pe-effect-queue [data-entry=\"51\"]"
+  },
+  {
+   "click": ".pe-opts .bgabutton[aria-label=\"Increase\"]"
+  },
+  {
+   "click": ".pe-opts .bgabutton[aria-label=\"Increase\"]"
+  },
+  {
+   "click": ".pe-opts .bgabutton[aria-label=\"Increase\"]"
+  },
+  {
+   "click": ".pe-opts .bgabutton[aria-label=\"Decrease\"]"
+  },
+  {
+   "clickText": "Use"
+  }
+ ]
+}

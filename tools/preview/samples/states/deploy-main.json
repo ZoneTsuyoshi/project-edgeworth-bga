@@ -322,7 +322,7 @@
    "click": ".pe-sat[data-sat-id=\"11\"]"
   },
   {
-   "click": ".pe-mod input"
+   "click": ".pe-mods .bgabutton"
   }
  ]
 }

@@ -161,7 +161,48 @@
  },
  "steps": [
   {
-   "click": ".pe-effect[data-entry=\"11\"] .pe-chip-btn"
+   "click": ".pe-effect-queue [data-entry=\"11\"]"
+  },
+  {
+   "click": ".pe-hand-card[data-id=\"44\"]"
+  },
+  {
+   "click": ".pe-sat[data-sat-id=\"13\"]"
+  },
+  {
+   "click": ".pe-field-opts[data-field=\"useMods\"] .bgabutton",
+   "nth": 1
+  },
+  {
+   "click": ".pe-hand-card[data-id=\"3\"]"
+  },
+  {
+   "click": ".pe-hand-card[data-id=\"18\"]"
+  },
+  {
+   "clickText": "Use"
+  },
+  {
+   "click": ".pe-effect-queue [data-entry=\"12\"]"
+  },
+  {
+   "click": ".pe-field-opts[data-field=\"tier\"] .bgabutton",
+   "nth": 2
+  },
+  {
+   "clickText": "Use"
+  },
+  {
+   "click": ".pe-effect-queue [data-entry=\"10\"]"
+  },
+  {
+   "click": ".pe-hand-card[data-id=\"70\"]"
+  },
+  {
+   "clickText": "Use"
+  },
+  {
+   "clickText": "Skip"
   }
  ]
 }

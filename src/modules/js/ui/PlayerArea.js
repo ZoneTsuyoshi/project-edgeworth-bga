@@ -98,6 +98,16 @@ export class PlayerArea {
     }
 
     /**
+     * 問いの発生源の配備カードを強調する（効果の窓。全衛星に渡し、持っている衛星だけに出る）。null で全部消す。
+     * @param {number | null} card
+     */
+    setSubjectCard(card) {
+        for (const view of this.sats.values()) {
+            view.setSubjectCard(card);
+        }
+    }
+
+    /**
      * 配備カードを押して選べるようにする（全衛星に同じ map を渡す。衛星に無いカードは無視される）。null で解除。
      * @param {Map<number, 'selectable' | 'selected'> | null} cards
      * @param {(card: number) => void} [onPick]

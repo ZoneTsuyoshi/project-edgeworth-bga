@@ -128,6 +128,97 @@ export function initialOrder(q) {
   return [...order, ...ids.filter((id) => !order.includes(id))];
 }
 
+// ---- 1 件ずつの表示（014 §5.1） ----
+
+/**
+ * 問いの識別子（注目中の問いを覚える鍵）。EFFECT は entryId、ORDER は組の entryId の並び。
+ * @param {Question} q
+ * @returns {string}
+ */
+export function questionKey(q) {
+  return q.type === 'ORDER' ? `o:${q.entries.map((e) => e.entryId).join(',')}` : `e:${q.entryId}`;
+}
+
+/**
+ * 注目する問い。前回の注目が今の問いに残っていれば維持、無ければ先頭（ORDER があればそれ）。問いが無ければ null。
+ * @param {Question[]} questions
+ * @param {string | null | undefined} prev 前回の注目（questionKey）
+ * @returns {string | null}
+ */
+export function pickFocus(questions, prev) {
+  const keys = questions.map(questionKey);
+  if (typeof prev === 'string' && keys.includes(prev)) {
+    return prev;
+  }
+  const order = questions.find((q) => q.type === 'ORDER');
+  return order !== undefined ? questionKey(order) : (keys[0] ?? null);
+}
+
+/**
+ * 待ち列（未解決の問いの発生源のカード）に並べる問い。EFFECT が 2 件以上のときだけ（1 件・ORDER は出さない）。
+ * @param {Question[]} questions
+ * @returns {EffectQuestion[]}
+ */
+export function queueQuestions(questions) {
+  const effects = /** @type {EffectQuestion[]} */ (questions.filter((q) => q.type === 'EFFECT'));
+  return effects.length >= 2 && questions.every((q) => q.type === 'EFFECT') ? effects : [];
+}
+
+/** 数値の入力を選択肢のボタンにする上限（これを超えると [−] 値 [+]） */
+export const NUMBER_BUTTONS_MAX = 8;
+
+/**
+ * 候補の無い数値（AMOUNT）の入力の形。値が 8 通り以下なら選択肢の一覧（昇順）、それより多ければ null（[−] 値 [+]）。
+ * @param {Field} field
+ * @returns {number[] | null}
+ */
+export function numberChoices(field) {
+  if (field.max < field.min) {
+    return [];
+  }
+  if (field.max - field.min + 1 > NUMBER_BUTTONS_MAX) {
+    return null;
+  }
+  return Array.from({ length: field.max - field.min + 1 }, (_unused, i) => field.min + i);
+}
+
+/**
+ * [−] / [+] の押した後の値（範囲に収める。値が無いときは下限から）。
+ * @param {number | null | undefined} value
+ * @param {1 | -1} delta
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export function stepNumber(value, delta, min, max) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return min;
+  }
+  return Math.max(min, Math.min(max, Number(value) + delta));
+}
+
+/**
+ * 文の先頭を小文字にする（`${todo}` はタイトルの途中に入る。先頭が数字・記号ならそのまま）。
+ * @param {string} text
+ * @returns {string}
+ */
+export function lowerFirst(text) {
+  return text === '' ? text : text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+/**
+ * 付け替えで決めた移動（もとの置き先と違うカード）。カード番号順。
+ * @param {Record<string, any>} assignment 今の割り当て（カード番号 → 衛星 ID）
+ * @param {any[]} candidates もとの割り当て（`{ card, sat }`）
+ * @returns {{ card: number, from: number, to: number }[]}
+ */
+export function assignmentMoves(assignment, candidates) {
+  return candidates
+    .map((c) => ({ card: Number(c.card), from: Number(c.sat), to: Number(entriesOf(assignment).find(([card]) => Number(card) === Number(c.card))?.[1] ?? c.sat) }))
+    .filter((m) => m.from !== m.to)
+    .sort((a, b) => a.card - b.card);
+}
+
 // ---- フィールド ----
 
 /**

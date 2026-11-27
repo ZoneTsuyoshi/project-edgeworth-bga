@@ -33,7 +33,7 @@
     {
      "type": "EFFECT",
      "entryId": 41,
-     "cardKey": "triad_booster",
+     "cardKey": "course_corrector",
      "mandatory": false,
      "cost": {
       "kind": "NONE"
@@ -57,5 +57,9 @@
    "sellValue": 3
   }
  },
- "steps": []
+ "steps": [
+  {
+   "clickText": "Use"
+  }
+ ]
 }

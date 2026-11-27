@@ -3,6 +3,7 @@
  * 欄 = トレイの 1 行「ラベル + 今の値（文字）」。選択中の欄は pe-picked。欄が 2 つ以上のとき、選択中でない欄の行に BGA 標準の secondary ボタン [Choose from hand]。
  * 選んだカードの [×] は無く、手札のカードをもう一度押すと外れる（トグル）。
  * 選択中の欄だけが手札のゾーン（HandView.setSelectable / setChosen）を使い、他の欄で選んだカードは手札の上に印（setPlanned）を付けて候補から外す。
+ * 手札を使わない欄（kind: 'direct'。効果の窓の区域・衛星・手札に無いカード）も同じ形で並べる（盤面・ロケット・トレイのカードの行で入力する。ボタンは [Choose]）。
  * 判定（次に移る欄、他の欄に取られたカードを候補から外す）は logic/hand-targets.js の純関数。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -14,6 +15,7 @@ import { cardName } from './texts.js';
 
 /**
  * @typedef {object} HandTarget
+ * @property {'hand' | 'direct'} [kind] hand（既定）= 手札のゾーンで選ぶ。direct = 手札を使わない（盤面・ロケット・トレイで選ぶ。selected は区域・衛星の番号など）
  * @property {string} id 欄の識別子（同じ画面で一意）
  * @property {string} label 欄の見出し
  * @property {string} badge 他の欄が選択中のとき、手札の上に出す印（例: Sell / Discard / Deploy）
@@ -26,7 +28,7 @@ import { cardName } from './texts.js';
  * @property {number[]} [exclude] この欄の候補にできないカード（他の目的に予約済み。印は付く）
  * @property {Map<number, string>} [reasons] 手札のゾーンで押せないカードの理由（title）
  * @property {(cardId: number) => string} [itemText] 今の値の文言（省略はカード名）。組の行など
- * @property {HTMLElement} [extra] 欄の中に足す部品（残すカードだけの小さな一覧など）
+ * @property {HTMLElement | ((active: boolean) => HTMLElement | null)} [extra] 欄の中に足す部品（残すカードだけの小さな一覧など。関数は選択中かどうかで出し分ける）
  * @property {(ids: number[]) => void} onChange 選択が変わった（HandTargets が上限と他の欄との重なりを整えた後の並び）
  */
 
@@ -57,6 +59,11 @@ export class HandTargets {
         return this.targets.map((t) => ({ id: t.id, candidates: t.candidates, selected: t.selected, need: t.need, max: t.max, disabled: t.disabled !== undefined }));
     }
 
+    /** @returns {import('./logic/hand-targets.js').TargetState[]} 手札のゾーンを使う欄だけ（他の欄に取られたカード・印の判定用） */
+    handStates() {
+        return this.states().filter((_s, i) => this.targets[i].kind !== 'direct');
+    }
+
     /**
      * 選択中の欄の、ステータスバーのタイトル（欄が未完了のとき、または欄が複数のとき。完了済みの単独の欄は元のタイトルのまま）。
      * @returns {string | null}
@@ -83,16 +90,17 @@ export class HandTargets {
         const several = this.targets.length > 1;
         const names = target.selected.map((cardId) => target.itemText?.(cardId) ?? cardName(cardId));
         const tools = el('span', { class: 'pe-field-tools' });
+        const extra = typeof target.extra === 'function' ? target.extra(active) : (target.extra ?? null);
         const row = el('div', { class: `pe-field${active ? ' pe-picked' : ''}${target.disabled === undefined ? '' : ' pe-field-off'}`, dataset: { target: id }, 'aria-current': active ? 'true' : null }, [
             el('div', { class: 'pe-field-main' }, [
                 el('span', { class: 'pe-field-label' }, [target.label]),
                 el('span', { class: `pe-field-value${names.length === 0 ? ' pe-field-empty' : ''}` }, [names.length === 0 ? (target.disabled ?? _('None')) : names.join(', ')]),
                 tools,
             ]),
-            target.extra ?? null,
+            extra,
         ]);
         if (several && !active) {
-            this.opts.addButton(_('Choose from hand'), () => {
+            this.opts.addButton(target.kind === 'direct' ? _('Choose') : _('Choose from hand'), () => {
                 this.opts.setActive(id);
                 this.opts.refresh();
             }, { color: 'secondary', destination: tools, disabled: target.disabled !== undefined, tooltip: target.disabled });
@@ -120,7 +128,7 @@ export class HandTargets {
      */
     apply() {
         const hand = this.opts.hand;
-        const states = this.states();
+        const states = this.handStates();
         /** @type {Record<string, string>} */
         const badges = {};
         for (const t of this.targets) {
@@ -135,7 +143,7 @@ export class HandTargets {
             }
         }
         const target = this.targets.find((t) => t.id === this.active);
-        if (target === undefined) {
+        if (target === undefined || target.kind === 'direct') {
             hand.setSelectable(null);
         } else {
             const excluded = new Set(target.exclude ?? []);
@@ -148,7 +156,7 @@ export class HandTargets {
             hand.setChosen(target.selected);
         }
         // 選択中の欄が選んだカードには印を付けない（選択として出る）
-        if (target !== undefined) {
+        if (target !== undefined && target.kind !== 'direct') {
             for (const id of target.selected) {
                 marks.delete(id);
             }
