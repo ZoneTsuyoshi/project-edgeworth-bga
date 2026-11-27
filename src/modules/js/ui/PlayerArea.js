@@ -1,8 +1,8 @@
 /**
- * プレイヤーごとの領域（仕様書 012 §2.3〜§2.5）。
- * 見出しは名前（プレイヤー色）と地域 A〜H の列だけ。数値・印はプレイヤーパネルにだけ出す（012 追補 U-5）。
- * 自分: 衛星 5 機（衛星カード・配備カード・燃料ゲージ）、アクションカード 5 枚、ミッション 2 枚（表）、手札。
- * 他プレイヤー: 衛星 5 機の要約、アクションカード 5 枚の状態、ミッションの裏面 2 枚（手札の欄は出さない。枚数はパネル）。観戦者は全員を同じ大きさで並べる。
+ * プレイヤーごとの領域（仕様書 014 §2.3・§2.4）。
+ * 自分: レール + 名前 → 行 A（アクションカード 5 枚 + ミッション 2 枚。隣り合わせで中央寄せ）→ 行 B（ロケット 5 機。下端をそろえる）→ 行 C（手札。[Sell cards] は右端）。
+ * 他プレイヤー（観戦者は全員）: 1 行目 = レール + 名前 + アクションカード 5 枚（小）+ ミッション裏 2 枚（小）、2 行目 = 小さいロケット 5 機（手札の欄は無い。枚数はパネル）。
+ * 数値・印はプレイヤーパネルにだけ出す（012 追補 U-5）。地域 A〜H の列は出さない（パネルの n/8。014 §4.4）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { SatelliteView } from '../cards/SatelliteView.js';
@@ -10,7 +10,6 @@ import { ActionRow, HandView } from '../cards/HandView.js';
 import { renderMissions } from '../cards/FieldView.js';
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
-import { regionRow } from './PlayerStats.js';
 
 export class PlayerArea {
     /**
@@ -26,7 +25,6 @@ export class PlayerArea {
         this.mine = opts.mine;
         /** @type {Map<number, SatelliteView>} */
         this.sats = new Map();
-        this.detail = false;
         /** @type {number[]} 本人のミッション番号（観戦者・他人は空） */
         this.lastMissions = [];
         /** @type {number[] | null} 終了時に公開された全員のミッション（表向きにする。ゲーム中は null） */
@@ -39,32 +37,40 @@ export class PlayerArea {
             dataset: { player: player.id, color: COLOR_LETTERS[player.colorIndex] },
         });
         this.title = el('span', { class: 'pe-player-name' }, [player.name]);
-        /** 見出しの地域 A〜H の列（通信確立済みの地域は濃く） */
-        this.regionsBox = el('span', { class: 'pe-player-regions' });
         this.satsBox = el('div', { class: 'pe-sats' });
         this.actionsBox = el('div');
         this.missionsBox = el('div');
         this.handBox = el('div');
-        /** 手札の見出しの行のボタンの置き場（[Sell cards]。BGA の addActionButton の destination。012 追補 U-1） */
+        /** 手札のレールの右端のボタンの置き場（[Sell cards]。BGA の addActionButton の destination） */
         this.handTools = el('div', { class: 'pe-hand-tools' });
         this.actions = new ActionRow(env, tooltip, this.actionsBox, { mine: opts.mine });
         this.hand = new HandView(env, tooltip, this.handBox);
-        this.actionsGroup = el('div', { class: 'pe-player-group', role: 'group', 'aria-label': _('Actions') }, [this.actionsBox]);
-        // 並びは CSS（レイアウトごと）で決める。見出しの文字は出さず、各グループに aria-label を付ける（012 追補 U-4）
-        this.root.append(
-            el('header', { class: 'pe-player-head' }, [this.title, this.regionsBox]),
-            this.satsBox,
-            el('div', { class: 'pe-player-row' }, [
-                this.actionsGroup,
-                el('div', { class: 'pe-player-group', role: 'group', 'aria-label': _('Missions') }, [this.missionsBox]),
-            ]),
-        );
+        /**
+         * @param {string} label
+         * @param {HTMLElement} body
+         * @param {string} cls
+         * @returns {HTMLElement}
+         */
+        const group = (label, body, cls) => el('div', { class: `pe-player-group ${cls}`, role: 'group', 'aria-label': label }, [
+            opts.mine ? el('div', { class: 'pe-rail-label' }, [label]) : null,
+            body,
+        ]);
+        this.actionsGroup = group(_('Action cards'), this.actionsBox, 'pe-group-actions');
+        const missionsGroup = group(_('Missions'), this.missionsBox, 'pe-group-missions');
+        const head = el('header', { class: 'pe-player-head' }, [this.title]);
         if (opts.mine) {
-            // 手札の上端の行は文字なしで [Sell cards] の置き場だけ（空なら隠れる）。手札の欄は自分にだけ（他プレイヤーの枚数はパネル）
-            this.root.append(el('div', { class: 'pe-player-group pe-player-handgroup', role: 'group', 'aria-label': _('Hand') }, [
-                el('div', { class: 'pe-hand-head' }, [this.handTools]),
-                this.handBox,
-            ]));
+            this.root.append(
+                head,
+                el('div', { class: 'pe-row-a' }, [this.actionsGroup, missionsGroup]),
+                this.satsBox,
+                el('div', { class: 'pe-row-c pe-player-handgroup', role: 'group', 'aria-label': _('Hand') }, [
+                    el('div', { class: 'pe-hand-head' }, [el('span', { class: 'pe-rail-label' }, [_('Hand')]), this.handTools]),
+                    this.handBox,
+                ]),
+            );
+        } else {
+            // 他プレイヤー: 名前 + アクションカード + ミッション裏を 1 行に、その下に小さいロケット（手札の欄は無い）
+            this.root.append(el('div', { class: 'pe-other-top' }, [head, this.actionsGroup, missionsGroup]), this.satsBox);
         }
         this.refresh();
     }
@@ -82,21 +88,6 @@ export class PlayerArea {
             return;
         }
         container.append(this.actionsBox);
-    }
-
-    /**
-     * @param {boolean} detail 紙どおりの詳細表示（全機。ゲームの設定 101。012 追補 U-8）
-     */
-    setDetail(detail) {
-        this.detail = detail;
-        for (const v of this.sats.values()) {
-            v.setDetail(detail);
-        }
-    }
-
-    /** 見出しの地域 A〜H の列をモデルに合わせて描き直す */
-    renderRegions() {
-        this.regionsBox.replaceChildren(regionRow(this.env, this.player.linkedRegions));
     }
 
     /**
@@ -150,7 +141,7 @@ export class PlayerArea {
         return this.sats.get(satId);
     }
 
-    /** モデル（player）の内容で全体を描き直す。衛星は既存の SatelliteView を更新する（詳細表示の状態を保つ） */
+    /** モデル（player）の内容で全体を描き直す。衛星は既存の SatelliteView を更新する */
     refresh() {
         const p = this.player;
         const seen = new Set();
@@ -159,7 +150,6 @@ export class PlayerArea {
             const existing = this.sats.get(s.satId);
             if (existing === undefined) {
                 const view = new SatelliteView(this.env, this.tooltip, s, { mine: this.mine, ownerName: p.name });
-                view.setDetail(this.detail);
                 this.sats.set(s.satId, view);
                 this.satsBox.append(view.root);
             } else {
@@ -173,7 +163,6 @@ export class PlayerArea {
             }
         }
         this.actions.setStates(p.actionCards);
-        this.renderRegions();
         this.refreshHand();
     }
 

@@ -63,7 +63,7 @@ export class Layout {
         this.root.style.setProperty('--pe-hex-w', `${hexW}px`);
         // 区域の幅 90 px 以上: 方向の矢印を盤面に出す。それ未満はボトムシートの方向パッド（012 §3.9）
         this.root.dataset.hexSize = hexW >= 90 ? 'large' : (hexW >= 52 ? 'medium' : 'small');
-        const sizes = cardSizes(layout);
+        const sizes = cardSizes(layout, width);
         for (const [name, [w, h]] of Object.entries(sizes)) {
             // CSS のカスタムプロパティは大文字小文字を区別するので、名前は小文字にそろえる（`actionOther` → `--pe-actionother-w`）
             this.root.style.setProperty(`--pe-${name.toLowerCase()}-w`, `${w}px`);

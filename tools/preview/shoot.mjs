@@ -5,6 +5,7 @@
  *
  * 使い方:
  *   npm run preview:shots                                  既定: 幅 360 / 390 / 768 / 1024 / 1366 / 1440 / 1920 / 2560 × 状態 none / launchpad / planning / deploy-main / link-main / draft / effects-use / final-score
+ *                                                          + 観戦者・2 人 6 列・名声オン（1440）と、名声オン（390）
  *   npm run preview:shots -- --widths 1440,390 --states planning,deploy-main
  *   npm run preview:shots -- --query "theme=dark" --suffix dark --states planning --widths 1440
  *   npm run preview:shots -- --query "sample=two-players-standard-6col" --suffix 2p6col --states none --widths 1440
@@ -31,6 +32,13 @@ const OUT_DIR = join(ROOT, 'build', 'preview-shots');
 /** 既定の幅 → 画面の高さ（ページ全体を撮るので、高さは sticky などの見え方にだけ効く） */
 const WIDTHS = { 360: 780, 390: 844, 768: 1024, 1024: 768, 1366: 768, 1440: 900, 1920: 1080, 2560: 1440 };
 const STATES = ['none', 'launchpad', 'planning', 'deploy-main', 'link-main', 'draft', 'effects-use', 'final-score'];
+/** 既定の撮影に足す組み合わせ（014 §10。観戦者・2 人 6 列・名声オン） */
+const EXTRA_SHOTS = [
+    { name: 'w1440-none-spectator', width: 1440, state: 'none', query: 'spectator=1' },
+    { name: 'w1440-none-2p6col', width: 1440, state: 'none', query: 'sample=two-players-standard-6col' },
+    { name: 'w1440-none-fame', width: 1440, state: 'none', query: 'fame=1' },
+    { name: 'w390-none-fame', width: 390, state: 'none', query: 'fame=1' },
+];
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 const sleep = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
@@ -291,6 +299,9 @@ async function main() {
         const suffix = typeof args.suffix === 'string' ? `-${args.suffix}` : '';
         const query = typeof args.query === 'string' ? args.query : '';
         shots = widths.flatMap((width) => states.map((state) => ({ name: `w${width}-${state}${suffix}`, width, state, query })));
+        if (typeof args.widths !== 'string' && typeof args.states !== 'string') {
+            shots.push(...EXTRA_SHOTS.map((shot) => ({ ...shot, query: [shot.query, query].filter((q) => q !== '').join('&') })));
+        }
     }
     const fullPage = args.viewport !== true;
     mkdirSync(OUT_DIR, { recursive: true });

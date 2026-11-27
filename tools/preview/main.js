@@ -3,7 +3,7 @@
  * ui/GameView.js に渡す。通知は同じ表（notifications.js）で再生できる。静的サーバーで開く: `npx http-server . -p 8765` → /tools/preview/
  * BGA の枠に近い見た目（上部バー・ステータスバー・右の列・フッター。仕様書 014 §10）。画像は `npm run preview:shots`（tools/preview/shoot.mjs）。
  * クエリ: ?sample=three-players-advanced|two-players-standard-6col、?theme=dark（BGA 風の枠だけが変わる）、?layout=narrow|wide（narrow = パネルをゲームの上へ。
- *   指定が無ければ幅 980 px 未満で narrow）、?touch=1、?spectator=1、?fame=1、?tools=1（開発用のボタン）、?demo=select|dpad|move|detail、
+ *   指定が無ければ幅 980 px 未満で narrow）、?touch=1、?spectator=1、?fame=1、?tools=1（開発用のボタン）、?demo=select|dpad|move、
  *   ?state=<samples/states/ の見本名>（状態の操作 UI。BGA の statusBar / actions / dialogs / gameArea は代用品。steps で操作を再生する）
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -201,9 +201,6 @@ const demos = {
             await dispatchNotification(view, 'satellitesMoved', { moves: [{ sat_id: sat.satId, from_cell: sat.cell, cell: 35 - 12 + 1, dir: 'NE', reflected: false }] });
         }
     },
-    detail() {
-        view.setDetailAll(true);
-    },
     select_actions() {
         myArea()?.actions.setSelectable([1, 2, 5]);
         myArea()?.actions.setPlot(true, null);
@@ -215,7 +212,6 @@ for (const [name, fn] of Object.entries(demos)) {
 addTool('clear', () => {
     view.stateFrame.leave();
     myArea()?.actions.setSelectable(null);
-    view.setDetailAll(false);
 });
 const demo = params.get('demo');
 if (demo !== null && demo in demos) {

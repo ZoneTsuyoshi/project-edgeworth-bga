@@ -1,7 +1,7 @@
 /**
  * 状態ごとの操作 UI の枠（仕様書 012 §3.9、§6、009 の args、010 §13）。
  * 細部は状態機械（I-07）の状態クラスとのつなぎ込みで仕上げる。ここでは次を用意する。
- *   - 同時選択の args（`participants`・`confirmed`・`_private`）から確定の印と待機表示を出す
+ *   - 同時選択の args（`participants`・`confirmed`・`_private`）から確定済みかどうかを持つ（アクションカードの `Planned` に使う）
  *   - 区域を選ぶ（ハイライト + タップ）、アクションカード・手札を選ぶ、コストの内訳と方向パッド（ボトムシート）を出す
  * ステータスバーのボタン（[Confirm]・[Pass]・[Change my choice]）は状態クラスが `bga.statusBar` に出す。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
@@ -33,24 +33,22 @@ export class StateFrame {
     }
 
     /**
-     * 状態に入ったとき。標準の args の形に合わせて、確定の印・待機表示・ハイライトを出す。
+     * 状態に入ったとき。標準の args の形に合わせて、確定済みかどうかを持つ。
      * @param {string} _stateName
      * @param {Record<string, any>} args
      * @param {boolean} isActive 自分が操作できるか
      */
     enter(_stateName, args, isActive) {
         const m = this.view.m;
-        const participants = (args.participants ?? []).map((/** @type {unknown} */ v) => int(v));
         const confirmed = (args.confirmed ?? []).map((/** @type {unknown} */ v) => int(v));
-        // 確定の印と待機の回転アイコン（確定済みはチェック）。内容は出さない（010 §9.2）
+        // 確定済みかどうかだけを持つ（パネルの ✓ と回転は廃止。BGA 標準のアクティブ表示に任せる。014 §4.4）。内容は出さない（010 §9.2）
         for (const id of m.playerOrder) {
             m.players[id].confirmed = confirmed.includes(id);
-            this.view.panels.get(id)?.setWaiting(participants.includes(id));
         }
         this.view.refreshMarks();
 
         // 区域・アクション・手札・衛星の選択は、状態ごとのクラス（states/）が isActive と args の `_private` から組み立てる。
-        // ここは確定の印と待機表示だけを標準の args の形（participants・confirmed）から出す。
+        // ここは確定済みかどうかだけを標準の args の形（confirmed）から持つ。
         if (!isActive) {
             this.leaveSelection();
         }
@@ -63,9 +61,6 @@ export class StateFrame {
         if (m.me !== null) {
             this.view.areas.get(m.me)?.actions.setSelectable(null);
             this.view.areas.get(m.me)?.hand.setSelectable(null);
-        }
-        for (const panel of this.view.panels.values()) {
-            panel.setWaiting(false);
         }
     }
 

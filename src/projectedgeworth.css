@@ -7,7 +7,7 @@
  * と、`data-layout`（wide / medium / narrow）。`cqw`・`vw`・`@media` の幅には依存しない（012 §2.2、§10 教訓 1）。
  * 背景画像の size / position は JS が % で入れる（Safari の小数ピクセルのずれ防止。教訓 10）。
  * 卓の色はライト・ダークで変えない（014 §1.1）。BGA 側のパネル・バーだけがテーマに従う。
- * 構成: 0 卓の背景 / 1 トークン / 2 土台 / 3 ボタン・バッジ / 4 ラウンドトラック・場 / 5 盤面 / 6 コマ / 7 ハイライト / 8 カード / 9 衛星 / 10 領域・手札 / 11 パネル / 12 拡大表示・トレイ / 13 操作 UI（選択パネル・衛星の選択・効果の問い・名声の内訳）/ 14 予定
+ * 構成: 0 卓の背景 / 1 トークン / 2 土台 / 3 ボタン・バッジ / 4 ラウンドトラック・場 / 5 盤面 / 6 コマ / 7 ハイライト / 8 カード / 9 衛星（ロケット・キャプション） / 10 領域・手札 / 11 パネル / 12 拡大表示・トレイ / 13 操作 UI（選択パネル・衛星の選択・効果の問い・名声の内訳）/ 14 予定
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 
@@ -34,14 +34,16 @@ body {
     --pe-warn: #ff8f80;
     --pe-ok: #6fdc9a;
     --pe-hex-h: calc(var(--pe-hex-w, 52px) * 503 / 435);
-    --pe-hand-w: 120px;
-    --pe-hand-h: 168px;
-    --pe-satellite-w: 240px;
-    --pe-satellite-other-w: 120px;
+    --pe-hand-w: 150px;
+    --pe-hand-h: 210px;
+    --pe-satellite-w: 230px;
+    --pe-satellite-other-w: 150px;
     --pe-supply-w: 72px;
-    --pe-action-w: 84px;
-    --pe-actionother-w: 48px;
-    --pe-mission-w: 84px;
+    --pe-action-w: 92px;
+    --pe-action-h: 129px;
+    --pe-actionother-w: 44px;
+    --pe-actionother-h: 62px;
+    --pe-mission-w: 92px;
     --pe-c-b: #0b528d;
     --pe-c-b-dark: #073a65;
     --pe-c-b-ink: #6db3f2;
@@ -176,29 +178,6 @@ body {
 
 /* ---- 2 土台 ---- */
 
-.pe-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 2px;
-    background: var(--pe-ok);
-    font-size: 12px;
-    line-height: 1;
-    color: #0a1122;
-}
-
-.pe-waiting {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid var(--pe-ink-dim);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: pe-spin 1s linear infinite;
-}
-
 .pe-base-badge {
     display: inline-flex;
     align-items: center;
@@ -214,17 +193,7 @@ body {
     color: #fff;
 }
 
-@keyframes pe-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .pe-waiting {
-        animation: none;
-    }
-
     .pe-pbox,
     .pe-sat-piece {
         transition: none !important;
@@ -260,6 +229,7 @@ body {
     gap: 8px;
     align-items: center;
     justify-content: space-between;
+    min-height: 32px;
 }
 
 .pe-hand-tools {
@@ -894,13 +864,14 @@ body {
     filter: brightness(0.7);
 }
 
+/* 手札（014 §2.3）: 折り返す。重ねない・横スクロールしない。中身は中央寄せ。カードの下に英語名のキャプション（2 行まで） */
 .pe-hand {
     position: relative;
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    gap: 12px 10px;
     align-items: flex-start;
-    padding-top: 6px;
-    overflow-x: auto;
+    justify-content: center;
 }
 
 .pe-hand-empty {
@@ -911,51 +882,78 @@ body {
 
 .pe-hand-card {
     width: var(--pe-hand-w);
-    margin-left: calc(var(--pe-hand-w) * -0.42);
-}
-
-.pe-hand-card:first-child {
-    margin-left: 0;
-}
-
-/* PC（wide・medium）: 手札は重ねず横に並べ、幅が足りなければ折り返す（narrow は重ねたまま。PR 2 で全レイアウトを折り返しに） */
-.pe-root:not([data-layout="narrow"]) .pe-hand {
-    flex-wrap: wrap;
-    gap: 6px;
-    overflow-x: visible;
-}
-
-.pe-root:not([data-layout="narrow"]) .pe-hand-card {
-    margin-left: 0;
 }
 
 .pe-hand-card.pe-selected {
     transform: translateY(-6px);
 }
 
-/* アクションカード: 横向きは 90° 回転 + グレー（回転とグレーアウトの両方。012 §4.4）。行の高さは回転後の縦横が収まるように取る */
+.pe-card-slot {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    width: var(--pe-hand-w);
+}
+
+/* カードの下の英語名（手札・自分のアクションカード）。2 行ぶんの高さを確保して、行の下端をそろえる */
+.pe-card-name {
+    width: 100%;
+    max-height: 30px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 15px;
+    text-align: center;
+    overflow-wrap: anywhere;
+    color: var(--pe-ink-dim);
+}
+
+/* アクションカード: 横向きは 90° 回転 + グレー（回転とグレーアウトの両方。012 §4.4）。カードの箱（高さ = カードの高さ）の中で回す */
 .pe-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    align-items: flex-end;
+    gap: 8px;
+    align-items: flex-start;
+    justify-content: center;
 }
 
 .pe-action-slot {
     display: flex;
-    align-items: flex-end;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    width: var(--pe-action-w);
+}
+
+/* 横向きのカードは回すと横幅が高さぶんに広がるので、そのぶんの幅を取る */
+.pe-action-slot-side {
+    width: var(--pe-action-h);
+}
+
+.pe-action-box {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    min-width: var(--pe-action-w);
-    height: calc(var(--pe-action-w) * 999 / 715 + 6px);
+    width: 100%;
+    height: var(--pe-action-h);
 }
 
 .pe-action-card {
     width: var(--pe-action-w);
 }
 
+.pe-actions-other {
+    gap: 4px;
+}
+
 .pe-actions-other .pe-action-slot {
-    min-width: var(--pe-actionother-w);
-    height: calc(var(--pe-actionother-w) * 999 / 715 + 4px);
+    width: var(--pe-actionother-w);
+}
+
+.pe-actions-other .pe-action-box {
+    height: var(--pe-actionother-h);
 }
 
 .pe-actions-other .pe-action-card {
@@ -963,28 +961,41 @@ body {
 }
 
 .pe-sideways {
-    margin-bottom: calc((var(--pe-action-w) * 999 / 715 - var(--pe-action-w)) / -2);
     transform: rotate(90deg);
     filter: grayscale(1) brightness(0.65);
 }
 
-.pe-actions-other .pe-sideways {
-    margin-bottom: calc((var(--pe-actionother-w) * 999 / 715 - var(--pe-actionother-w)) / -2);
+/* 他プレイヤーと narrow は、回したカードが幅を広げないよう、回しながら幅に収まる大きさにする（715 ÷ 999 = 0.7157） */
+.pe-actions-other .pe-action-slot-side {
+    width: var(--pe-actionother-w);
+}
+
+.pe-root[data-layout="narrow"] .pe-action-slot-side {
+    width: var(--pe-action-w);
+}
+
+/* narrow: 5 枚が 1 行に入る幅 (W − 24) ÷ 5 の 24 は、4 つの間隔 6 px（layout-math の ACTION_NARROW_PAD） */
+.pe-root[data-layout="narrow"] .pe-actions {
+    gap: 6px;
+}
+
+/* narrow（幅 64 px）では IV Establish Link が 3 行になる */
+.pe-root[data-layout="narrow"] .pe-action-slot .pe-card-name {
+    max-height: 45px;
+}
+
+.pe-actions-other .pe-sideways,
+.pe-root[data-layout="narrow"] .pe-sideways {
+    transform: rotate(90deg) scale(0.7157);
 }
 
 .pe-action-state-1 {
     box-shadow: 0 0 0 2px var(--pe-pick);
 }
 
-.pe-action-plot .pe-check {
-    position: absolute;
-    right: -4px;
-    bottom: -4px;
-}
-
 .pe-missions {
     display: flex;
-    gap: 6px;
+    gap: 8px;
 }
 
 .pe-mission-card {
@@ -1031,18 +1042,24 @@ body {
     background: #3fe0ff;
 }
 
+.pe-player-other .pe-missions {
+    gap: 4px;
+}
+
 .pe-player-other .pe-mission-card {
     width: var(--pe-actionother-w);
 }
 
-/* ---- 9 衛星（カード・配備カード・燃料ゲージ。012 §4.2〜§4.5） ---- */
+/* ---- 9 衛星（紙どおりのロケット + キャプション。014 §4.1） ---- */
 
 .pe-sat {
     position: relative;
     display: flex;
     flex: 0 0 auto;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
     width: var(--pe-satellite-w);
     min-width: 0;
 }
@@ -1074,133 +1091,6 @@ body {
 }
 
 /* stylelint-enable selector-class-pattern */
-
-.pe-sat-simple {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-/* 衛星カードの上に重ねる配備カードの効果アイコンの帯（2 × 2） */
-.pe-strip {
-    position: absolute;
-    overflow: hidden;
-    border-radius: 2px;
-    background-color: #000;
-    background-repeat: no-repeat;
-    cursor: pointer;
-}
-
-.pe-strip.pe-used::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgb(0 0 0 / 35%);
-}
-
-/* チップ（種類・名前・名声・燃料庫の数・歯車）。最大 4 行 */
-.pe-chips {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.pe-chip {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    min-height: 32px;
-    padding: 1px 6px;
-    border: 1px solid var(--pe-line);
-    border-left: 4px solid var(--pe-chip-type, var(--pe-line));
-    border-radius: 2px;
-    background: var(--pe-mat);
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.pe-chip[data-type="crew"] {
-    --pe-chip-type: #2a8ab8;
-}
-
-.pe-chip[data-type="device"] {
-    --pe-chip-type: #c08a1a;
-}
-
-.pe-chip[data-type="software"] {
-    --pe-chip-type: #6a4fb3;
-}
-
-/* 空の配備枠の数の印（「+3」。行にはしない。012 追補 U-6） */
-.pe-chips-more {
-    align-self: flex-start;
-    padding: 0 8px;
-    border: 1px dashed var(--pe-line);
-    border-radius: 2px;
-    font-size: 12px;
-    line-height: 18px;
-    color: var(--pe-ink-dim);
-}
-
-.pe-chip-level {
-    flex: 0 0 auto;
-    min-width: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--pe-ink-dim);
-}
-
-/* 種別アイコン（Crew / Device / Software）。色の縁の補助（012 追補 2026-11-14 A）。幅はスプライトのセルの縦横比 */
-.pe-chip-type-icon {
-    flex: 0 0 auto;
-    width: calc(14px * var(--pe-glyph-aspect, 1));
-    height: 14px;
-    background-repeat: no-repeat;
-}
-
-.pe-root[data-layout="narrow"] .pe-chip-type-icon {
-    width: calc(18px * var(--pe-glyph-aspect, 1));
-    height: 18px;
-}
-
-.pe-chip-name {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.pe-chip-meta {
-    display: flex;
-    flex: 0 0 auto;
-    gap: 4px;
-}
-
-.pe-chip-fame {
-    padding: 0 4px;
-    border-radius: 2px;
-    background: #6a2c8f;
-    font-size: 12px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.pe-chip-fuel {
-    padding: 0 4px;
-    border-radius: 2px;
-    background: var(--pe-c-b);
-    font-size: 12px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.pe-chip.pe-used {
-    filter: brightness(0.75);
-}
 
 /* 起動効果の歯車と使用済みの ×（CSS / SVG。画像に焼かない。012 §4.5） */
 .pe-gear {
@@ -1239,62 +1129,7 @@ body {
     opacity: 0.4;
 }
 
-.pe-strip .pe-gear {
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    width: 14px;
-    height: 14px;
-}
-
-.pe-chip-active-only {
-    font-size: 12px;
-    color: var(--pe-ink-dim);
-}
-
 /* 燃料ゲージ: 横一列のスロット（左が初期燃料庫）+ Fuel R / C。燃料切れは枠の外に Out of fuel（012 §4.3） */
-.pe-fuel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    align-items: center;
-}
-
-.pe-fuel-row {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-}
-
-.pe-fuel-cell {
-    position: relative;
-    flex: 0 0 auto;
-    width: 14px;
-    height: 14px;
-    border: 1px solid var(--pe-line);
-    border-radius: 2px;
-    background: rgb(255 255 255 / 8%);
-}
-
-.pe-fuel-initial {
-    border-color: var(--pe-ink-dim);
-}
-
-.pe-fuel-out {
-    position: relative;
-    flex: 0 0 auto;
-    width: 14px;
-    height: 14px;
-    margin-left: 6px;
-    border: 1px dashed var(--pe-warn);
-    border-radius: 2px;
-    opacity: 0.45;
-}
-
-.pe-fuel-out.pe-on {
-    opacity: 1;
-}
-
 .pe-fuel-piece {
     position: absolute;
     top: 50%;
@@ -1304,48 +1139,6 @@ body {
     background-repeat: no-repeat;
     transform: translate(-50%, -50%);
     pointer-events: none;
-}
-
-.pe-fuel-empty {
-    opacity: 0.55;
-}
-
-.pe-fuel-label {
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.pe-fuel-low {
-    color: var(--pe-pick);
-}
-
-.pe-out-of-fuel {
-    color: var(--pe-warn);
-}
-
-.pe-sat-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    align-items: center;
-    font-size: 12px;
-}
-
-.pe-sat-status {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    color: var(--pe-ink-dim);
-}
-
-.pe-sat-active .pe-sat-status {
-    font-weight: bold;
-    color: var(--pe-ink);
-}
-
-.pe-dir-arrow {
-    display: inline-block;
-    color: var(--pe-pc);
 }
 
 .pe-sat-used {
@@ -1389,27 +1182,88 @@ body {
 
 .pe-fuel-slot {
     position: absolute;
-    border: 1px dashed rgb(255 255 255 / 55%);
-    border-radius: 2px;
     pointer-events: none;
 }
 
-.pe-sat-detail .pe-fuel-slot {
-    border-color: transparent;
-}
 
 .pe-paper-used {
     position: absolute;
     top: 86%;
     left: 60%;
     z-index: 2;
+    width: 18px;
+    height: 18px;
     color: #d32f2f;
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1;
     pointer-events: none;
-    text-shadow: 0 0 2px #000;
+    filter: drop-shadow(0 0 1px #000);
     transform: translate(-50%, -50%);
+}
+
+.pe-paper-used-x {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* ロケットの下のキャプション（2 行ぶんの高さを確保して、ロケットの下端のそろいを崩さない。014 §4.1） */
+.pe-sat-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: center;
+    width: 100%;
+    min-height: 34px;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    color: var(--pe-ink-dim);
+}
+
+.pe-cap-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-weight: bold;
+    color: var(--pe-ink);
+}
+
+.pe-cap-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.pe-cap-fuel,
+.pe-cap-status {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.pe-cap-fuel-icon {
+    display: inline-block;
+    width: 12px;
+    height: 14px;
+    background-repeat: no-repeat;
+}
+
+.pe-cap-icon {
+    display: block;
+    width: 14px;
+    height: 14px;
+}
+
+.pe-cap-arrow {
+    color: var(--pe-pi);
+}
+
+.pe-cap-standby {
+    display: none;
+}
+
+.pe-cap-warn {
+    color: var(--pe-warn);
 }
 
 .pe-fuel-on-paper {
@@ -1423,24 +1277,20 @@ body {
     width: 7%;
 }
 
-/* 簡略表示で他プレイヤーの衛星は要約（幅は Layout が `--pe-satellite-other-w` に px で入れる。燃料庫の数などは隠す） */
-.pe-player-other .pe-chip-meta {
-    display: none;
-}
+/* ---- 10 プレイヤーの領域（014 §2.3・§2.4） ---- */
 
-/* ---- 10 プレイヤーの領域 ---- */
-
-/* プレイヤーの領域（レール。014 §1.2）: 箱で囲まず、上端の 1 px の線と、その左端 48 px のプレイヤー色の太い線。名前はプレイヤー色（暗い卓の上用の明るい版）。
-   並びは PR 2 で作り替える。ここは色と形だけ */
+/* レール: 箱で囲まず、上端の 1 px の線と、その左端 48 px のプレイヤー色の太い線。名前はプレイヤー色（暗い卓の上用の明るい版） */
 .pe-player {
     position: relative;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    place-content: flex-start center;
+    flex-direction: column;
+    gap: 14px;
     padding: 12px 0 0;
     border: 0;
     border-top: 1px solid var(--pe-line);
+
+    /* パネルの移動のボタンで来たとき、上に貼り付く BGA のステータスバーの下に見出しが隠れないようにする */
+    scroll-margin-top: 120px;
 }
 
 .pe-player::before {
@@ -1459,10 +1309,9 @@ body {
 
 .pe-player-head {
     display: flex;
-    flex: 0 0 100%;
     gap: 8px;
-    align-items: center;
-    justify-content: space-between;
+    align-items: baseline;
+    justify-content: flex-start;
 }
 
 .pe-player-name {
@@ -1471,63 +1320,97 @@ body {
     color: var(--pe-pi, var(--pe-ink));
 }
 
-.pe-player-regions {
-    display: inline-flex;
-}
-
-.pe-player-row {
-    display: contents;
-}
-
-.pe-player-group {
-    flex: 0 1 auto;
-    max-width: 100%;
-}
-
-.pe-sats {
+/* 行 A: アクションカードのグループとミッションのグループを隣り合わせ（間 32 px）にし、行全体を中央寄せ。ラベルは各グループの左上 */
+.pe-row-a {
     display: flex;
-    flex: 0 0 100%;
-    flex-wrap: nowrap;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 12px 32px;
     align-items: flex-start;
     justify-content: center;
 }
 
-/* 他プレイヤーの衛星は 1 行（収まらなければ横スクロール） */
-.pe-player-other .pe-sats {
-    padding: 2px;
-    overflow-x: auto;
-    justify-content: safe center;
+.pe-player-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+    max-width: 100%;
 }
 
-/* 自分の並び: 見出し → 衛星 → 手札・アクション・ミッション。narrow は 見出し → 手札 → 衛星（2 列のグリッド）→ アクションとミッション */
-.pe-player-mine .pe-player-head {
-    order: -3;
-}
-
-.pe-player-mine .pe-sats {
+/* 行 B: ロケット 5 機。下端をそろえ（衛星カードが 1 本の線に並び、ロケットが上へ伸びる）、中央寄せ。折り返す */
+.pe-sats {
+    display: flex;
     flex-wrap: wrap;
-    order: -2;
-}
-
-.pe-player-mine .pe-player-handgroup {
-    order: -1;
-}
-
-.pe-root[data-layout="narrow"] .pe-player-mine .pe-player-handgroup {
-    flex: 0 0 100%;
-    order: -2;
-}
-
-.pe-root[data-layout="narrow"] .pe-player-mine .pe-sats {
-    display: grid;
-    order: -1;
-    grid-template-columns: repeat(2, var(--pe-satellite-w));
+    gap: 12px;
+    align-items: flex-end;
     justify-content: center;
 }
 
-.pe-root[data-layout="narrow"] .pe-player {
-    gap: 8px 14px;
+.pe-root[data-layout="medium"] .pe-sats {
+    gap: 10px;
+}
+
+.pe-root[data-layout="narrow"] .pe-sats {
+    gap: 8px;
+}
+
+/* 行 C: 手札。ラベル HAND は中身の左上、[Sell cards] は同じ行の右端 */
+.pe-row-c {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 他プレイヤー: 1 行目 = 名前 + アクションカード（小）+ ミッション裏（小）、2 行目 = 小さいロケット。自分よりずっと小さい */
+.pe-other-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    align-items: center;
+}
+
+.pe-root .pe-player-other .pe-sats {
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.pe-root[data-layout="narrow"] .pe-player-other .pe-sats {
+    gap: 6px;
+    justify-content: center;
+}
+
+/* narrow の他プレイヤーは名前を出さないので、キャプションは 1 行ぶん（5 機とも同じ高さなので下端のそろいは崩れない） */
+.pe-root[data-layout="narrow"] .pe-player-other .pe-sat-caption {
+    min-height: 18px;
+}
+
+/* narrow の他プレイヤー: 名前 + アクションカード 6 枚（確定した札を含む）+ ミッション裏 2 枚が 1 行に入るよう、間隔を詰める */
+.pe-root[data-layout="narrow"] .pe-other-top {
+    gap: 6px 8px;
+}
+
+.pe-root[data-layout="narrow"] .pe-actions-other,
+.pe-root[data-layout="narrow"] .pe-player-other .pe-missions {
+    gap: 2px;
+}
+
+/* narrow の他プレイヤー（幅 約 68 px）は燃料と状態のアイコンだけ。名前と状態の文字は読み上げだけに残す */
+.pe-root[data-layout="narrow"] .pe-player-other .pe-cap-name,
+.pe-root[data-layout="narrow"] .pe-player-other .pe-cap-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.pe-root[data-layout="narrow"] .pe-player-other .pe-cap-standby {
+    display: block;
+}
+
+.pe-root[data-layout="narrow"] .pe-player-other .pe-cap-row {
+    gap: 0 4px;
 }
 
 #pe-others {
@@ -1547,10 +1430,11 @@ body {
     color: inherit;
 }
 
+/* カウンターは 1 つの数だけ。移動のボタンはカウンターと同じ行の右端（014 §8。390 px で 1 行。名声がオンのときだけ 2 行まで） */
 .pe-panel-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px 7px;
+    gap: 2px 6px;
     align-items: center;
 }
 
@@ -1574,25 +1458,6 @@ body {
 
 .pe-icon-maya {
     width: 20px;
-}
-
-.pe-regions {
-    display: inline-flex;
-    gap: 1px;
-    align-items: center;
-}
-
-/* 通信確立していない地域は薄く、している地域は濃く（作者要望 2026-10-20 その 3） */
-.pe-region {
-    display: inline-flex;
-    padding: 1px;
-    border-radius: 2px;
-    opacity: 0.3;
-}
-
-.pe-region-linked {
-    background: var(--pe-pc, #888);
-    opacity: 1;
 }
 
 .pe-icon-region {
@@ -1625,9 +1490,7 @@ body {
 }
 
 .pe-icon-fame {
-    display: inline-block;
-    font-size: 17px;
-    line-height: 20px;
+    display: inline-flex;
     color: #c98a00;
 }
 
@@ -1675,6 +1538,22 @@ body {
     gap: 4px;
     align-items: center;
     margin-left: auto;
+}
+
+/* 領域へ移るボタン（32 × 32 px。パネルは BGA の面なので、文字色に従う細い線だけ） */
+.pe-panel-jump {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid currentcolor;
+    border-radius: 2px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
 }
 
 /* ---- 12 拡大表示（PR 3 でツールチップに作り替える）・トレイ ---- */
@@ -1986,24 +1865,34 @@ html[data-theme="dark"] .pe-zoom {
     opacity: 0.5;
 }
 
-/* 衛星の選択（配備先・打ち上げ / 転回・通信確立）。枠は形（実線・破線・太線）でも区別する */
+/* 衛星の選択（配備先・打ち上げ / 転回・通信確立）。枠はロケット全体ではなく土台の衛星カードに付ける（配備カードの積みの上にも出す）。枠は形（実線・破線・太線）でも区別する */
 .pe-sat-pickable {
     cursor: pointer;
 }
 
-.pe-sat-selectable {
-    outline: 3px solid var(--pe-can);
-    outline-offset: 2px;
+.pe-sat-selectable .pe-sat-card::after,
+.pe-sat-sellable .pe-sat-card::after,
+.pe-sat-selected .pe-sat-card::after,
+.pe-sat-subject .pe-sat-card::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    z-index: 2;
+    border: 3px solid var(--pe-can);
+    border-radius: 3px;
+    pointer-events: none;
 }
 
-.pe-sat-sellable {
-    outline: 3px dashed var(--pe-can);
-    outline-offset: 2px;
+.pe-sat-selectable .pe-sat-card::after {
+    box-shadow: 0 0 10px 2px var(--pe-can-glow);
 }
 
-.pe-sat-selected {
-    outline: 5px solid var(--pe-pick);
-    outline-offset: 2px;
+.pe-sat-sellable .pe-sat-card::after {
+    border-style: dashed;
+}
+
+.pe-sat-selected .pe-sat-card::after {
+    border: 5px solid var(--pe-pick);
 }
 
 .pe-sat-blocked > :not(.pe-sat-note) {
@@ -2028,17 +1917,9 @@ html[data-theme="dark"] .pe-zoom {
     color: #0a1122;
 }
 
-/* 衛星カードの見出し（形状とプラン） */
-.pe-sat-name {
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--pe-ink);
-}
-
 /* 効果の問いの対象の衛星（盤面のコマと同じ金色。選択の枠とは太さと札で区別する） */
-.pe-sat-subject {
-    outline: 4px double var(--pe-pick);
-    outline-offset: 2px;
+.pe-sat-subject .pe-sat-card::after {
+    border: 4px double var(--pe-pick);
 }
 
 .pe-sat-subject-tag {
@@ -2062,8 +1943,8 @@ html[data-theme="dark"] .pe-zoom {
     outline-offset: 1px;
 }
 
-.notouch-device .pe-sat-pickable:hover {
-    outline-color: var(--pe-pick);
+.notouch-device .pe-sat-pickable:hover .pe-sat-card::after {
+    border-color: var(--pe-pick);
 }
 
 /* 効果の問い */

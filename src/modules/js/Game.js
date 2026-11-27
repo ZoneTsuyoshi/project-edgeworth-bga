@@ -1,6 +1,6 @@
 /**
  * PROJECT EDGEWORTH のクライアント（仕様書 004 §4、012 §12）。
- * Game.js は setup、状態クラスの登録、通知の購読、ゲームの設定（101）の反映だけを持つ。画面の組み立ては ui/GameView.js、盤面は board/、カードは cards/、
+ * Game.js は setup、状態クラスの登録、通知の購読だけを持つ。画面の組み立ては ui/GameView.js、盤面は board/、カードは cards/、
  * 通知の処理は notifications.js。BGA のグローバルへの依存はこのファイルの Env の組み立てに閉じ込める。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -14,9 +14,6 @@ import { MulliganState } from './states/MulliganState.js';
 import { PlanningPlot, SetupLaunchPadPlace } from './states/PlacementStates.js';
 import { ProposalState } from './states/ProposalState.js';
 import { GameView } from './ui/GameView.js';
-
-/** ゲームの設定 101「Satellite cards」（gamepreferences.jsonc）。0 = Compact、1 = As printed（詳細表示。012 追補 U-8） */
-const PREF_SATELLITE_CARDS = 101;
 
 export class Game {
     /**
@@ -56,25 +53,7 @@ export class Game {
         };
         this.view = new GameView(env, this.bga.gameArea.getElement());
         this.view.setup(gamedatas);
-        this.setupPreferences(this.view);
         this.bga.notifications.setupPromiseNotifications({});
-    }
-
-    /**
-     * ゲームの設定を読んで画面に反映し、変更も受ける（`userPreferences` が無い環境でも落ちない）。
-     * @param {GameView} view
-     */
-    setupPreferences(view) {
-        const prefs = this.bga.userPreferences;
-        if (prefs === undefined || prefs === null) {
-            return;
-        }
-        view.setDetailAll(Number(prefs.get?.(PREF_SATELLITE_CARDS)) === 1);
-        prefs.onChange = (/** @type {number | string} */ prefId, /** @type {number | string} */ value) => {
-            if (Number(prefId) === PREF_SATELLITE_CARDS) {
-                view.setDetailAll(Number(value) === 1);
-            }
-        };
     }
 }
 
