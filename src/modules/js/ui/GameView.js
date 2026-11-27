@@ -5,11 +5,11 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { BoardView } from '../board/BoardView.js';
-import { Highlights } from '../board/Highlights.js';
+import { directionLabel, Highlights } from '../board/Highlights.js';
 import { PieceLayer } from '../board/PieceLayer.js';
 import { FieldView } from '../cards/FieldView.js';
-import { satelliteName } from '../cards/SatelliteView.js';
-import { Tooltip } from '../cards/Tooltip.js';
+import { fuelGauge, satelliteName } from '../cards/SatelliteView.js';
+import { format } from '../states/logic/common.js';
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { BottomSheet } from './BottomSheet.js';
 import { ChoicePanel } from './ChoicePanel.js';
@@ -21,6 +21,7 @@ import { PlayerPanel } from './PlayerPanel.js';
 import { RoundTrack } from './RoundTrack.js';
 import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
+import { Tips } from './Tips.js';
 import { Tray } from './Tray.js';
 import { missionFrames, revealedMissions, scoresFromGamedatas } from '../states/logic/score.js';
 
@@ -40,7 +41,7 @@ export class GameView {
         this.panels = new Map();
         /** 先送り済みの保留通知の ev_id（010 §10.5。windowClosed で空にする） */
         this.appliedEvents = new Set();
-        this.tooltip = new Tooltip(env);
+        this.tips = new Tips(env);
         this.root = el('div', { id: 'pe-root', class: 'pe-root' });
         host.append(this.root);
 
@@ -58,13 +59,15 @@ export class GameView {
             const p = this.model?.players[id];
             return p === undefined ? null : { color: COLOR_LETTERS[p.colorIndex] ?? 'b', name: p.name };
         });
-        this.field = new FieldView(env, this.tooltip, this.supplyBox);
+        this.field = new FieldView(env, this.tips, this.supplyBox);
         this.field.onToggleDiscard = () => this.toggleDiscard();
         this.board = new BoardView(env, this.boardWrap);
         this.highlights = new Highlights(this.board);
         /** @type {((satId: number) => boolean) | null} 盤面の衛星コマのタップを、操作中の状態が受ける（受けたら true。転回の衛星の選択） */
         this.satelliteHandler = null;
         this.pieces = new PieceLayer(this.board, {
+            playerName: (id) => this.model?.players[id]?.name ?? '',
+            satelliteTip: (satId) => this.satelliteTip(satId),
             onSatelliteClick: (satId) => {
                 if (this.satelliteHandler?.(satId) !== true) {
                     this.focusSatellite(satId);
@@ -115,6 +118,7 @@ export class GameView {
 
     /** 捨て札の一覧をトレイに開く / 閉じる（もう一度押すか [Close] で閉じる。014 §4.3） */
     toggleDiscard() {
+        this.tips.hide();
         if (this.tray.listOpen) {
             this.tray.hideList();
             return;
@@ -160,7 +164,7 @@ export class GameView {
         for (const id of rotated) {
             const player = model.players[id];
             const mine = id === model.me;
-            const area = new PlayerArea(this.env, this.tooltip, player, { mine });
+            const area = new PlayerArea(this.env, this.tips, player, { mine });
             if (mine) {
                 area.hand.setCards(model.myHand);
                 area.refreshHand({ hand: model.myHand, missions: model.myMissions });
@@ -333,6 +337,25 @@ export class GameView {
         this.highlights.set([{ cell, kind: 'selected' }]);
         this.board.scrollToCell(cell);
         window.setTimeout(() => this.stateFrame.restoreHighlights(), 1500);
+    }
+
+    /**
+     * 盤面の衛星コマのツールチップの文（持ち主・衛星の名前・燃料・向き）。
+     * @param {number} satId
+     * @returns {string}
+     */
+    satelliteTip(satId) {
+        const found = this.findSatellite(satId);
+        if (found === null) {
+            return '';
+        }
+        const { player, sat } = found;
+        const g = fuelGauge(sat.fuelUsed, sat.fuelCapacity);
+        return [
+            `${satelliteName(sat)} · ${player.name}`,
+            g.outOfFuel ? `${_('Fuel')}: ${_('Out of fuel')}` : `${_('Fuel')} ${g.remaining}/${sat.fuelCapacity}`,
+            sat.dir === null || sat.dir === undefined ? _('Standby') : format(_('Active, heading ${direction}'), { direction: directionLabel(sat.dir) }),
+        ].join('\n');
     }
 
     /**

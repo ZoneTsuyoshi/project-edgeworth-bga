@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import {
   BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, outlineSegments, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
-import { cardSizes, computeHexWidth, HEX_W_MAX, HEX_W_MIN, innerWidthOf, layoutOf, narrowStepFor, NARROW_STEPS, othersColumns, ROOT_GUTTER, ROOT_GUTTER_NARROW, rootMetrics, satelliteWidths, shiftNarrowStep, supplyCardSize, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
+import { cardSizes, computeHexWidth, HEX_W_MAX, HEX_W_MIN, innerWidthOf, layoutOf, narrowStepFor, NARROW_STEPS, othersColumns, ROOT_GUTTER, ROOT_GUTTER_NARROW, rootMetrics, satelliteWidths, shiftNarrowStep, supplyCardSize } from '../../src/modules/js/ui/layout-math.js';
 
 test('行のずれと区域 ID（003 §1.1・§1.4）', () => {
   assert.equal(shiftOf(1, 0), 1);
@@ -165,13 +165,6 @@ test('カードの大きさ（014 §2.2 の表）', () => {
     const [aw] = cardSizes('narrow', w).action;
     assert.ok(aw * 5 + 6 * 4 <= w, `width ${w}: アクションカード 5 枚が 1 行に入る`);
   }
-});
-
-test('拡大表示の寸法（012 §4.1、§4.6）', () => {
-  assert.equal(zoomWidth(false, 1600), 360);
-  assert.equal(zoomWidth(true, 1600), 540);
-  assert.equal(zoomWidth(true, 390), 358);
-  assert.equal(zoomAvailableHeight(800, 60), 800 - 68 - 8);
 });
 
 test('衛星コマの回転は最短で回る', () => {

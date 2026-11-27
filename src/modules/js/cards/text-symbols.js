@@ -8,7 +8,7 @@ import { escapeHtml } from '../ui/dom.js';
 
 /**
  * @typedef {{ label: string, piece: string, framed?: boolean }} SymbolDef
- * label = 代替テキスト（aria-label・title）に入れる英語名。piece = コマ・アイコンのスプライト名（sprite-layout の pieceSprite）。
+ * label = 代替テキスト（aria-label）に入れる英語名。piece = コマ・アイコンのスプライト名（sprite-layout の pieceSprite）。
  * framed = 四角い枠を CSS で重ねる（現在は未使用。予算は作者が追加した原本 `予算` を使う）。
  */
 
@@ -47,7 +47,7 @@ export const SYMBOL_PIECES = [...new Set(Object.values(SYMBOLS).map((s) => s.pie
 export function symbolHtml(def, css) {
   const label = escapeHtml(def.label);
   const style = `${css.style}--pe-glyph-aspect:${Math.round(css.aspect * 1e4) / 1e4}`;
-  return `<span class="pe-glyph${def.framed === true ? ' pe-glyph-framed' : ''}" role="img" aria-label="${label}" title="${label}" style="${escapeHtml(style)}"></span>`;
+  return `<span class="pe-glyph${def.framed === true ? ' pe-glyph-framed' : ''}" role="img" aria-label="${label}" style="${escapeHtml(style)}"></span>`;
 }
 
 /**

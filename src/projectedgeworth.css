@@ -629,6 +629,7 @@ body {
 /* キューブ: CSS の角丸の正方形（プレイヤー色の塗り、暗い縁、白い内側のハイライト。012 §3.4、作者回答） */
 .pe-cube {
     position: absolute;
+    pointer-events: auto;
     min-width: 6px;
     min-height: 6px;
     border: max(1px, calc(var(--pe-hex-w, 52px) * 0.018)) solid var(--pe-pc-dark);
@@ -640,6 +641,7 @@ body {
 
 .pe-stack-badge {
     position: absolute;
+    pointer-events: auto;
     padding: 0 3px;
     border-radius: 2px;
     background: #fff;
@@ -693,6 +695,7 @@ body {
 /* 発射拠点: 区域の左上のマス（slot 0）の中心に置く。持ち主の色を足元の輪に出す（012 §3.6）。left / top は PieceLayer が指定 */
 .pe-base-piece {
     position: absolute;
+    pointer-events: auto;
     aspect-ratio: 164 / 228;
     background-repeat: no-repeat;
     transform: translate(-50%, -50%);
@@ -1556,77 +1559,108 @@ body {
     cursor: pointer;
 }
 
-/* ---- 12 拡大表示（PR 3 でツールチップに作り替える）・トレイ ---- */
+/* ---- 12 ツールチップ（014 §7）・トレイ ---- */
 
-/* document.body 直下（BGA の zoom / transform の外）。高さの上限は JS が window.innerHeight から出した --pe-zoom-avail（教訓 3・4） */
-.pe-zoom {
-    --pe-zoom-w: 360px;
+/* document.body 直下（BGA の zoom / transform の外）。BGA 標準のツールチップに合わせた見た目（卓ではなく BGA の枠の側）。位置と大きさは Tips.js が決める */
+.pe-tip {
+    --pe-tip-img: 220px;
 
     position: fixed;
     z-index: 9100;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: var(--pe-zoom-w);
-    max-height: var(--pe-zoom-avail, 80vh);
-    overflow: auto;
-    padding: 8px;
-    border: 1px solid #888;
-    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #b4bac4;
+    border-radius: 6px;
     background: #fff;
-    box-shadow: 0 6px 24px rgb(0 0 0 / 45%);
+    box-shadow: 0 3px 12px rgb(0 0 0 / 35%);
+    font-size: 13px;
+    line-height: 1.45;
     color: #1d2430;
+    overflow-wrap: anywhere;
 }
 
-html[data-theme="dark"] .pe-zoom {
-    background: #262b36;
-    color: #e7eaf0;
+html[data-theme="dark"] .pe-tip {
+    border-color: #444b59;
+    background: #22262f;
+    color: #e8eaee;
 }
 
-/* ホバーの拡大表示は操作を通す（カードのクリックを奪わない。作者回答 2026-10-20） */
-.pe-zoom.pe-zoom-hover {
-    pointer-events: none;
-}
-
-.pe-zoom[hidden] {
+.pe-tip[hidden] {
     display: none;
 }
 
-.pe-zoom-img {
+/* ホバーで出したものは、クリックを奪わない */
+.pe-tip-hover {
+    pointer-events: none;
+}
+
+.pe-tip-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.pe-tip-img {
     flex: 0 0 auto;
-    width: 100%;
+    width: var(--pe-tip-img);
     aspect-ratio: 715 / 999;
     background-repeat: no-repeat;
 }
 
-.pe-zoom-img.pe-zoom-landscape {
+.pe-tip-img-landscape {
     aspect-ratio: 999 / 715;
 }
 
-.pe-zoom-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.pe-zoom-chip {
-    padding: 2px 8px;
-    border: 1px solid #888;
-    border-radius: 4px;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-}
-
-.pe-zoom-text {
-    font-size: 13px;
-    line-height: 1.45;
+.pe-tip-body {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .pe-tip-name {
     margin-bottom: 4px;
     font-size: 15px;
     font-weight: bold;
+}
+
+.pe-tip-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+}
+
+.pe-tip-stat {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.pe-tip-stat-label {
+    color: #5d6573;
+}
+
+html[data-theme="dark"] .pe-tip-stat-label {
+    color: #a7b0bf;
+}
+
+.pe-tip-facts .pe-glyph,
+.pe-tip-stat .pe-glyph {
+    margin-right: 3px;
+}
+
+.pe-tip-fame,
+.pe-tip-gear {
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+    vertical-align: -3px;
+    color: #c98a00;
+}
+
+.pe-tip-gear {
+    color: inherit;
 }
 
 .pe-tip-facts {
@@ -1637,7 +1671,7 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 .pe-tip-facts dt {
-    color: #777;
+    color: #5d6573;
 }
 
 .pe-tip-facts dd {
@@ -1646,6 +1680,76 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-tip-effect {
     margin: 0;
+}
+
+.pe-tip-line {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pe-tip-reason {
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+.pe-tip-sat {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #c3c7cf;
+}
+
+.pe-tip-fuel {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 16px;
+    background-repeat: no-repeat;
+}
+
+.pe-tip-deployed {
+    margin-top: 4px;
+}
+
+.pe-tip-deployed ol {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.pe-tip-sublabel {
+    color: #5d6573;
+}
+
+html[data-theme="dark"] .pe-tip-sublabel,
+html[data-theme="dark"] .pe-tip-facts dt {
+    color: #a7b0bf;
+}
+
+/* タッチで開いたものだけ、最後の手段として中のスクロールを許す（max-height は JS） */
+.pe-tip-touch {
+    pointer-events: auto;
+}
+
+/* 情報の印（タッチ端末の選択中のカードの左上。32 × 32 px。押すとツールチップが開く。選択は変えない） */
+.pe-tip-info {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.pe-tip-info svg {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 60%));
 }
 
 /* トレイ（#pe-tray。盤面の下。箱なし。レールとラベル、その下に中身。014 §5）。PR 1 では選択パネル・ボトムシート・捨て札の一覧を同じ場所に置く */

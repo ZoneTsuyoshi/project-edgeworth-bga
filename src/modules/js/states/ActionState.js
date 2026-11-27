@@ -17,6 +17,18 @@ import { el } from '../ui/dom.js';
 import { HandTargets } from './HandTargets.js';
 import { format, privateOf, sellableHand, sellsWholeHand, sellTotal, validMods } from './logic/common.js';
 import { modOptionText, modName } from './texts.js';
+import { tipText } from '../ui/Tips.js';
+
+/**
+ * 要素に文字だけのツールチップを付けて返す。
+ * @param {HTMLElement} node
+ * @param {string} text
+ * @returns {HTMLElement}
+ */
+function tipped(node, text) {
+  tipText(node, text);
+  return node;
+}
 
 export class ActionState extends ChoiceState {
     /**
@@ -393,7 +405,7 @@ export class ActionState extends ChoiceState {
                         this.refresh();
                     },
                 }),
-                el('span', { title: modName(option.hostKey) }, [modOptionText(option)]),
+                tipped(el('span', {}, [modOptionText(option)]), modName(option.hostKey)),
             ])),
         ]);
     }

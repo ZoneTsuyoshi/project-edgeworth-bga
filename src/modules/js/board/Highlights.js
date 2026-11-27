@@ -124,7 +124,6 @@ export class Highlights {
             const btn = el('button', {
                 type: 'button',
                 class: `pe-arrow pe-arrow-${dir.toLowerCase()}${opts.selected === dir ? ' pe-selected' : ''}`,
-                title: directionLabel(dir),
                 'aria-label': directionLabel(dir),
                 disabled,
                 style: { '--ax': cx + v[0] * 0.6, '--ay': cy + v[1] * 0.6 },

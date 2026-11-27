@@ -6,6 +6,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { el } from './dom.js';
+import { tipCard, tipText } from './Tips.js';
 import { roundTrackState } from './round-track.js';
 
 /** @returns {Record<number, { numeral: string, name: string }>} 段の番号 → ローマ数字と名前 */
@@ -56,9 +57,14 @@ export class RoundTrack {
             const { numeral, name } = labels[step.no];
             const marks = step.holders.flatMap((id) => {
                 const info = this.lookup(id);
-                return info === null ? [] : [el('span', { class: 'pe-round-mark', role: 'img', 'aria-label': info.name, dataset: { color: info.color } })];
+                if (info === null) {
+                    return [];
+                }
+                const mark = el('span', { class: 'pe-round-mark', role: 'img', 'aria-label': info.name, dataset: { color: info.color } });
+                tipText(mark, info.name);
+                return [mark];
             });
-            list.append(el('li', {
+            const item = el('li', {
                 class: `pe-round-step pe-round-${step.state}`,
                 'aria-current': step.state === 'current' ? 'step' : null,
                 'aria-label': numeral === '' ? name : `${numeral} ${name}`,
@@ -66,7 +72,14 @@ export class RoundTrack {
                 numeral === '' ? null : el('span', { class: 'pe-round-numeral', 'aria-hidden': 'true' }, [numeral]),
                 el('span', { class: 'pe-round-name' }, [name]),
                 ...marks,
-            ]));
+            ]);
+            // I〜V の段はそのアクションカードのツールチップ、計画・循環の段は文字（014 §7）
+            if (step.no >= 1 && step.no <= 5) {
+                tipCard(item, `A00${step.no}`);
+            } else {
+                tipText(item, step.no === 0 ? _('Planning Phase') : _('Orbit Phase'));
+            }
+            list.append(item);
         }
         this.root.replaceChildren(el('span', { class: 'pe-round-label' }, [`${_('Round')} ${state.round}`]), list);
     }

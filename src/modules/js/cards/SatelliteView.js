@@ -7,11 +7,12 @@
  */
 import { createCard } from './CardView.js';
 import { applySprite, COLOR_LETTERS, pieceSprite, projectKey } from './sprite-layout.js';
-import { cardInfo, chipInfo } from './card-text.js';
+import { cardInfo, chipInfo, GEAR_PATH } from './card-text.js';
 import { fuelSlotOrder, projectFuelSlots, SATELLITE_FUEL_SLOTS } from './fuel-slots.js';
 import { SATELLITE_ROTATION } from '../board/geometry.js';
 import { directionLabel } from '../board/Highlights.js';
 import { el } from '../ui/dom.js';
+import { tipLine, tipText } from '../ui/Tips.js';
 import { format, satelliteLabel } from '../states/logic/common.js';
 
 /** 衛星カードの燃料庫の数（002 §6。初期燃料庫 1 + 燃料庫 1） */
@@ -81,11 +82,11 @@ export function fuelGauge(fuelUsed, capacity) {
 export function gearIcon(used, dim) {
   const node = el('span', {
     class: `pe-gear${used ? ' pe-gear-used' : ''}${dim ? ' pe-gear-dim' : ''}`,
-    title: used ? _('Used this round') : (dim ? _('Active satellites only') : _('Activated effect')),
     role: 'img',
     'aria-label': used ? _('Used this round') : _('Activated effect'),
   });
-  node.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.5 5.2v-3.4l-2.1-.4a6.6 6.6 0 0 0-.9-2.1l1.2-1.8-2.4-2.4-1.8 1.2a6.6 6.6 0 0 0-2.1-.9L12.1 2H8.7l-.4 2.1a6.6 6.6 0 0 0-2.1.9L4.4 3.8 2 6.2l1.2 1.8c-.4.7-.7 1.4-.9 2.1l-2.1.4v3.4l2.1.4c.2.7.5 1.4.9 2.1L2 18.2l2.4 2.4 1.8-1.2c.7.4 1.4.7 2.1.9l.4 2.1h3.4l.4-2.1c.7-.2 1.4-.5 2.1-.9l1.8 1.2 2.4-2.4-1.2-1.8c.4-.7.7-1.4.9-2.1l2.1-.4Z" transform="scale(.9) translate(1.3 1.3)"/></svg>'
+  tipText(node, used ? _('Used this round') : (dim ? _('Active satellites only') : _('Activated effect')));
+  node.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${GEAR_PATH}" transform="scale(.9) translate(1.3 1.3)"/></svg>`
     + '<svg class="pe-gear-x" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke-width="3.2" stroke-linecap="round"/></svg>';
   return node;
 }
@@ -123,13 +124,13 @@ function svgIcon(path, cls, opts = {}) {
 export class SatelliteView {
     /**
      * @param {import('./CardView.js').Env} env
-     * @param {import('./Tooltip.js').Tooltip} tooltip
+     * @param {import('../ui/Tips.js').Tips} tips
      * @param {SatelliteData} sat
      * @param {{ mine: boolean, ownerName?: string, compact?: boolean }} opts
      */
-    constructor(env, tooltip, sat, opts) {
+    constructor(env, tips, sat, opts) {
         this.env = env;
-        this.tooltip = tooltip;
+        this.tips = tips;
         this.sat = sat;
         this.opts = opts;
         this.root = el('div', { class: 'pe-sat', dataset: { satId: sat.satId } });
@@ -310,7 +311,29 @@ export class SatelliteView {
         ]);
     }
 
-    /** 衛星カード（横長）。拡大表示を結びつける */
+    /**
+     * 衛星カードのツールチップの、本文の下に足す内容: 今の燃料・状態と、配備済みのカード名の一覧（014 §7）。
+     * @returns {HTMLElement}
+     */
+    tipExtra() {
+        const sat = this.sat;
+        const g = fuelGauge(sat.fuelUsed, sat.fuelCapacity);
+        const status = g.outOfFuel
+            ? _('Out of fuel')
+            : (this.active && sat.dir !== null && sat.dir !== undefined ? format(_('Active, heading ${direction}'), { direction: directionLabel(sat.dir) }) : _('Standby'));
+        const box = el('div', { class: 'pe-tip-sat' }, [
+            tipLine(g.outOfFuel ? `${_('Fuel')}: ${_('Out of fuel')}` : `${_('Fuel')} ${g.remaining}/${sat.fuelCapacity}`, this.createFuelPiece('pe-tip-fuel')),
+            tipLine(status),
+        ]);
+        const names = this.sat.cards.map((c) => chipInfo(projectKey(c.id))?.name ?? projectKey(c.id));
+        box.append(el('div', { class: 'pe-tip-deployed' }, [
+            el('div', { class: 'pe-tip-sublabel' }, [_('Deployed cards')]),
+            names.length === 0 ? el('div', {}, [_('None')]) : el('ol', {}, names.map((n) => el('li', {}, [n]))),
+        ]));
+        return box;
+    }
+
+    /** 衛星カード（横長）。ツールチップを結びつける */
     renderSatelliteCard() {
         const card = createCard(this.env, this.sat.card, { classes: ['pe-sat-card'] });
         // 待機中の衛星は、衛星コマを衛星カードの右下の衛星の形の枠に置く（稼働中はコマが盤面にある。作者要望 2026-10-20 その 3）
@@ -319,7 +342,7 @@ export class SatelliteView {
             applySprite(piece, pieceSprite(`satellite_${(this.sat.shape ?? 'HAMMER').toLowerCase()}_${COLOR_LETTERS[this.sat.colorIndex] ?? 'b'}`), this.env.imgUrl);
             card.append(piece);
         }
-        this.tooltip.bind(card, this.sat.card, { chips: () => this.deployedKeys() });
+        this.tips.card(card, this.sat.card, () => this.tipExtra());
         return card;
     }
 
@@ -372,9 +395,9 @@ export class SatelliteView {
             });
             // 紙のカードに歯車は印刷済み。使用済みのときだけ × を効果タイプの歯車の位置に重ねる
             if (info?.activated && c.activation === 1) {
-                node.append(el('span', { class: 'pe-paper-used', title: _('Used this round'), role: 'img', 'aria-label': _('Used this round') }, [svgIcon('M5 5l14 14M19 5L5 19', 'pe-paper-used-x')]));
+                node.append(el('span', { class: 'pe-paper-used', role: 'img', 'aria-label': _('Used this round') }, [svgIcon('M5 5l14 14M19 5L5 19', 'pe-paper-used-x')]));
             }
-            this.tooltip.bind(node, key);
+            this.tips.card(node, key, () => (c.activation === 1 && info?.activated ? tipLine(_('Used this round'), null, 'pe-tip-reason') : null));
         } catch {
             // 飾りが付かなくても、カードの絵は出す
         }

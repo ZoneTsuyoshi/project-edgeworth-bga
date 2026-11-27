@@ -60,7 +60,6 @@ export class BottomSheet {
             type: 'button',
             class: `pe-dpad-btn${pad.selected === dir ? ' pe-selected' : ''}`,
             disabled: pad.disabled?.includes(dir) === true,
-            title: directionLabel(dir),
             'aria-label': directionLabel(dir),
             onClick: () => pad.onPick(dir),
         }, [directionGlyph(dir)])));

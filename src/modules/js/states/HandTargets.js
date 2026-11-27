@@ -6,6 +6,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { el } from '../ui/dom.js';
+import { tipText } from '../ui/Tips.js';
 import {
   advanceActive, candidatesFor, pickFromHand, plannedMarks, removeCard, resolveActive, targetComplete,
 } from './logic/hand-targets.js';
@@ -38,6 +39,17 @@ import { cardName } from './texts.js';
  * @property {(id: string | null) => void} setActive 選択中の欄を覚える（描き直しはしない）
  * @property {() => void} refresh 画面を描き直す
  */
+
+/**
+ * 要素に文字だけのツールチップを付けて返す（空なら付けない）。
+ * @param {HTMLElement} node
+ * @param {string | undefined} text
+ * @returns {HTMLElement}
+ */
+function tipped(node, text) {
+  tipText(node, text);
+  return node;
+}
 
 export class HandTargets {
     /**
@@ -84,7 +96,6 @@ export class HandTargets {
             el('button', {
                 type: 'button',
                 class: 'pe-btn pe-btn-small',
-                title: _('Remove'),
                 'aria-label': _('Remove'),
                 onClick: () => this.change(id, removeCard(target.selected, cardId)),
             }, ['×']),
@@ -92,17 +103,16 @@ export class HandTargets {
         return el('div', { class: `pe-handfield${active ? ' pe-handfield-active' : ''}${target.disabled === undefined ? '' : ' pe-handfield-off'}`, dataset: { target: id } }, [
             el('div', { class: 'pe-handfield-head' }, [
                 el('div', { class: 'pe-choice-label' }, [target.label]),
-                several ? el('button', {
+                several ? tipped(el('button', {
                     type: 'button',
                     class: 'pe-btn pe-btn-small',
                     disabled: target.disabled !== undefined,
-                    title: target.disabled,
                     'aria-pressed': active ? 'true' : 'false',
                     onClick: () => {
                         this.opts.setActive(id);
                         this.opts.refresh();
                     },
-                }, [_('Choose from hand')]) : null,
+                }, [_('Choose from hand')]), target.disabled) : null,
             ]),
             target.disabled === undefined ? null : el('div', { class: 'pe-handfield-note' }, [target.disabled]),
             items.length === 0 ? null : el('ul', { class: 'pe-handfield-list' }, items),
