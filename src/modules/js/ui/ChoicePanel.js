@@ -1,6 +1,6 @@
 /**
  * 選択パネル（企画の残すカード、効果の問い、売却の同梱など、盤面の外で選ぶ操作を載せる枠。仕様書 012 §6）。
- * 盤面の上に出す。開いたときに画面の中央へスクロールし、枠と見出しを強調して見落とさないようにする
+ * 盤面の下のトレイ（#pe-tray。014 §5）に出す。PR 4 でトレイ（ui/Tray.js）に統合して削除する。開いたときに画面の中央へスクロールし、枠と見出しを強調して見落とさないようにする
  * （姉妹リポジトリで、選択パネルが画面外で「ボタンが無い」ように見えた不具合の対策）。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -9,9 +9,11 @@ import { clear, el } from './dom.js';
 export class ChoicePanel {
     /**
      * @param {HTMLElement} root
+     * @param {() => void} [onChange] 表示 / 非表示が変わったとき（トレイの開閉）
      */
-    constructor(root) {
+    constructor(root, onChange = () => {}) {
         this.root = root;
+        this.onChange = onChange;
         root.classList.add('pe-choice');
         root.hidden = true;
         this.opened = false;
@@ -24,7 +26,7 @@ export class ChoicePanel {
      */
     show(content, opts = {}) {
         clear(this.root);
-        this.root.append(el('div', { class: 'pe-choice-title' }, [content.title]));
+        this.root.append(el('div', { class: 'pe-rail-label pe-choice-title' }, [content.title]));
         if (content.hint !== undefined && content.hint !== '') {
             this.root.append(el('div', { class: 'pe-choice-hint' }, [content.hint]));
         }
@@ -39,12 +41,14 @@ export class ChoicePanel {
             this.scrollToView();
         }
         this.opened = true;
+        this.onChange();
     }
 
     hide() {
         clear(this.root);
         this.root.hidden = true;
         this.opened = false;
+        this.onChange();
     }
 
     scrollToView() {

@@ -24,7 +24,8 @@
     "build:rulebook-en": "node scripts/build-rulebook-en.mjs",
     "check:sprites": "node scripts/check-sprites.mjs",
     "build:card-info": "node scripts/build-card-info.mjs",
-    "check:card-info": "node scripts/build-card-info.mjs --check"
+    "check:card-info": "node scripts/build-card-info.mjs --check",
+    "preview:shots": "node tools/preview/shoot.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

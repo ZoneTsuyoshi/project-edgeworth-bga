@@ -1,6 +1,6 @@
 /**
  * PROJECT EDGEWORTH のクライアント（仕様書 004 §4、012 §12）。
- * Game.js は setup、状態クラスの登録、通知の購読、ゲームの設定（101）の反映、移動のショートカット（bga-jump-to）だけを持つ。画面の組み立ては ui/GameView.js、盤面は board/、カードは cards/、
+ * Game.js は setup、状態クラスの登録、通知の購読、ゲームの設定（101）の反映だけを持つ。画面の組み立ては ui/GameView.js、盤面は board/、カードは cards/、
  * 通知の処理は notifications.js。BGA のグローバルへの依存はこのファイルの Env の組み立てに閉じ込める。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -17,8 +17,6 @@ import { GameView } from './ui/GameView.js';
 
 /** ゲームの設定 101「Satellite cards」（gamepreferences.jsonc）。0 = Compact、1 = As printed（詳細表示。012 追補 U-8） */
 const PREF_SATELLITE_CARDS = 101;
-/** 移動のショートカットの折りたたみの状態を端末に保存するキー（012 追補 U-7） */
-const JUMP_TO_FOLDED_KEY = 'projectedgeworth-jumpto-folded';
 
 export class Game {
     /**
@@ -54,12 +52,12 @@ export class Game {
             animationsActive: () => this.bga.gameui.bgaAnimationsActive(),
             currentPlayerId: () => (spectator ? null : Number(this.bga.players.getCurrentPlayerId())),
             selectionMode: () => this.view?.stateFrame.selecting === true,
+            addButton: (label, callback, opts = {}) => this.bga.statusBar.addActionButton(label, callback, opts),
         };
         this.view = new GameView(env, this.bga.gameArea.getElement());
         this.view.setup(gamedatas);
         this.setupPreferences(this.view);
         this.bga.notifications.setupPromiseNotifications({});
-        this.setupJumpTo();
     }
 
     /**
@@ -77,26 +75,6 @@ export class Game {
                 view.setDetailAll(Number(value) === 1);
             }
         };
-    }
-
-    /**
-     * 盤面と各プレイヤーの領域へのショートカット（bga-jump-to。012 追補 U-7）。
-     * ライブラリは非同期で読み込む。読み込めなくても（`importEsmLib` が無いプレビューを含め）ゲームは動く。
-     */
-    setupJumpTo() {
-        const globals = /** @type {{ importEsmLib?: (name: string, version: string) => Promise<any> }} */ (/** @type {unknown} */ (globalThis));
-        if (typeof globals.importEsmLib !== 'function') {
-            return;
-        }
-        globals.importEsmLib('bga-jump-to', '1.x').then((/** @type {any} */ BgaJumpTo) => {
-            const entries = [
-                new BgaJumpTo.Entry(_('Board'), 'pe-board-wrap', { color: '#0d1830' }),
-                ...BgaJumpTo.BgaPlayerEntries(this.bga, { entryTarget: (/** @type {number | string} */ playerId) => `pe-player-${playerId}` }),
-            ];
-            new BgaJumpTo.Manager({ localStorageFoldedKey: JUMP_TO_FOLDED_KEY, entries });
-        }).catch((/** @type {unknown} */ error) => {
-            console.warn('bga-jump-to を読み込めませんでした', error);
-        });
     }
 }
 

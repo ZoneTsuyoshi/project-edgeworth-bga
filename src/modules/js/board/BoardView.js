@@ -57,11 +57,11 @@ export class BoardView {
         this.highlightLayer = el('div', { class: 'pe-highlights' });
         this.arrowsLayer = el('div', { class: 'pe-arrows' });
         this.board.append(this.tilesLayer, this.bordersSvg, this.outlinesSvg, this.piecesLayer, this.highlightLayer, this.arrowsLayer);
-        // 上下は接続せず反射する。薄い帯にシェブロンを敷く（012 §3.7）。枠は盤面より狭いとき中央、広いとき横スクロール
+        // 上下は接続せず反射する。端の印は細い線 1 本（014 §1.1）。枠は盤面より狭いとき中央、広いとき横スクロール
         this.frame = el('div', { class: 'pe-board-frame' }, [
-            el('div', { class: 'pe-reflect pe-reflect-top', 'aria-hidden': 'true', title: _('Satellites bounce back here') }),
+            el('div', { class: 'pe-reflect pe-reflect-top', 'aria-hidden': 'true' }),
             this.board,
-            el('div', { class: 'pe-reflect pe-reflect-bottom', 'aria-hidden': 'true', title: _('Satellites bounce back here') }),
+            el('div', { class: 'pe-reflect pe-reflect-bottom', 'aria-hidden': 'true' }),
         ]);
         this.viewport.append(this.frame);
         host.append(this.viewport);

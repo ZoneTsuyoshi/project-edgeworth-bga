@@ -15,6 +15,7 @@ import { el } from '../ui/dom.js';
  * @property {() => boolean} animationsActive リプレイの高速再生などでは false
  * @property {() => number | null} currentPlayerId 観戦者は null
  * @property {() => boolean} selectionMode 選択モード中か（タップは選択、長押しが拡大。012 §4.6）
+ * @property {(label: string, callback: () => void, opts?: { color?: 'primary' | 'secondary' | 'alert', destination?: HTMLElement, disabled?: boolean, classes?: string | string[] }) => unknown} addButton BGA 標準のボタンを置く（BGA では `bga.statusBar.addActionButton`。`destination` で盤面の外のバーでなく指定の要素の中へ。014 §1.2）
  */
 
 /**

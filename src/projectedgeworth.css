@@ -1,140 +1,122 @@
 /*
- * PROJECT EDGEWORTH のスタイル（仕様書 012）。素の CSS 1 ファイル（SCSS や CSS の読み込み命令は使わない。004 §4）。
+ * PROJECT EDGEWORTH のスタイル（仕様書 012、014）。素の CSS 1 ファイル（SCSS や CSS の読み込み命令は使わない。004 §4）。
+ * 方針（014 §1）: 公式バナーのように、暗い卓の上に盤面・コマ・カードを直接置く。白い面・角丸の箱・影・点滅は使わない。
+ * ゾーンは上端の細い線と、左端の小さなラベル（`.pe-rail-label`）で示す。形は角丸 0〜3 px、影はカード・コマの接地の影だけ。
  * 寸法の基準は JS（ui/Layout.js）が ResizeObserver で測って `#pe-root` に入れる px の CSS 変数
- *   --pe-root-w（ゲーム領域の幅）、--pe-hex-w（盤面の区域の幅）、--pe-<kind>-w / -h（カードの大きさ）
+ *   --pe-root-w（ゲーム領域の幅）、--pe-hex-w（盤面の区域の幅）、--pe-<kind>-w / -h（カードの大きさ。<kind> は小文字）、--pe-supply-w / -h（場のカード）
  * と、`data-layout`（wide / medium / narrow）。`cqw`・`vw`・`@media` の幅には依存しない（012 §2.2、§10 教訓 1）。
  * 背景画像の size / position は JS が % で入れる（Safari の小数ピクセルのずれ防止。教訓 10）。
- * ダークモードは `html[data-theme="dark"]`（BGA の切り替え。`prefers-color-scheme` は使わない。012 §11）。
- * 構成: 1 トークン / 2 土台 / 3 ボタン・バッジ / 4 フェイズ帯・場 / 5 盤面 / 6 コマ / 7 ハイライト / 8 カード / 9 衛星 / 10 領域・手札 / 11 パネル / 12 拡大表示・ボトムシート / 13 操作 UI（選択パネル・衛星の選択・効果の問い・名声の内訳）
+ * 卓の色はライト・ダークで変えない（014 §1.1）。BGA 側のパネル・バーだけがテーマに従う。
+ * 構成: 0 卓の背景 / 1 トークン / 2 土台 / 3 ボタン・バッジ / 4 ラウンドトラック・場 / 5 盤面 / 6 コマ / 7 ハイライト / 8 カード / 9 衛星 / 10 領域・手札 / 11 パネル / 12 拡大表示・トレイ / 13 操作 UI（選択パネル・衛星の選択・効果の問い・名声の内訳）/ 14 予定
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 
-/* ---- 0 テーマの背景（012 追補 U-3）。BGA の既定の背景は html にあり、body の背景がそれを覆う。fixed は使わない（iOS） ---- */
+/* ---- 0 卓の背景（014 §1.1）。BGA の既定の背景は html にあり、body の背景がそれを覆う。fixed は使わない（iOS） ---- */
 
 body {
     background:
         url("img/pe_background.webp") repeat top center / 900px auto,
-        linear-gradient(180deg, #dbe7f0 0%, #c9dae8 55%, #bfd2e3 100%);
-    background-color: #c9dae8;
+        linear-gradient(180deg, #0e172b 0%, #0a1122 55%, #070c18 100%);
+    background-color: #0a1122;
 }
 
-html[data-theme="dark"] body {
-    background:
-        url("img/pe_background.webp") repeat top center / 900px auto,
-        linear-gradient(180deg, #0f1b33 0%, #0b1428 55%, #08101f 100%);
-    background-color: #0b1428;
-}
-
-/* ---- 1 トークン ---- */
+/* ---- 1 トークン（卓の上の色。テーマで変えない。014 §1.2） ---- */
 
 .pe-root {
-    --pe-bg: #f3f0e8;
-    --pe-surface: #fff;
-    --pe-surface-2: #e9e5da;
-    --pe-text: #1d2430;
-    --pe-text-dim: #5b6575;
-    --pe-line: #c9c3b4;
-    --pe-accent: #c4410c;
-    --pe-ok: #1f7a3d;
-    --pe-warn: #b42318;
-    --pe-board-bg: #0d1830;
-    --pe-border-line: #fff;
+    --pe-ink: #e9eef7;
+    --pe-ink-dim: #9aa9c1;
+    --pe-line: rgb(126 200 232 / 32%);
+    --pe-line-strong: #6fd0ea;
+    --pe-mat: rgb(14 24 44 / 82%);
+    --pe-can: #fff;
+    --pe-can-glow: rgb(92 200 255 / 75%);
+    --pe-pick: #ffd23f;
+    --pe-warn: #ff8f80;
+    --pe-ok: #6fdc9a;
     --pe-hex-h: calc(var(--pe-hex-w, 52px) * 503 / 435);
     --pe-hand-w: 120px;
     --pe-hand-h: 168px;
     --pe-satellite-w: 240px;
     --pe-satellite-other-w: 120px;
-    --pe-field-card-w: 60px;
+    --pe-supply-w: 72px;
     --pe-action-w: 84px;
     --pe-actionother-w: 48px;
     --pe-mission-w: 84px;
-    --pe-reward-w: 108px;
     --pe-c-b: #0b528d;
     --pe-c-b-dark: #073a65;
+    --pe-c-b-ink: #6db3f2;
     --pe-c-g: #007633;
     --pe-c-g-dark: #004f21;
+    --pe-c-g-ink: #5fd68a;
     --pe-c-r: #ad0003;
     --pe-c-r-dark: #750002;
+    --pe-c-r-ink: #ff7a70;
     --pe-c-y: #b9881c;
     --pe-c-y-dark: #82600f;
+    --pe-c-y-ink: #f2c75c;
 
+    /* 領域の並び（014 §2.1）。#pe-round / #pe-board-wrap / #pe-supply / #pe-tray / #pe-score / #pe-me / #pe-others。medium が既定 */
     box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-        "band"
-        "field"
-        "panel"
-        "score"
+        "round"
         "board"
+        "supply"
+        "tray"
+        "score"
         "me"
         "others";
-    gap: 10px;
+    gap: 20px;
     width: 100%;
     max-width: 1400px;
     margin-inline: auto;
-    padding: 8px 12px;
-    color: var(--pe-text);
+    padding: 8px 12px 24px;
+    color: var(--pe-ink);
 }
 
-/* wide: フェイズ帯と場を同じ行に置く。narrow は場を自分の領域の下へ（012 追補 U-2・U-6） */
+/* wide: 盤面の右に場の縦 1 列。盤面と場を合わせて中央寄せ */
 .pe-root[data-layout="wide"] {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto minmax(0, 1fr);
     grid-template-areas:
-        "band field"
-        "panel panel"
-        "score score"
-        "board board"
-        "me me"
-        "others others";
+        "round round round round"
+        ". board supply ."
+        "tray tray tray tray"
+        "score score score score"
+        "me me me me"
+        "others others others others";
+    column-gap: 0;
 }
 
+
+/* narrow: 場は自分の領域の下。余白は 8 px（Layout の rootMetrics と同じ値） */
 .pe-root[data-layout="narrow"] {
     grid-template-areas:
-        "band"
-        "panel"
-        "score"
+        "round"
         "board"
+        "tray"
+        "score"
         "me"
-        "field"
+        "supply"
         "others";
-    gap: 6px;
+    gap: 16px;
+    padding-inline: 8px;
 }
 
-#pe-phase-band {
-    grid-area: band;
-}
-
-#pe-field {
-    grid-area: field;
-}
-
-#pe-choice-panel {
-    grid-area: panel;
-}
-
-#pe-score {
-    grid-area: score;
+#pe-round {
+    grid-area: round;
 }
 
 #pe-board-wrap {
     grid-area: board;
 }
 
-#pe-me {
-    grid-area: me;
+#pe-score {
+    grid-area: score;
 }
 
-html[data-theme="dark"] .pe-root {
-    --pe-bg: #1c2029;
-    --pe-surface: #262b36;
-    --pe-surface-2: #313847;
-    --pe-text: #e7eaf0;
-    --pe-text-dim: #a2abbb;
-    --pe-line: #46506a;
-    --pe-accent: #ff8a4c;
-    --pe-ok: #52c97c;
-    --pe-warn: #ff7b6e;
+#pe-me {
+    grid-area: me;
 }
 
 .pe-root > * {
@@ -152,25 +134,44 @@ html[data-theme="dark"] .pe-root {
     font: inherit;
 }
 
-/* 色の対応（原本のコマの色。パネルの丸もこの色で描く。012 未確定事項 No.2） */
+/* hidden 属性は、display を指定した規則（flex・grid）に負けないようにする */
+.pe-root [hidden] {
+    display: none !important;
+}
+
+/* ゾーンのラベル（レール）: 12 px・大文字・字間・補助色（014 §1.2） */
+.pe-rail-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pe-ink-dim);
+}
+
+/* 色の対応（原本のコマの色 --pe-pc と、暗い卓の上の文字用の明るい版 --pe-pi。012 未確定事項 No.2、014 §1.2） */
 [data-color="b"] {
     --pe-pc: var(--pe-c-b);
     --pe-pc-dark: var(--pe-c-b-dark);
+    --pe-pi: var(--pe-c-b-ink);
 }
 
 [data-color="g"] {
     --pe-pc: var(--pe-c-g);
     --pe-pc-dark: var(--pe-c-g-dark);
+    --pe-pi: var(--pe-c-g-ink);
 }
 
 [data-color="r"] {
     --pe-pc: var(--pe-c-r);
     --pe-pc-dark: var(--pe-c-r-dark);
+    --pe-pi: var(--pe-c-r-ink);
 }
 
 [data-color="y"] {
     --pe-pc: var(--pe-c-y);
     --pe-pc-dark: var(--pe-c-y-dark);
+    --pe-pi: var(--pe-c-y-ink);
 }
 
 /* ---- 2 土台 ---- */
@@ -181,18 +182,18 @@ html[data-theme="dark"] .pe-root {
     justify-content: center;
     width: 18px;
     height: 18px;
-    border-radius: 50%;
+    border-radius: 2px;
     background: var(--pe-ok);
     font-size: 12px;
     line-height: 1;
-    color: #fff;
+    color: #0a1122;
 }
 
 .pe-waiting {
     display: inline-block;
     width: 14px;
     height: 14px;
-    border: 2px solid var(--pe-text-dim);
+    border: 2px solid var(--pe-ink-dim);
     border-top-color: transparent;
     border-radius: 50%;
     animation: pe-spin 1s linear infinite;
@@ -202,12 +203,13 @@ html[data-theme="dark"] .pe-root {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 18px;
-    height: 18px;
+    min-width: 20px;
+    height: 20px;
     padding: 0 4px;
-    border-radius: 9px;
-    background: var(--pe-accent);
-    font-size: 11px;
+    border-radius: 2px;
+    background: #333;
+    outline: 1px solid rgb(255 255 255 / 40%);
+    font-size: 12px;
     font-weight: bold;
     color: #fff;
 }
@@ -218,19 +220,9 @@ html[data-theme="dark"] .pe-root {
     }
 }
 
-@keyframes pe-pulse {
-    50% {
-        opacity: 0.45;
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .pe-waiting {
         animation: none;
-    }
-
-    .pe-hl-selectable {
-        animation: none !important;
     }
 
     .pe-pbox,
@@ -244,16 +236,16 @@ html[data-theme="dark"] .pe-root {
 .pe-btn {
     min-height: 32px;
     padding: 4px 12px;
-    border: 1px solid var(--pe-line);
-    border-radius: 6px;
-    background: var(--pe-surface);
-    color: var(--pe-text);
+    border: 1px solid var(--pe-line-strong);
+    border-radius: 2px;
+    background: var(--pe-mat);
+    color: var(--pe-ink);
     cursor: pointer;
 }
 
 .pe-btn[aria-pressed="true"] {
-    border-color: var(--pe-text);
-    box-shadow: inset 0 0 0 1px var(--pe-text);
+    border-color: var(--pe-pick);
+    box-shadow: inset 0 0 0 1px var(--pe-pick);
     font-weight: bold;
 }
 
@@ -288,7 +280,7 @@ html[data-theme="dark"] .pe-root {
 .pe-btn-small {
     min-width: 32px;
     padding: 2px 8px;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .pe-badge {
@@ -298,93 +290,130 @@ html[data-theme="dark"] .pe-root {
     min-width: 20px;
     height: 20px;
     padding: 0 5px;
-    border-radius: 10px;
-    background: var(--pe-text);
+    border-radius: 2px;
+    background: var(--pe-ink);
     font-size: 12px;
     font-weight: bold;
     line-height: 20px;
     text-align: center;
-    color: var(--pe-surface);
+    color: #0a1122;
 }
 
-/* ---- 4 フェイズ帯・場の情報 ---- */
+/* ---- 4 ラウンドトラック・場（014 §3、§4.3） ---- */
 
-.pe-phase-band {
+/* ラウンドトラック: 箱・背景・枠なしで卓の上に直接、中央寄せ。押せない（タブに見せない） */
+.pe-round {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 14px;
-    align-items: center;
-    padding: 6px 10px;
-    border: 1px solid var(--pe-line);
-    border-radius: 8px;
-    background: var(--pe-surface);
+    gap: 4px 24px;
+    align-items: baseline;
     justify-content: center;
+    min-height: 32px;
+    font-size: 14px;
+    color: var(--pe-ink);
 }
 
-.pe-phase-label {
+.pe-round-label {
+    font-size: 12px;
     font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pe-ink-dim);
 }
 
-.pe-phases {
+.pe-round-steps {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.pe-phase {
-    display: flex;
+.pe-round-step {
+    display: inline-flex;
     gap: 6px;
-    align-items: baseline;
-    padding: 2px 10px;
-    border: 1px solid var(--pe-line);
-    border-radius: 6px;
-    background: var(--pe-surface-2);
+    align-items: center;
+    padding: 2px 0 4px;
+    border-bottom: 2px solid transparent;
+    color: var(--pe-ink);
+    cursor: default;
 }
 
-.pe-phase-numeral {
+.pe-round-step + .pe-round-step::before {
+    content: "\203A";
+    margin: 0 12px;
+    color: var(--pe-ink-dim);
+}
+
+.pe-round-numeral {
     font-weight: bold;
 }
 
-.pe-phase-chosen {
-    border-color: var(--pe-accent);
-    background: var(--pe-surface);
-    box-shadow: inset 0 -3px 0 var(--pe-accent);
+.pe-round-current {
+    border-bottom-color: var(--pe-pick);
+    font-weight: bold;
+    color: #fff;
 }
 
-.pe-phase-dim {
+.pe-round-done {
+    color: var(--pe-ink-dim);
+}
+
+.pe-round-skipped {
+    text-decoration: line-through;
     opacity: 0.4;
 }
 
-.pe-phase-current {
-    outline: 2px solid var(--pe-accent);
-    outline-offset: 1px;
+/* そのアクションを選んだプレイヤー（アクション選択ボーナスの保持者）の色の四角 */
+.pe-round-mark {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--pe-pi);
 }
 
-.pe-end-note {
-    margin-left: auto;
-    font-weight: bold;
-    color: var(--pe-warn);
+/* 名前は wide では全部、medium・narrow では現在の段だけ（アクションの段。計画・循環は名前だけの段なので常に出す） */
+.pe-root:not([data-layout="wide"]) .pe-round-step:not(.pe-round-current) .pe-round-numeral + .pe-round-name {
+    display: none;
 }
 
-/* 場: 白い枠をやめ、小さなカードを背景の上に置く（012 追補 U-4）。見出しの文字は無く、各グループに aria-label と title */
-.pe-field {
+/* 場（#pe-supply）: 枠・見出しの箱なし。各スロットの上に 12 px のラベル。wide は縦 1 列、medium・narrow は横 1 行（中央寄せ） */
+#pe-supply {
+    grid-area: supply;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
+    flex-direction: column;
+    gap: 10px;
+    align-self: start;
+}
+
+.pe-root:not([data-layout="wide"]) #pe-supply {
+    flex-direction: row;
+    gap: 32px;
     align-items: flex-end;
     justify-content: center;
-    padding: 2px 6px;
+    align-self: auto;
 }
 
-.pe-field-group {
-    flex: 0 0 auto;
+/* 盤面との間隔 12 px は場の左の余白で取る（列の間隔にすると、両端の 1fr の列の間にも入って幅が足りなくなる。layout-math の SUPPLY_GAP） */
+.pe-root[data-layout="wide"] #pe-supply {
+    margin-left: 12px;
+}
+
+.pe-supply-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
 }
 
 .pe-rewards {
     display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pe-root:not([data-layout="wide"]) .pe-rewards {
+    flex-direction: row;
     gap: 8px;
 }
 
@@ -393,7 +422,7 @@ html[data-theme="dark"] .pe-root {
     position: relative;
     display: block;
     flex: 0 0 auto;
-    width: var(--pe-field-card-w);
+    width: var(--pe-supply-w);
     padding: 0;
     border: 0;
     background: transparent;
@@ -408,98 +437,48 @@ html[data-theme="dark"] .pe-root {
     width: 100%;
     aspect-ratio: 715 / 999;
     padding-top: 40%;
-    border: 2px dashed var(--pe-line);
-    border-radius: 6px;
-    background: var(--pe-surface);
-    font-size: 11px;
+    border: 1px dashed var(--pe-line-strong);
+    border-radius: 2px;
+    font-size: 12px;
     text-align: center;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-deck-card,
 .pe-discard-card,
 .pe-reward-card {
-    width: var(--pe-field-card-w);
+    width: var(--pe-supply-w);
 }
 
-/* 捨て札の一覧（モーダル。document.body 直下） */
-
-.pe-modal {
-    position: fixed;
-    z-index: 9000;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 55%);
-}
-
-.pe-modal-body {
-    width: min(92vw, 760px);
-    max-height: 80vh;
-    overflow: auto;
-    padding: 12px;
-    border-radius: 10px;
-    background: #fff;
-    color: #1d2430;
-}
-
-html[data-theme="dark"] .pe-modal-body {
-    background: #262b36;
-    color: #e7eaf0;
-}
-
-.pe-modal-head {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.pe-modal-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* ---- 5 盤面 ---- */
+/* ---- 5 盤面（014 §1.1）。区域を卓の上に直接置く（板の地・角丸・影は無い） ---- */
 
 .pe-board-wrap {
     position: relative;
     justify-self: center;
     width: fit-content;
     max-width: 100%;
-    overflow: clip;
-    border-radius: 8px;
-    background: var(--pe-board-bg);
 }
 
-/* narrow だけ出す拡縮ボタン。盤面の枠の右上に重ねる（012 追補 U-6） */
+/* narrow だけ出す拡縮の行。盤面の上の通常の流れの中（盤面に重ねない。014 §2.5）。各 36 × 36 px */
 .pe-board-tools {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    z-index: 4;
     display: flex;
     gap: 4px;
-}
-
-.pe-board-tools[hidden] {
-    display: none;
+    justify-content: flex-end;
+    height: 36px;
+    margin-bottom: 6px;
 }
 
 .pe-board-tool {
-    width: 32px;
-    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     padding: 0;
-    border: 1px solid #fff6;
-    border-radius: 6px;
-    background: #0d1830cc;
-    font-size: 18px;
-    line-height: 1;
-    color: #fff;
+    border: 1px solid var(--pe-line-strong);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--pe-ink);
     cursor: pointer;
 }
 
@@ -508,11 +487,14 @@ html[data-theme="dark"] .pe-modal-body {
     cursor: default;
 }
 
+/* 入れ子のスクロールは narrow の盤面だけ（014 §2.2）。wide・medium は盤面が幅に収まる */
 .pe-board-viewport {
     position: relative;
-    overflow: auto hidden;
-    background: var(--pe-board-bg);
     touch-action: pan-x pan-y;
+}
+
+.pe-root[data-layout="narrow"] .pe-board-viewport {
+    overflow: auto hidden;
 }
 
 .pe-board-frame {
@@ -530,25 +512,21 @@ html[data-theme="dark"] .pe-modal-body {
     width: calc((var(--pe-cols, 12) + 0.5) * var(--pe-hex-w, 52px));
     height: calc((0.75 * (var(--pe-rows, 6) - 1) + 1) * var(--pe-hex-h));
     overflow: hidden;
-    background: var(--pe-board-bg);
 }
 
-/* 上下は接続せず反射する。薄い帯のシェブロン（012 §3.7） */
+/* 概観の段（narrow）は見るだけ。区域・コマ・矢印は押せず、盤面のタップは標準の段へ切り替える（014 §2.5。GameView.onOverviewTap） */
+.pe-root[data-narrow-step="overview"][data-layout="narrow"] .pe-board,
+.pe-root[data-narrow-step="overview"][data-layout="narrow"] .pe-board * {
+    pointer-events: none !important;
+}
+
+/* 上下は接続せず反射する。端の印は細い線 1 本（012 §3.7、014 §1.1） */
 .pe-reflect {
     flex: 0 0 auto;
     width: calc((var(--pe-cols, 12) + 0.5) * var(--pe-hex-w, 52px));
-    height: 6px;
-    background-color: #1b2c4d;
-    background-repeat: repeat-x;
-    background-size: 12px 6px;
-}
-
-.pe-reflect-top {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M2 5l4-4 4 4' fill='none' stroke='%238fa6d6' stroke-width='1.2'/%3E%3C/svg%3E");
-}
-
-.pe-reflect-bottom {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M2 1l4 4 4-4' fill='none' stroke='%238fa6d6' stroke-width='1.2'/%3E%3C/svg%3E");
+    height: 1px;
+    margin: 6px 0;
+    background: var(--pe-line);
 }
 
 .pe-tiles {
@@ -591,7 +569,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-border-line {
-    stroke: var(--pe-border-line);
+    stroke: #fff;
     stroke-width: 0.03;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -647,7 +625,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-score-table thead th.pe-score-selected {
-    box-shadow: inset 0 -3px 0 #ffd23f;
+    box-shadow: inset 0 -3px 0 var(--pe-pick);
 }
 
 /* ---- 6 コマ ---- */
@@ -693,9 +671,9 @@ html[data-theme="dark"] .pe-modal-body {
 .pe-stack-badge {
     position: absolute;
     padding: 0 3px;
-    border-radius: 6px;
+    border-radius: 2px;
     background: #fff;
-    font-size: max(9px, calc(var(--pe-hex-w, 52px) * 0.11));
+    font-size: max(12px, calc(var(--pe-hex-w, 52px) * 0.11));
     font-weight: bold;
     line-height: 1.3;
     color: #111;
@@ -718,7 +696,7 @@ html[data-theme="dark"] .pe-modal-body {
 
 /* 効果の問いの対象の衛星コマ（金色の光。コマは回るので outline ではなく影で囲む） */
 .pe-sat-piece.pe-sat-piece-subject {
-    filter: drop-shadow(0 0 3px #ffc933) drop-shadow(0 0 3px #ffc933) drop-shadow(0 0 6px #ffc933);
+    filter: drop-shadow(0 0 3px var(--pe-pick)) drop-shadow(0 0 3px var(--pe-pick)) drop-shadow(0 0 6px var(--pe-pick));
 }
 
 .pe-pbox-sat.pe-bounce {
@@ -777,10 +755,6 @@ html[data-theme="dark"] .pe-modal-body {
     stroke-linejoin: round;
 }
 
-.pe-hl-selectable {
-    animation: pe-pulse 0.8s ease-in-out infinite;
-}
-
 .pe-hl-selectable .pe-hl-outer,
 .pe-hl-sellable .pe-hl-outer {
     stroke: #fff;
@@ -803,7 +777,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-hl-selected .pe-hl-inner {
-    stroke: #ffc933;
+    stroke: var(--pe-pick);
     stroke-width: 0.07;
 }
 
@@ -819,7 +793,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-hl-badge circle {
-    fill: #ffc933;
+    fill: var(--pe-pick);
     stroke: #0a1224;
     stroke-width: 0.02;
 }
@@ -829,7 +803,7 @@ html[data-theme="dark"] .pe-modal-body {
     font-weight: bold;
 }
 
-/* 方向の矢印ボタン（区域の幅 90 px 以上のときだけ盤面に出す。それ未満はボトムシートの方向パッド） */
+/* 方向の矢印ボタン（区域の幅 90 px 以上のときだけ盤面に出す。それ未満はトレイの方向パッド）。盤面の操作具として丸のまま（014 §1.2） */
 .pe-arrow {
     position: absolute;
     top: calc(var(--ay) * var(--pe-hex-w, 52px) - 18px);
@@ -853,7 +827,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-arrow.pe-selected {
-    background: #ffc933;
+    background: var(--pe-pick);
 }
 
 .pe-arrow:disabled {
@@ -867,9 +841,9 @@ html[data-theme="dark"] .pe-modal-body {
     position: relative;
     flex: 0 0 auto;
     background: #1c2230;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.2;
-    color: #aab;
+    color: var(--pe-ink-dim);
 }
 
 .pe-card::before {
@@ -904,12 +878,12 @@ html[data-theme="dark"] .pe-modal-body {
     position: absolute;
     inset: 0;
     border-radius: 4.2% / 3%;
-    box-shadow: inset 0 0 0 2px var(--pe-accent);
+    box-shadow: inset 0 0 0 2px var(--pe-can), 0 0 10px 2px var(--pe-can-glow);
     pointer-events: none;
 }
 
 .pe-selected::after {
-    box-shadow: inset 0 0 0 4px #ffc933, 0 0 8px 2px #ffc933;
+    box-shadow: inset 0 0 0 4px var(--pe-pick), 0 0 8px 2px var(--pe-pick);
 }
 
 .pe-unselectable {
@@ -931,8 +905,8 @@ html[data-theme="dark"] .pe-modal-body {
 
 .pe-hand-empty {
     padding: 2px 0;
-    font-size: 12px;
-    color: var(--pe-text-dim);
+    font-size: 13px;
+    color: var(--pe-ink-dim);
 }
 
 .pe-hand-card {
@@ -944,7 +918,7 @@ html[data-theme="dark"] .pe-modal-body {
     margin-left: 0;
 }
 
-/* PC（wide・medium。BGA の盤面領域は画面より狭く、PC でも medium になる）: 手札は重ねず横に並べ、幅が足りなければ折り返す（narrow は重ねたまま） */
+/* PC（wide・medium）: 手札は重ねず横に並べ、幅が足りなければ折り返す（narrow は重ねたまま。PR 2 で全レイアウトを折り返しに） */
 .pe-root:not([data-layout="narrow"]) .pe-hand {
     flex-wrap: wrap;
     gap: 6px;
@@ -999,7 +973,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-action-state-1 {
-    box-shadow: 0 0 0 2px var(--pe-accent);
+    box-shadow: 0 0 0 2px var(--pe-pick);
 }
 
 .pe-action-plot .pe-check {
@@ -1040,8 +1014,8 @@ html[data-theme="dark"] .pe-modal-body {
     z-index: 1;
     min-width: 16px;
     padding: 0 4px;
-    border-radius: 8px;
-    font-size: 11px;
+    border-radius: 2px;
+    font-size: 12px;
     font-weight: bold;
     line-height: 16px;
     text-align: center;
@@ -1050,7 +1024,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-mission-slot-0 > .pe-mission-slotno {
-    background: #ffd23f;
+    background: var(--pe-pick);
 }
 
 .pe-mission-slot-1 > .pe-mission-slotno {
@@ -1089,6 +1063,17 @@ html[data-theme="dark"] .pe-modal-body {
     pointer-events: none;
     filter: drop-shadow(0 0 1px rgb(0 0 0 / 60%));
 }
+
+/* 輪郭に沿う影は box-shadow で代用できないので、コマの 3 か所だけ filter: drop-shadow を使う。Safari では重いので無効にする（014 §1.2） */
+
+/* stylelint-disable selector-class-pattern -- .dj_safari は BGA が付けるクラス名 */
+.dj_safari .pe-sat-piece,
+.dj_safari .pe-sat-piece.pe-sat-piece-subject,
+.dj_safari .pe-sat-standby-piece {
+    filter: none;
+}
+
+/* stylelint-enable selector-class-pattern */
 
 .pe-sat-simple {
     display: flex;
@@ -1131,8 +1116,8 @@ html[data-theme="dark"] .pe-modal-body {
     padding: 1px 6px;
     border: 1px solid var(--pe-line);
     border-left: 4px solid var(--pe-chip-type, var(--pe-line));
-    border-radius: 4px;
-    background: var(--pe-surface);
+    border-radius: 2px;
+    background: var(--pe-mat);
     font-size: 12px;
     cursor: pointer;
 }
@@ -1154,18 +1139,18 @@ html[data-theme="dark"] .pe-modal-body {
     align-self: flex-start;
     padding: 0 8px;
     border: 1px dashed var(--pe-line);
-    border-radius: 10px;
-    font-size: 11px;
+    border-radius: 2px;
+    font-size: 12px;
     line-height: 18px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-chip-level {
     flex: 0 0 auto;
     min-width: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 /* 種別アイコン（Crew / Device / Software）。色の縁の補助（012 追補 2026-11-14 A）。幅はスプライトのセルの縦横比 */
@@ -1197,18 +1182,18 @@ html[data-theme="dark"] .pe-modal-body {
 
 .pe-chip-fame {
     padding: 0 4px;
-    border-radius: 8px;
+    border-radius: 2px;
     background: #6a2c8f;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     color: #fff;
 }
 
 .pe-chip-fuel {
     padding: 0 4px;
-    border-radius: 3px;
+    border-radius: 2px;
     background: var(--pe-c-b);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     color: #fff;
 }
@@ -1264,7 +1249,7 @@ html[data-theme="dark"] .pe-modal-body {
 
 .pe-chip-active-only {
     font-size: 12px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 /* 燃料ゲージ: 横一列のスロット（左が初期燃料庫）+ Fuel R / C。燃料切れは枠の外に Out of fuel（012 §4.3） */
@@ -1288,11 +1273,11 @@ html[data-theme="dark"] .pe-modal-body {
     height: 14px;
     border: 1px solid var(--pe-line);
     border-radius: 2px;
-    background: var(--pe-surface-2);
+    background: rgb(255 255 255 / 8%);
 }
 
 .pe-fuel-initial {
-    border-color: var(--pe-text-dim);
+    border-color: var(--pe-ink-dim);
 }
 
 .pe-fuel-out {
@@ -1331,7 +1316,7 @@ html[data-theme="dark"] .pe-modal-body {
 }
 
 .pe-fuel-low {
-    color: #b57b00;
+    color: var(--pe-pick);
 }
 
 .pe-out-of-fuel {
@@ -1350,12 +1335,12 @@ html[data-theme="dark"] .pe-modal-body {
     display: inline-flex;
     gap: 4px;
     align-items: center;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-sat-active .pe-sat-status {
     font-weight: bold;
-    color: var(--pe-text);
+    color: var(--pe-ink);
 }
 
 .pe-dir-arrow {
@@ -1445,18 +1430,27 @@ html[data-theme="dark"] .pe-modal-body {
 
 /* ---- 10 プレイヤーの領域 ---- */
 
-/* プレイヤーのマット: 背景の上の半透明の面（不透明度 90 %）とプレイヤー色の帯（012 追補 U-4）。
-   並び: wide・medium の自分 = 見出し → 衛星 → 手札・アクション・ミッション（1 行、折り返し可、中央）。他プレイヤー = 見出し → 衛星 → アクションとミッション */
+/* プレイヤーの領域（レール。014 §1.2）: 箱で囲まず、上端の 1 px の線と、その左端 48 px のプレイヤー色の太い線。名前はプレイヤー色（暗い卓の上用の明るい版）。
+   並びは PR 2 で作り替える。ここは色と形だけ */
 .pe-player {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     gap: 8px 20px;
     place-content: flex-start center;
-    padding: 8px 10px;
-    border: 1px solid var(--pe-line);
-    border-top: 4px solid var(--pe-pc, var(--pe-line));
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--pe-surface) 90%, transparent);
+    padding: 12px 0 0;
+    border: 0;
+    border-top: 1px solid var(--pe-line);
+}
+
+.pe-player::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 48px;
+    height: 3px;
+    background: var(--pe-pc, var(--pe-line));
 }
 
 .pe-player-other {
@@ -1471,18 +1465,10 @@ html[data-theme="dark"] .pe-modal-body {
     justify-content: space-between;
 }
 
-/* 名前はプレイヤー色。白地・暗い地のどちらでも読めるよう白い縁取り（012 追補 U-5） */
 .pe-player-name {
     font-size: 15px;
     font-weight: bold;
-    color: var(--pe-pc, var(--pe-text));
-    paint-order: stroke fill;
-    -webkit-text-stroke: 2px rgb(0 0 0 / 55%);
-}
-
-/* ダーク: 暗い地では白い細い縁取り（ライトは白地の黄色が読めるよう暗い縁取り。C.3） */
-html[data-theme="dark"] .pe-player-name {
-    -webkit-text-stroke: 2px rgb(255 255 255 / 85%);
+    color: var(--pe-pi, var(--pe-ink));
 }
 
 .pe-player-regions {
@@ -1548,15 +1534,17 @@ html[data-theme="dark"] .pe-player-name {
     display: grid;
     grid-area: others;
     grid-template-columns: repeat(var(--pe-others-cols, 1), minmax(0, 1fr));
-    gap: 10px;
+    gap: 28px 24px;
     align-items: start;
 }
 
 /* ---- 11 プレイヤーパネル（BGA 標準のパネルの下に足す。012 §5、追補 U-5） ---- */
 
+/* BGA のパネルの中（ゲーム領域の外。卓のトークンは使えず、文字の色は BGA のテーマに従う） */
 .pe-panel {
     margin-top: 4px;
-    font-size: 12px;
+    font-size: 13px;
+    color: inherit;
 }
 
 .pe-panel-row {
@@ -1598,7 +1586,7 @@ html[data-theme="dark"] .pe-player-name {
 .pe-region {
     display: inline-flex;
     padding: 1px;
-    border-radius: 3px;
+    border-radius: 2px;
     opacity: 0.3;
 }
 
@@ -1678,7 +1666,7 @@ html[data-theme="dark"] .pe-player-name {
 /* 予算: 原本がないので、マヤのアイコンに四角い枠を重ねて代用する（印刷では予算を四角い枠付きのマヤで表す） */
 .pe-glyph-framed {
     border: 2px solid currentcolor;
-    border-radius: 3px;
+    border-radius: 2px;
     background-clip: padding-box;
 }
 
@@ -1689,7 +1677,7 @@ html[data-theme="dark"] .pe-player-name {
     margin-left: auto;
 }
 
-/* ---- 12 拡大表示・ボトムシート ---- */
+/* ---- 12 拡大表示（PR 3 でツールチップに作り替える）・トレイ ---- */
 
 /* document.body 直下（BGA の zoom / transform の外）。高さの上限は JS が window.innerHeight から出した --pe-zoom-avail（教訓 3・4） */
 .pe-zoom {
@@ -1781,27 +1769,58 @@ html[data-theme="dark"] .pe-zoom {
     margin: 0;
 }
 
-/* ボトムシート: コストの内訳・方向パッド。盤面コンテナの下に貼り付く（012 §2.5） */
-.pe-sheet {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
+/* トレイ（#pe-tray。盤面の下。箱なし。レールとラベル、その下に中身。014 §5）。PR 1 では選択パネル・ボトムシート・捨て札の一覧を同じ場所に置く */
+#pe-tray {
+    grid-area: tray;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--pe-line);
+}
+
+#pe-tray-panel,
+#pe-tray-sheet,
+.pe-tray-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ラベルの行: 左に 12 px のラベル、右端に BGA 標準の [Close] */
+.pe-tray-head {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pe-tray-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 16px;
-    align-items: center;
-    padding: 8px 12px;
-    border-top: 2px solid var(--pe-accent);
-    background: var(--pe-surface);
+    gap: 12px 10px;
 }
 
-.pe-sheet[hidden] {
-    display: none;
+.pe-tray-empty {
+    margin: 0;
+    font-size: 13px;
+    color: var(--pe-ink-dim);
 }
 
-.pe-sheet-title {
-    width: 100%;
-    font-weight: bold;
+/* コストの内訳・方向パッド（ボトムシートの中身）。貼り付かない（014 §5） */
+.pe-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+}
+
+.pe-sheet-line {
+    padding: 2px 8px;
+    border-left: 2px solid var(--pe-line-strong);
+    background: var(--pe-mat);
+    font-size: 14px;
+    color: var(--pe-ink);
 }
 
 .pe-dpad {
@@ -1812,17 +1831,18 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 .pe-dpad-btn {
-    border: 2px solid var(--pe-text);
-    border-radius: 8px;
-    background: var(--pe-surface-2);
+    border: 1px solid var(--pe-line-strong);
+    border-radius: 2px;
+    background: var(--pe-mat);
     font-size: 24px;
-    color: var(--pe-text);
+    color: var(--pe-ink);
     cursor: pointer;
 }
 
 .pe-dpad-btn.pe-selected {
-    background: #ffc933;
-    color: #0a1224;
+    border-color: var(--pe-pick);
+    background: var(--pe-pick);
+    color: #0a1122;
 }
 
 .pe-dpad-btn:disabled {
@@ -1832,65 +1852,38 @@ html[data-theme="dark"] .pe-zoom {
 /* ホバー専用のスタイルは .notouch-device を前置する（必須の情報はホバーだけに置かない。012 §10 教訓 9） */
 .notouch-device .pe-chip:hover,
 .notouch-device .pe-strip:hover {
-    outline: 2px solid var(--pe-accent);
+    outline: 2px solid var(--pe-can);
 }
 
 .notouch-device .pe-selectable:hover {
     transform: translateY(-4px);
 }
 
-/* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 700 px 未満） ---- */
-
-.pe-root[data-layout="narrow"] .pe-phase-name {
-    display: none;
-}
-
-.pe-root[data-layout="narrow"] .pe-phase {
-    padding: 2px 8px;
-}
+/* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 640 px 未満） ---- */
 
 .pe-root[data-layout="narrow"] .pe-btn,
 .pe-root[data-layout="narrow"] .pe-btn-small {
     min-height: 32px;
 }
 
-.pe-root[data-layout="narrow"] .pe-field {
-    --pe-field-card-w: 48px;
-
-    gap: 6px 14px;
-}
-
 /* ---- 13 操作 UI（仕様書 008、012 §6）。選択パネル・衛星の選択・効果の問い・名声の内訳 ---- */
 
-/* 選択パネル: 盤面の上に出す。見落とさないよう枠と見出しを強調する */
+/* 選択パネル: 盤面の下のトレイに出す。箱なし（レールとラベル）。PR 4 でトレイに統合する */
 .pe-choice {
-    margin: 4px 0;
-    padding: 8px 12px 12px;
-    border: 3px solid var(--pe-accent);
-    border-radius: 8px;
-    background: var(--pe-surface);
-    box-shadow: 0 0 0 3px rgb(196 65 12 / 22%);
-}
-
-.pe-choice[hidden] {
-    display: none;
-}
-
-.pe-choice-title {
-    font-weight: bold;
-    color: var(--pe-accent);
+    margin: 0;
+    padding: 0;
 }
 
 .pe-choice-hint,
 .pe-choice-label {
     margin: 2px 0 4px;
     font-size: 13px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-choice-label {
     font-weight: bold;
-    color: var(--pe-text);
+    color: var(--pe-ink);
 }
 
 .pe-choice-section {
@@ -1936,23 +1929,23 @@ html[data-theme="dark"] .pe-zoom {
 .pe-picker-name {
     max-width: 100%;
     overflow: hidden;
-    font-size: 11px;
+    font-size: 12px;
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-picker-empty {
     font-size: 13px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-sellprompt {
     margin-top: 10px;
     padding: 6px 8px;
     border: 2px dashed var(--pe-warn);
-    border-radius: 6px;
+    border-radius: 2px;
 }
 
 .pe-sellprompt-ok {
@@ -1976,7 +1969,7 @@ html[data-theme="dark"] .pe-zoom {
 .pe-mods-title {
     font-size: 12px;
     font-weight: bold;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-mod,
@@ -1999,17 +1992,17 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 .pe-sat-selectable {
-    outline: 3px solid var(--pe-accent);
+    outline: 3px solid var(--pe-can);
     outline-offset: 2px;
 }
 
 .pe-sat-sellable {
-    outline: 3px dashed var(--pe-accent);
+    outline: 3px dashed var(--pe-can);
     outline-offset: 2px;
 }
 
 .pe-sat-selected {
-    outline: 5px solid #ffc933;
+    outline: 5px solid var(--pe-pick);
     outline-offset: 2px;
 }
 
@@ -2019,11 +2012,11 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-sat-note {
     padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--pe-surface-2);
+    border-radius: 2px;
+    background: var(--pe-mat);
     font-size: 12px;
     font-weight: bold;
-    color: var(--pe-text);
+    color: var(--pe-ink);
 }
 
 .pe-sat-note-blocked {
@@ -2031,46 +2024,46 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 .pe-sat-note-selected {
-    background: #ffc933;
-    color: #0a1224;
+    background: var(--pe-pick);
+    color: #0a1122;
 }
 
 /* 衛星カードの見出し（形状とプラン） */
 .pe-sat-name {
     font-size: 12px;
     font-weight: bold;
-    color: var(--pe-text);
+    color: var(--pe-ink);
 }
 
 /* 効果の問いの対象の衛星（盤面のコマと同じ金色。選択の枠とは太さと札で区別する） */
 .pe-sat-subject {
-    outline: 4px double #ffc933;
+    outline: 4px double var(--pe-pick);
     outline-offset: 2px;
 }
 
 .pe-sat-subject-tag {
     padding: 2px 6px;
-    border-radius: 4px;
-    background: #ffc933;
+    border-radius: 2px;
+    background: var(--pe-pick);
     font-size: 12px;
     font-weight: bold;
-    color: #0a1224;
+    color: #0a1122;
 }
 
 /* 付け替えの配備カード（押して選ぶ） */
 .pe-card-pickable {
     cursor: pointer;
-    outline: 2px solid var(--pe-accent);
+    outline: 2px solid var(--pe-can);
     outline-offset: 1px;
 }
 
 .pe-card-picked {
-    outline: 4px solid #ffc933;
+    outline: 4px solid var(--pe-pick);
     outline-offset: 1px;
 }
 
 .notouch-device .pe-sat-pickable:hover {
-    outline-color: #ffc933;
+    outline-color: var(--pe-pick);
 }
 
 /* 効果の問い */
@@ -2087,7 +2080,7 @@ html[data-theme="dark"] .pe-zoom {
 .pe-effect-text {
     margin: 2px 0 0;
     font-size: 13px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-effect-cost,
@@ -2107,7 +2100,7 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-effect-need {
     font-size: 12px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-field-editor {
@@ -2124,17 +2117,17 @@ html[data-theme="dark"] .pe-zoom {
 .pe-chip-btn {
     min-height: 32px;
     padding: 2px 10px;
-    border: 1px solid var(--pe-line);
-    border-radius: 16px;
-    background: var(--pe-surface);
+    border: 1px solid var(--pe-line-strong);
+    border-radius: 2px;
+    background: var(--pe-mat);
     font-size: 13px;
-    color: var(--pe-text);
+    color: var(--pe-ink);
     cursor: pointer;
 }
 
 .pe-chip-btn.pe-selected {
-    border-color: #ffc933;
-    background: #ffc933;
+    border-color: var(--pe-pick);
+    background: var(--pe-pick);
     font-weight: bold;
     color: #0a1224;
 }
@@ -2153,7 +2146,7 @@ html[data-theme="dark"] .pe-zoom {
 .pe-assign-hint {
     margin: 0;
     font-size: 12px;
-    color: var(--pe-text-dim, var(--pe-text));
+    color: var(--pe-ink-dim);
 }
 
 .pe-assign-row {
@@ -2165,7 +2158,7 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-card-chip {
     padding: 0 6px;
-    border-bottom: 2px dotted var(--pe-accent);
+    border-bottom: 2px dotted var(--pe-pick);
     font-weight: bold;
     cursor: help;
 }
@@ -2191,19 +2184,19 @@ html[data-theme="dark"] .pe-zoom {
     justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
-    background: var(--pe-accent);
+    border-radius: 2px;
+    background: var(--pe-pick);
     font-size: 12px;
     font-weight: bold;
-    color: #fff;
+    color: #0a1122;
 }
 
 .pe-order-forced {
     padding: 0 6px;
     border: 1px solid var(--pe-line);
-    border-radius: 8px;
-    font-size: 11px;
-    color: var(--pe-text-dim);
+    border-radius: 2px;
+    font-size: 12px;
+    color: var(--pe-ink-dim);
 }
 
 .pe-order-moves {
@@ -2212,13 +2205,10 @@ html[data-theme="dark"] .pe-zoom {
     margin-left: auto;
 }
 
-/* 名声の内訳の表 */
+/* 名声の内訳の表（#pe-score。箱なし。上端の線とラベル。中身は変えない。幅の調整は PR 6） */
 .pe-scoresheet {
-    margin: 4px 0;
-    padding: 8px 12px 12px;
-    border: 3px solid var(--pe-ok);
-    border-radius: 8px;
-    background: var(--pe-surface);
+    padding: 8px 0 0;
+    border-top: 1px solid var(--pe-line);
 }
 
 .pe-scoresheet[hidden] {
@@ -2250,10 +2240,10 @@ html[data-theme="dark"] .pe-zoom {
 .pe-score-rank {
     margin-left: 6px;
     padding: 0 6px;
-    border-radius: 8px;
-    background: var(--pe-accent);
-    font-size: 11px;
-    color: #fff;
+    border-radius: 2px;
+    background: var(--pe-pick);
+    font-size: 12px;
+    color: #0a1122;
 }
 
 .pe-score-points {
@@ -2264,8 +2254,8 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-score-part {
     display: block;
-    font-size: 11px;
-    color: var(--pe-text-dim);
+    font-size: 12px;
+    color: var(--pe-ink-dim);
 }
 
 .pe-score-ok {
@@ -2275,7 +2265,7 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-score-table .pe-score-total td,
 .pe-score-table .pe-score-total th {
-    border-top: 2px solid var(--pe-text);
+    border-top: 2px solid var(--pe-ink);
     font-size: 15px;
 }
 
@@ -2297,12 +2287,12 @@ html[data-theme="dark"] .pe-zoom {
     gap: 6px;
     align-items: center;
     padding: 2px 6px;
-    border: 2px dashed #ffc933;
-    border-radius: 4px;
-    background: rgb(255 201 51 / 18%);
+    border: 2px dashed var(--pe-pick);
+    border-radius: 2px;
+    background: rgb(255 210 63 / 18%);
     font-size: 12px;
     font-weight: bold;
-    color: var(--pe-text);
+    color: var(--pe-ink);
 }
 
 .pe-plan-card {
@@ -2311,7 +2301,7 @@ html[data-theme="dark"] .pe-zoom {
 }
 
 .pe-planned {
-    outline: 3px dashed #ffc933;
+    outline: 3px dashed var(--pe-pick);
     outline-offset: 1px;
 }
 
@@ -2321,12 +2311,12 @@ html[data-theme="dark"] .pe-zoom {
     left: 50%;
     z-index: 3;
     padding: 1px 6px;
-    border-radius: 8px;
-    background: #ffc933;
-    font-size: 11px;
+    border-radius: 2px;
+    background: var(--pe-pick);
+    font-size: 12px;
     font-weight: bold;
     white-space: nowrap;
-    color: #0a1224;
+    color: #0a1122;
     transform: translateX(-50%);
     pointer-events: none;
 }
@@ -2335,7 +2325,7 @@ html[data-theme="dark"] .pe-zoom {
 .pe-handfield {
     padding: 4px 6px;
     border: 1px solid var(--pe-line);
-    border-radius: 6px;
+    border-radius: 2px;
 }
 
 .pe-handfield-active {
@@ -2357,7 +2347,7 @@ html[data-theme="dark"] .pe-zoom {
 
 .pe-handfield-note {
     font-size: 12px;
-    color: var(--pe-text-dim);
+    color: var(--pe-ink-dim);
 }
 
 .pe-handfield-list {
@@ -2375,7 +2365,7 @@ html[data-theme="dark"] .pe-zoom {
     align-items: center;
     padding: 2px 4px 2px 8px;
     border: 1px solid var(--pe-line);
-    border-radius: 12px;
+    border-radius: 2px;
     font-size: 13px;
 }
 

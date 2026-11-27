@@ -58,7 +58,7 @@ BGA の Public Alpha の審査（2026-11-27 に作者が受領）で、UI が全
   - 設定 100（席順の印）の実装（§3。宣言だけで実装が無い不具合の修正）
   - 廃止するもの、確認の道具（`tools/preview` と自動検査）、実装の PR の分け方、ユーザー向け文言
 - 対象外:
-  - ルール、サーバー（PHP）の状態遷移・通知・データ。サーバーで変えるのは、`src/gamepreferences.jsonc` の設定 101 の削除と、`getAllDatas` への真偽値 1 項目の追加（終了条件を満たしたか。サーバーが終了判定のために既に持つ値を公開するだけ。§3）だけ
+  - ルール、サーバー（PHP）の状態遷移・通知・データ。サーバーで変えるのは、`src/gamepreferences.jsonc` の設定 101 の削除だけ（最終ラウンドのバナーは出さないので、`getAllDatas` への項目の追加も無い。§3）
   - カードの券面（日本語の印刷）の加工、スプライトの再生成、新しい画像の作成
   - BGA の wiki のルール概要、メタ画像（012 §9）
   - 得点表（`#pe-score`）の中身（内訳の行・列・値）。中身は変えず、見た目と幅だけを新しい体系に合わせる（§2.2）
@@ -294,7 +294,7 @@ ROUND 3    Planning › I Budget › II Deploy › III Launch/Turn › IV Link �
 
 - I〜V の数字の後ろに、そのアクションを選んだプレイヤー（アクション選択ボーナスの保持者。`bonusHolders`）の色の小さな四角（8 px。設定 100 がオンのときは席順の数字入りの 14 px）。ツールチップに名前。
 - 名前（Budget など）は wide では全部、medium・narrow では現在の段だけ。
-- セットアップ中は `SETUP` の文字だけ。「このラウンドで終了」は BGA 標準のバナー `bga.gameArea.addLastTurnBanner()` で出し、独自の文字（`pe-end-note`）は廃止。
+- セットアップ中は `SETUP` の文字だけ。「このラウンドで終了」のバナー（`bga.gameArea.addLastTurnBanner()`）は出さない（下の「最終ラウンドの表示」のとおり、そう知らせられる時点がサーバーに無いため。2026-11-28 に訂正）。独自の文字（`pe-end-note`）は廃止。通知 N31 `gameEndTriggered` と N32 `finalScore` では、ラウンドトラックを `Game end` の表示にするだけ（ログには通知の文 `The game ends after this round` が出る）。
 - 段にホバー / タップで、そのアクションカード（A001〜A005）のツールチップ（§7）。
 - 状態の計算は純粋関数（`ui/round-track.js` など）にし、`tests/js` で検証する。
 
@@ -303,7 +303,7 @@ ROUND 3    Planning › I Budget › II Deploy › III Launch/Turn › IV Link �
 - 現在の段の判定の入力は、`flow_phase`（`FlowPhase`: `SETUP`・`PLANNING`・`BUDGET`・`DEPLOY`・`LAUNCH_TURN`・`LINK`・`PROPOSAL`・`ORBIT`・`END`）と `round`（`GameView.refreshBand`、`notifications.js` の `phaseStarted`）。I〜V は `PHASE_ACTION`（`BUDGET` = 1 … `PROPOSAL` = 5）で対応する。
 - 「選ばれた」「行わない」の判定は `bonusHolders`（アクション番号 → 保持者の ID の配列。キーがある = 選ばれたアクション。公開前は `{}`）。`GameView.refreshBand` が今も同じ入力で「選ばれたアクション」を出している。
 - 設定 100（コマに席順の数字を重ねる）は `gamepreferences.jsonc` に宣言があるが、**クライアントにも CSS にも実装が無い**（`pe_marks_on` の参照が `src` のどこにも無い。【実測】）。宣言だけで実装が無いのは不具合で、E.1・E.2（色だけに頼らない）に必要なので、**今回実装する**（PR 6。メインエージェントの決定、2026-11-27）。オンのとき、コマ（衛星・発射拠点・キューブ）、ラウンドトラックの四角、プレイヤーの領域のレールの名前の前、パネルの移動のボタンの横に、席順の数字（1〜4）の印を出す。既定はオフのまま（紙のコマには印が無いため）。印は SVG / CSS で描き、画像は作らない。`cssPref`（`pe_marks_on` / `pe_marks_off`）のクラスで切り替える。席順の数字は `normalize.js` のプレイヤーのモデルに無いので、`playerOrder` の添字（1 始まり）から作る。`cssPref` が付けるクラスの付け先は、本書で読んだ公式文書には記載が無い（【未確認】。実装時に Studio で確かめる）。
-- 最終ラウンドの表示は、現状、通知 N31 `gameEndTriggered`（`notifications.js`）だけから出る。`getAllDatas` にこのフラグが無く、再読み込みすると今の「The game ends after this round」の表示も消える。**再読み込みでも出るよう、`getAllDatas` に終了条件を満たしたかどうかの真偽値を 1 つ足す**（サーバーが終了判定のために既に持っている値を公開するだけ。規則・状態・通知は変えない。メインエージェントの決定、2026-11-27。PR 1）。キー名と持ち方は実装時にサーバーのコードで確かめ、010 §8.2 に追記する。【実測】参考: `EndFlow::check`（状態 110）は終了を決めると、`setFlowPhase(FlowPhase::End)` と N31 を同時に出すので、`getAllDatas` の `phase` が `END` であること（既に公開済み）で足りるかもしれない。足りれば新しい項目は足さず、そうでなければ真偽値を足す（PHPUnit のテストを足す）。バナーの文は既存の通知の文 `The game ends after this round`（`Notices.php`）に合わせる。
+- **最終ラウンドの表示（2026-11-28 に訂正。実装時にサーバーのコードで確かめた）**: 当初は「最終ラウンドを `bga.gameArea.addLastTurnBanner()` で出し、再読み込みでも出るよう `getAllDatas` に終了条件を満たしたかの真偽値を足す」と書いたが、取り消す。`EndFlow::check`（状態 110。`src/modules/php/Flow/Machine/EndFlow.php`）は、ラウンドの終わりの終了判定（`RoundEnd::check`）で終了が決まった時点で、`setFlowPhase(FlowPhase::End)` と N31 `gameEndTriggered` を同時に出し、その後すぐ換金（120）と名声の計算（121）へ進む。終了条件を満たしたプレイヤーの一覧（`endConditionPlayers`）を書き込むのも、この終了判定（`RoundEnd::check`）だけで、ラウンドの途中では更新されない（終了条件は、終了判定の時点の稼働中の衛星の数と通信確立の数で決まる）。したがって「このラウンドが最後」とラウンドの途中で確定して知らせる時点は無く、バナーを出せる時点が無い。再読み込みは `getAllDatas` の `phase === 'END'`（既に公開済み）でラウンドトラックを `Game end` に復元できるので、新しい項目も要らない。**バナーは出さない。サーバーは変えない（設定 101 の削除だけ）。**
 
 変更するファイル:
 
@@ -313,11 +313,11 @@ ROUND 3    Planning › I Budget › II Deploy › III Launch/Turn › IV Link �
 | `src/modules/js/ui/round-track.js`（新規） | 純粋関数（入力: `round`・`phase`・`bonusHolders`・`playerOrder`、出力: 段ごとの状態と保持者の一覧） |
 | `src/modules/js/ui/RoundTrack.js`（新規） | 描画。ツールチップの指定（`data-pe-tip`） |
 | `src/modules/js/ui/GameView.js` | `band`・`bandBox`・`refreshBand` を `roundTrack` に |
-| `src/modules/js/notifications.js` | `gameEndTriggered`（541 行付近）を `addLastTurnBanner` に。`finalScore`（`band.set({ phase: 'END' })`）も `roundTrack` に |
-| `src/modules/js/Game.js` / `cards/CardView.js`（`Env`） | `Env` に `lastTurnBanner(message)` を足す（BGA の外のプレビューでは代用品） |
+| `src/modules/js/notifications.js` | `gameEndTriggered`・`finalScore` はラウンドトラックを `Game end` にするだけ（バナーは出さない）。`refreshBand` の呼び出しは `refreshRound` に |
+| `src/modules/js/Game.js` / `cards/CardView.js`（`Env`） | `Env` に BGA 標準のボタンを置く `addButton(label, callback, opts)` を足す（§4.3 の捨て札の [Close]。BGA の外のプレビューでは代用品）。バナーの `lastTurnBanner` は不要 |
 | `src/projectedgeworth.css` | `.pe-phase-*`・`.pe-end-note` を `.pe-round-*` に |
 | `src/modules/js/board/PieceLayer.js`・`ui/PlayerArea.js`・`ui/PlayerPanel.js`・`ui/RoundTrack.js`、`src/projectedgeworth.css`、`Game.js`（設定 100 の読み取り） | 設定 100 の印（PR 6） |
-| `src/modules/php/Game.php`（`getAllDatas`）、`tests/Unit/` の該当テスト、`docs/specs/010-data-model.md`（§8.2 に追記） | 終了条件を満たしたかの真偽値（PR 1。上のとおり、既存の `phase` で足りるなら追加しない） |
+| なし（サーバーは変えない） | 最終ラウンドのバナーと `getAllDatas` への真偽値は取り消し（上の「最終ラウンドの表示」）。`010-data-model.md` の変更も無い |
 | `tests/js/round-track.test.mjs`（新規） | 状態の計算 |
 
 ### 4. 部品の見せ方
@@ -614,7 +614,7 @@ bga-jump-to、フェイズ帯の丸い札、盤面の上の選択パネル、貼
 
 ### 10. 確認の道具
 
-- **プレビューを BGA の枠に近づける**（`tools/preview`）: 上部バー、ステータスバー（`#page-title`。BGA と同じく上に貼り付く）、右の列（`#right-side`。幅 240 px のパネルとログ）、フッター。`#ebd-body` に `desktop_version` / `mobile_version` と `touch-device` / `notouch-device`。`bga.statusBar.addActionButton` の代用品は BGA のボタンのクラス（`bgabutton bgabutton_blue` など）と `destination`・`disabled`・`tooltip` を再現。`bga.dialogs.showMessage`、`bga.gameArea.addLastTurnBanner` の代用品。
+- **プレビューを BGA の枠に近づける**（`tools/preview`）: 上部バー、ステータスバー（`#page-title`。BGA と同じく上に貼り付く）、右の列（`#right-side`。幅 240 px のパネルとログ）、フッター。`#ebd-body` に `desktop_version` / `mobile_version` と `touch-device` / `notouch-device`。`bga.statusBar.addActionButton` の代用品は BGA のボタンのクラス（`bgabutton bgabutton_blue` など）と `destination`・`disabled`・`tooltip` を再現。`bga.dialogs.showMessage`。
 - **スクリーンショット**（`npm run preview:shots`）: Chrome を DevTools Protocol で動かす Node スクリプト（依存の追加なし。`tools/preview/shoot.mjs`）。幅 360 / 390 / 768 / 1024 / 1366 / 1440 / 1920 / 2560 × 主な状態。出力は `build/preview-shots/`（Git 管理外）。ホバー・タップ・スクロールを再現できる。
 - **UI の自動検査**（`npm run check:ui`。同じ道具）: (1) ページの横のはみ出しが無い、(2) `#pe-root` の中に `position: fixed` / `sticky` が無い、(3) 押せる要素が 32 × 32 px 以上、(4) `title` 属性が無い、(5) 文字が 12 px 以上、(6) 実際にスクロールする入れ子の要素は narrow の盤面だけ、(7) ツールチップが画面内にあり対象を覆わない。Chrome が無い環境では skip（CI には入れない。手元と PR の確認用）。
 
@@ -630,7 +630,7 @@ bga-jump-to、フェイズ帯の丸い札、盤面の上の選択パネル、貼
 
 | PR | 範囲 |
 | --- | --- |
-| 1 土台 | プレビューの BGA 風の枠とスクリーンショットの道具（§10）、トークンと背景（§1）、DOM と 3 レイアウト（§2.1・§2.2）、ラウンドトラック（§3）、場（§4.3。捨て札の一覧はトレイ）、盤面の地・拡縮の行、bga-jump-to の廃止、`getAllDatas` の終了条件の真偽値（§3。PHPUnit のテストを含む）、CSS 変数名 `--pe-actionOther-w` の不具合の修正 |
+| 1 土台 | プレビューの BGA 風の枠とスクリーンショットの道具（§10）、トークンと背景（§1）、DOM と 3 レイアウト（§2.1・§2.2）、ラウンドトラック（§3）、場（§4.3。捨て札の一覧はトレイ）、盤面の地・拡縮の行、bga-jump-to の廃止（最終ラウンドのバナーと `getAllDatas` の真偽値は取り消し。§3）、CSS 変数名 `--pe-actionOther-w` の不具合の修正 |
 | 2 プレイヤーの領域 | ロケットを唯一の表示に（§4.1）、行 A・B・C（§2.3）、他プレイヤー（§2.4）、キャプション、パネル（§8）、重複の整理（§4.4）、設定 101 の廃止 |
 | 3 ツールチップ | §7 全部（`title` の全廃を含む） |
 | 4 操作 | 共通のクラス（§6.1）、盤面を暗くする（§6.2）、押したときの理由（§6.3）、トレイ（§5。ドラフト・企画・コストの行・方向パッド）、マリガンを手札で、計画を行 A で、欄の共通の形・選択肢のボタン・[×] の廃止（§5.1 のうち効果の窓以外の欄: `HandTargets`） |
@@ -643,7 +643,7 @@ bga-jump-to、フェイズ帯の丸い札、盤面の上の選択パネル、貼
 
 | PR | 変更するファイル | 更新するプレビューの見本 |
 | --- | --- | --- |
-| 1 | `src/projectedgeworth.css`、`src/modules/js/ui/GameView.js`・`Layout.js`・`layout-math.js`・`round-track.js`（新規）・`RoundTrack.js`（新規）・`PhaseBand.js`（削除）・`Tray.js`（捨て札の一覧に必要な最小限。新規）、`cards/FieldView.js`・`CardView.js`（`Env`）、`board/BoardView.js`（地と跳ね返りの線）、`notifications.js`（最終ラウンドのバナー）、`Game.js`（`setupJumpTo` の削除）、`tools/preview/index.html`・`main.js`・`shoot.mjs`（新規）、`package.json`、`tests/js/geometry.test.mjs`・`round-track.test.mjs`（新規）、`src/modules/php/Game.php`（`getAllDatas`）と `tests/Unit/` の該当テスト、`docs/specs/010-data-model.md`（§8.2）、`ui/Layout.js`（`--pe-actionother-w` の修正） | 盤面 2 つ（`three-players-advanced`・`two-players-standard-6col`）、状態の見本のうち `launchpad`・`planning`・`planning-confirmed`・`deploy-main`・`final-score`。確認の幅 8 つ × ライト・ダーク |
+| 1 | `src/projectedgeworth.css`、`src/modules/js/ui/GameView.js`・`Layout.js`・`layout-math.js`・`round-track.js`（新規）・`RoundTrack.js`（新規）・`PhaseBand.js`（削除）・`Tray.js`（捨て札の一覧に必要な最小限。新規）、`cards/FieldView.js`・`CardView.js`（`Env`）、`board/BoardView.js`（地と跳ね返りの線）、`notifications.js`（`refreshRound`。N31 / N32 はラウンドトラックを `Game end` に）、`Game.js`（`setupJumpTo` の削除）、`tools/preview/index.html`・`main.js`・`shoot.mjs`（新規）、`package.json`、`tests/js/geometry.test.mjs`・`round-track.test.mjs`（新規）、`ui/Layout.js`（`--pe-actionother-w` の修正） | 盤面 2 つ（`three-players-advanced`・`two-players-standard-6col`）、状態の見本のうち `launchpad`・`planning`・`planning-confirmed`・`deploy-main`・`final-score`。確認の幅 8 つ × ライト・ダーク |
 | 2 | `cards/SatelliteView.js`・`HandView.js`・`FieldView.js`（`renderMissions`）、`ui/PlayerArea.js`・`PlayerPanel.js`・`PlayerStats.js`・`StateFrame.js`・`GameView.js`、`notifications.js`（`linkEstablished`）、`Game.js`（設定 101）、`src/gamepreferences.jsonc`、`src/projectedgeworth.css`、`tools/preview/main.js`（デモ `detail` の削除）、`tests/js/`（レイアウトの値） | 盤面 2 つ、`?spectator=1`、`?fame=1`、`?layout=narrow`、`planning`・`planning-confirmed`・`deploy-bonus-stage`・`effects-subject-satellite` |
 | 3 | `ui/Tips.js`・`tip-placement.js`（新規）、`cards/Tooltip.js`（削除）、`ui/layout-math.js`、上の `title` の 39 か所と `bind` の 13 か所、`tools/preview/shoot.mjs`（ホバー・タップ）、`tests/js/tip-placement.test.mjs`（新規） | `planning`、`deploy-main`、`effects-fields`、`launchpad`（ツールチップの出た状態）。タッチ（`touch-device`）・マウス |
 | 4 | `ui/Tray.js`、`ui/ChoicePanel.js`・`BottomSheet.js`（削除）、`board/Highlights.js`・`BoardView.js`、`cards/HandView.js`・`SatelliteView.js`、`ui/CardPicker.js`・`StateFrame.js`、`states/HandTargets.js`・`states/PlacementStates.js`・`ActionState.js`・`DraftState.js`・`ProposalState.js`・`DeployState.js`・`LaunchState.js`・`LinkState.js`・`MulliganState.js`（確認）、`Game.js`・`CardView.js`（`showMessage`）、`src/projectedgeworth.css` | `planning`・`mulligan`・`draft`・`draft-confirmed`・`proposal`・`proposal-plain`・`link-main`・`link-main-sell`・`launch-main`・`launch-board-turn-direction`・`deploy-main`・`deploy-bonus-stage`・`sell-pick`・`sell-all` |
@@ -658,7 +658,7 @@ UI 文言は英語を原文とし、`_()` で包む（012 §8.1）。既存の�
 | --- | --- | --- |
 | ラウンドトラック | `Round` + 数字（例 `Round 3`。表示は大文字）、`Setup`、`Planning`、`Budget`・`Deploy`・`Launch/Turn`・`Link`・`Proposal`（既存。ローマ数字は `I`〜`V`）、`Orbit`、`Game end` | 既存。指示書の図は `Plan` だが既存は `Planning`（`PhaseBand.js`）。既存に合わせた |
 | ラウンドトラックの四角のツールチップ | `${player_name}` | プレイヤー名のみ（そのアクションの保持者）。設定 100 がオンのとき、四角に席順の数字 |
-| 最終ラウンドのバナー | `The game ends after this round` | 既存（`Notices.php` の通知の文と同じ） |
+| 最終ラウンドの文 | `The game ends after this round` | 既存（`Notices.php` の通知の文。ログにだけ出る。バナーは出さない） |
 | ゾーンのラベル | `Rewards`（既存）、**`Deck`**、`Discard`（既存）、**`Action cards`**、`Missions`（既存）、`Hand`（既存） | 12 px・大文字（CSS）。既存の `Actions`（`aria-label`）と別に、ラベル用の文言を足す |
 | ロケットのキャプション | `Hammer (Moon)` 形（`satelliteName`）、燃料 `${remaining}/${capacity}`、`Standby`（既存）、`Out of fuel`（既存）、**`Active, heading ${direction}`**（`aria-label`） | `${direction}` の語は §4.1 の注。燃料のアイコンの `aria-label` は既存の `Fuel ${remaining} / ${capacity}` |
 | カードのキャプション | カード名（`card-info.js` の英語名）、アクションカードは `I Budget` 形 | 既存の名前 |
@@ -688,7 +688,7 @@ UI 文言は英語を原文とし、`_()` で包む（012 §8.1）。既存の�
 | §1.2・§5.1 | `.pe-btn`・記号の文字を使う [Choose from hand]・[×]・順番の `⤒ ▲ ▼`・`pe-chip-btn`・数値入力・`<select>` の置き換え | 「欄」の共通の形（ラベル + 今の値の 1 行、アクティブな欄は `pe-picked`、アクティブでない欄に `Choose from hand` / `Choose`）。[×] は廃止（トグル）。選択肢は `secondary` + `pe-picked` + `aria-pressed`（青にしない。指示書の「選んだものは `primary`」を取り消し）。数値は 8 通り以下ならボタン、多ければ [−] 値 [+]。`ORDER` は小さなカードの横並び + 各カードの下に [◀][▶]、「先頭へ」は廃止、1 組ずつ表示。`ASSIGNMENT` は `<select>` を廃止して部品だけ + 移動の行と取り消し。`USE_MODS` は `secondary` のトグル。捨て札の [Close] は `secondary`。§5.1 |
 | §2.2 | 得点表の入れ子スクロール | narrow でも横スクロールなしで収める（`table-layout: fixed`、ラベル列 34 %、名前は省略記号 + ツールチップ）。`.pe-score-scroll` を廃止。中身は変えない |
 | §3 | 設定 100（席順の数字）の実装が無い | 今回実装する（PR 6）。コマ・ラウンドトラック・レールの名前の前・パネルの移動のボタンの横に 1〜4 の印。既定はオフ。SVG / CSS、`cssPref` で切り替え |
-| §3 | 最終ラウンドの表示が再読み込みで消える | `getAllDatas` に終了条件を満たしたかの真偽値を 1 つ足す（PR 1。`phase = END` で足りるなら足さない）。サーバーの変更はこれと設定 101 の削除だけ |
+| §3 | 最終ラウンドの表示が再読み込みで消える | バナーは出さず、`getAllDatas` も変えない（2026-11-28 に取り消し。N31 は終了判定の時点にだけ出て、ラウンドの途中で「最後」と知らせる時点が無い。再読み込みは `phase = END` で復元）。サーバーの変更は設定 101 の削除だけ |
 | §4.4 | [Change my choice] で BGA 上のアクティブに戻らない | そのまま（サーバーは変えない）。選び直し中も非アクティブ（= 有効な確定がある）で、他のプレイヤーから見て正しい。本人は [Change my choice] と「Planned」で分かる |
 | §5.1 | [Use] が押せない理由の置き場 | ステータスバーのタイトルに `${todo}` として出す。トレイにも `tooltip` にも出さない |
 | §6.3 | `showMessage` の `error` がログに載る | `info` にする。同じ文は 2 秒以内に繰り返さない |
@@ -709,8 +709,8 @@ UI 文言は英語を原文とし、`_()` で包む（012 §8.1）。既存の�
 - **概観の段（narrow）**: 区域が 32 px 未満になり、区域・コマは押せない（見るだけ）。盤面をタップすると、その位置を中心に標準へ切り替わる（§2.5）。
 - **2〜4 人**: 他プレイヤーは 1〜3 人。wide で W ≥ 1180 かつ他が 2 人以上のときだけ 2 列（§2.2）。パネルの 1 行は人数分（スマホ 4 人で画面の 1/4 を目指す。§8）。
 - **名声の公開オプション（ゲームオプション 105）**: パネルのカウンターに名声が増える（§8）。ツールチップは既存の内訳（ミッションを除く。`fameTitle`）。
-- **リプレイ・アニメーション無効**（`bgaAnimationsActive()` が偽）: 盤面・ラウンドトラック・トレイは最終状態をそのまま描く。ツールチップの表示・消去の遅延はリプレイでも動く（アニメーションではない）。持ち上がる動き（`pe-can` のホバー）は CSS の遷移のみ。最終ラウンドのバナーは通知から出る。
-- **再読み込み**: 画面は `getAllDatas` と、今の状態の `getArgs` から作り直す。ラウンドトラックは `round`・`phase`・`bonusHolders` から復元する（012 エッジケースと同じ）。トレイは、選択中の状態（args がある）のときだけ再び開き、捨て札の一覧・ツールチップは閉じた状態から。最終ラウンドのバナーは、`getAllDatas` に足す真偽値（§3）から復元される。
+- **リプレイ・アニメーション無効**（`bgaAnimationsActive()` が偽）: 盤面・ラウンドトラック・トレイは最終状態をそのまま描く。ツールチップの表示・消去の遅延はリプレイでも動く（アニメーションではない）。持ち上がる動き（`pe-can` のホバー）は CSS の遷移のみ。
+- **再読み込み**: 画面は `getAllDatas` と、今の状態の `getArgs` から作り直す。ラウンドトラックは `round`・`phase`・`bonusHolders` から復元する（012 エッジケースと同じ）。トレイは、選択中の状態（args がある）のときだけ再び開き、捨て札の一覧・ツールチップは閉じた状態から。ゲームの終了（`phase = END`）のラウンドトラックは `getAllDatas` の `phase` から復元される（バナーは出さない。§3）。
 - **ダークテーマ**: 卓はテーマによらず同じ暗い背景（Q1）。ツールチップだけ白 / `#22262f` で切り替える。プレイヤー色の文字は暗い卓の上用の明るい版（`--pe-c-*-ink`）で、コントラスト比は §1.2 の表のとおり。BGA 側のパネルとバーはテーマに従う。
 - **タッチ端末**: ホバー専用の見た目は `.notouch-device` で前置する。ツールチップは、選べない要素はタップ、選べる要素は長押し 400 ms、選択中のカードの左上に 32 × 32 px の情報の印（§7）。押せる要素は 32 × 32 px 以上（E.3）。区域のタップは Pointer Events で、移動が 8 px を超えたらスクロールとみなす（012 §10）。
 - **ブラウザの拡大縮小**: 拡大しても、`#pe-root` の幅が変わるので `ResizeObserver`（`Layout`）が `data-layout` と寸法を更新する。固定幅にしない（C.4）。ツールチップは `placeTip` が毎回、見える領域から位置と高さを決める。
@@ -760,8 +760,7 @@ UI 文言は英語を原文とし、`_()` で包む（012 §8.1）。既存の�
 - [ ] 効果の窓（31）が 1 件ずつの表示で、（`EFFECT` が複数のとき）待ち列から注目を切り替えられ、入力値が保たれる。[Use]・[Skip]・[Confirm order] がステータスバーの BGA 標準のボタン（青・白・青）で、パネル内のボタンが無い。サーバーの操作（`actUseEffect`・`actSkipEffect`・`actOrderEffects`）と通知は変わらない
 - [ ] 計画（22）が行 A で直接選べ、`moveActionsTo` が無い。マリガン（13）が手札のゾーンで選べる
 - [ ] 設定 101 が `gamepreferences.jsonc` から消え、衛星が全員とも紙どおりのロケット。5 機の下端がそろう
-- [ ] 最終ラウンドが `addLastTurnBanner` で出る
-- [ ] 最終ラウンドのバナーが、再読み込みでも出る（`getAllDatas` の真偽値、または `phase`。PHPUnit のテストあり）
+- [ ] N31 / N32 でラウンドトラックが `Game end` になり、再読み込みでも（`phase = END`）同じ（バナーは出さない。§3 の訂正）
 - [ ] 設定 100 をオンにすると、コマ・ラウンドトラック・レール・パネルに席順の数字が出る（既定はオフ）
 - [ ] 効果の窓: `AREA`・`SATELLITE` が 1 つの問いに複数あるとき、アクティブな欄に応じて盤面・ロケットで選べ、欄の `Choose` で切り替わる。[×]・`<select>`・補助のチップ・`pe-btn` が無い。`ORDER` は ◀ ▶ で並べ替えられる。入力が足りないあいだ、タイトルに `${todo}` が出る
 - [ ] 得点表が narrow（4 人・360 px）で横スクロールなしに収まる

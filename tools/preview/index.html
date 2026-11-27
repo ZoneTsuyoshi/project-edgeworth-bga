@@ -6,34 +6,67 @@
 <title>PROJECT EDGEWORTH client preview</title>
 <link rel="stylesheet" href="../../src/projectedgeworth.css">
 <style>
-  /* BGA の外で動く簡易版。BGA のゲーム領域・プレイヤーパネル・ステータスバーを雑に真似るだけ */
-  body { margin: 0; font-family: system-ui, sans-serif; color: #1d2430; }
-  html[data-theme="dark"] body { color: #e7eaf0; }
-  #pv-layout { display: flex; align-items: flex-start; gap: 10px; padding: 8px; }
-  #game_play_area { flex: 1 1 auto; min-width: 0; }
-  #pv-side { flex: 0 0 240px; }
-  .pv-panel { margin-bottom: 8px; padding: 6px 8px; border-radius: 6px; background: #fff; }
-  html[data-theme="dark"] .pv-panel { background: #262b36; }
-  #page-title { padding: 6px 10px; background: #2b4a6f; color: #fff; }
-  #pv-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-  #pv-buttons button { min-height: 28px; padding: 2px 12px; border: 1px solid #fff8; border-radius: 4px; background: #3e73b0; color: #fff; }
-  #pv-buttons button.pv-secondary { background: #6b7a8c; }
-  #pv-buttons button.pv-alert { background: #b42318; }
-  #pv-buttons button:disabled { opacity: 0.4; }
-  #pv-log { margin: 0; padding: 4px 10px; background: #0a1224; color: #9fe3b0; font: 11px/1.4 monospace; white-space: pre-wrap; }
-  #pv-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 10px; background: #0003; }
-  body.pv-narrow #pv-layout { flex-direction: column-reverse; align-items: stretch; }
-  body.pv-narrow #pv-side { flex-basis: auto; width: 100%; }
+  /* BGA の外で動く簡易版。BGA の上部バー・ステータスバー（#page-title）・右の列（#right-side。プレイヤーパネルとログ）・フッターの
+     幅と上下関係だけを本物に近づける（仕様書 014 §10）。BGA のテーマ（?theme=dark）は枠だけが変わり、卓（#pe-root の周り）は変わらない */
+  html { --pv-bg: #fff; --pv-fg: #000; --pv-dim: #555; --pv-line: #c3c7cf; --pv-bar: #262b34; }
+  html[data-theme="dark"] { --pv-bg: #22262f; --pv-fg: #e8eaee; --pv-dim: #aab1bd; --pv-line: #3a404c; --pv-bar: #14171c; }
+  body { margin: 0; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: var(--pv-fg); }
+  #pv-topbar { display: flex; align-items: center; justify-content: space-between; height: 50px; padding: 0 16px; background: var(--pv-bar); color: #e8eaee; box-sizing: border-box; }
+  #pv-topbar b { font-size: 16px; letter-spacing: 0.04em; }
+  #pv-topbar span { font-size: 13px; color: #aab1bd; }
+  #page-title { position: sticky; top: 0; z-index: 100; padding: 8px 10px 10px; background: var(--pv-bg); border-bottom: 1px solid var(--pv-line); text-align: center; box-shadow: 0 1px 3px rgb(0 0 0 / 25%); }
+  #pv-title { font-size: 16px; line-height: 22px; }
+  #pv-buttons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 6px; }
+  #pv-buttons:empty { display: none; }
+  /* BGA のボタン（bgabutton）: 青 = primary、赤 = alert、白地に灰の枠 = secondary。角丸 5 px */
+  .bgabutton { display: inline-block; min-height: 28px; padding: 3px 12px; border: 1px solid transparent; border-radius: 5px; font: bold 14px/20px Roboto, Arial, sans-serif; color: #fff; cursor: pointer; }
+  .bgabutton_blue { background: #4871b6; border-color: #4871b6; }
+  .bgabutton_red { background: #c92727; border-color: #c92727; }
+  .bgabutton_gray { background: #fff; border-color: #a0a4ab; color: #4a4f58; }
+  .bgabutton:disabled, .bgabutton.disabled { opacity: 0.4; cursor: default; }
+  #pv-layout { display: flex; align-items: flex-start; gap: 10px; padding: 0 10px; }
+  #game_play_area_wrap { flex: 1 1 auto; min-width: 0; }
+  #game_play_area { min-width: 0; }
+  #right-side { flex: 0 0 240px; width: 240px; padding-top: 10px; }
+  .player-board { margin-bottom: 8px; padding: 6px 8px 8px; border-radius: 5px; background: var(--pv-bg); box-shadow: 0 1px 2px rgb(0 0 0 / 30%); }
+  .player-board .pv-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .player-board .player-name { font-weight: bold; font-size: 15px; }
+  .player-board .player_score { display: inline-flex; align-items: center; gap: 4px; font-weight: bold; font-size: 15px; color: var(--pv-fg); }
+  .player-board .player_score svg { width: 14px; height: 14px; fill: #c9a02b; }
+  .player-board .pv-content { margin-top: 4px; }
+  #pv-logwrap { margin-top: 10px; padding: 6px 8px; border-radius: 5px; background: var(--pv-bg); box-shadow: 0 1px 2px rgb(0 0 0 / 30%); font-size: 13px; }
+  #pv-logwrap h4 { margin: 0 0 4px; font-size: 13px; color: var(--pv-dim); }
+  #pv-logwrap p { margin: 0; padding: 3px 0; border-top: 1px solid var(--pv-line); color: var(--pv-fg); }
+  #pv-footer { margin-top: 24px; padding: 18px 16px; background: var(--pv-bar); color: #aab1bd; font-size: 13px; text-align: center; }
+  /* 開発用のボタン（select / dpad / move …）は ?tools=1 のときだけ */
+  #pv-tools { display: none; flex-wrap: wrap; gap: 6px; padding: 6px 10px; background: #0003; }
+  body.pv-tools #pv-tools { display: flex; }
+  #pv-log { margin: 0; padding: 4px 10px; background: #0a1224; color: #9fe3b0; font: 12px/1.4 monospace; white-space: pre-wrap; }
+  /* bga.dialogs.showMessage の代用（画面の上に一時的に出る帯。type: info） */
+  .pv-msg { position: fixed; top: 70px; left: 50%; z-index: 9500; max-width: calc(100vw - 32px); padding: 8px 14px; border: 1px solid #a0a4ab; border-radius: 4px; background: #fff; color: #000; font-weight: bold; box-shadow: 0 2px 8px rgb(0 0 0 / 35%); transform: translateX(-50%); }
+  .pv-msg.pv-msg-error { border-color: #c92727; background: #c92727; color: #fff; }
+  /* narrow（980 px 未満、または ?layout=narrow）: パネルをゲームの上に。490 px 未満は 1 列、それ以上は 2 列 */
+  body.pv-narrow #pv-layout { flex-direction: column-reverse; align-items: stretch; padding: 0; gap: 0; }
+  body.pv-narrow #right-side { flex-basis: auto; width: 100%; padding: 8px 8px 0; box-sizing: border-box; }
+  body.pv-narrow #pv-side { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+  body.pv-narrow .player-board { margin: 0; }
+  body.pv-narrow #pv-logwrap { display: none; }
+  @media (max-width: 489px) { body.pv-narrow #pv-side { grid-template-columns: 1fr; } }
 </style>
 </head>
-<body>
+<body id="ebd-body">
+<div id="pv-topbar"><b>Board Game Arena</b><span>PROJECT EDGEWORTH · Table #000000</span></div>
 <div id="page-title"><div id="pv-title">Preview status bar (BGA outside)</div><div id="pv-buttons"></div></div>
 <div id="pv-tools"></div>
 <pre id="pv-log" hidden></pre>
 <div id="pv-layout">
-  <div id="game_play_area"></div>
-  <aside id="pv-side"></aside>
+  <div id="game_play_area_wrap"><div id="game_play_area"></div></div>
+  <aside id="right-side">
+    <div id="pv-side"></div>
+    <div id="pv-logwrap"><h4>Game log</h4><p>Round 3 starts</p><p>Aoi draws 2 cards</p><p>Bruno chose an Action Card</p></div>
+  </aside>
 </div>
+<div id="pv-footer">Board Game Arena · Terms · Privacy · Help</div>
 <script type="module" src="./main.js"></script>
 </body>
 </html>
