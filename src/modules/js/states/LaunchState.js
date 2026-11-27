@@ -5,6 +5,7 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { directionLabel } from '../board/Highlights.js';
+import { costLine, directionPad } from '../ui/Tray.js';
 import { ActionState } from './ActionState.js';
 import { canShowPass, format } from './logic/common.js';
 import { launchActionArgs, launchQuote, launchSelectionFrom, launchState, parseLaunchable, parseTurnable, satelliteOps, validateLaunch } from './logic/launch.js';
@@ -113,11 +114,11 @@ export class LaunchState extends ActionState {
                 const state = launchState(option, funds);
                 if (sel.satId === option.satId) {
                     const picked = launchQuote(option, sel.useMods, funds);
-                    picks.set(option.satId, { state: 'selected', note: costNote(picked.cost, picked.pay) });
+                    picks.set(option.satId, { state: 'selected', cost: picked.cost });
                 } else if (state.usable) {
-                    picks.set(option.satId, { state: state.pay.kind === 'free' ? 'selectable' : 'sellable', note: costNote(option.cost, state.pay) });
+                    picks.set(option.satId, { state: state.pay.kind === 'free' ? 'selectable' : 'sellable', cost: option.cost });
                 } else {
-                    picks.set(option.satId, { state: 'blocked', note: option.blocked === null ? costNote(option.cost, state.pay) : launchBlockedText(option.blocked) });
+                    picks.set(option.satId, { state: 'blocked', reason: option.blocked === null ? costNote(option.cost, state.pay) : launchBlockedText(option.blocked) });
                 }
             }
             area?.setSatPicks(picks, (satId) => {
@@ -139,7 +140,6 @@ export class LaunchState extends ActionState {
                 hint = sel.dir === null ? _('${you} must choose the direction of the launched satellite') : format(_('Launch ${sat} (${dir}).'), { sat: view.satName(option.satId), dir: directionLabel(sel.dir) });
             } else {
                 hint = _('${you} must choose a satellite to launch');
-                view.sheet.show({ title: _('Choose a satellite to launch'), lines: [_('Standby satellites with Project cards can be launched')] });
             }
         } else if (sel.op === 'turn') {
             /** @type {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>>} */
@@ -150,7 +150,7 @@ export class LaunchState extends ActionState {
                 } else if (option.blocked === null) {
                     picks.set(option.satId, { state: 'selectable' });
                 } else {
-                    picks.set(option.satId, { state: 'blocked', note: turnBlockedText(option.blocked) });
+                    picks.set(option.satId, { state: 'blocked', reason: turnBlockedText(option.blocked) });
                 }
             }
             area?.setSatPicks(picks, (satId) => {
@@ -176,7 +176,6 @@ export class LaunchState extends ActionState {
                 hint = sel.dir === null ? _('${you} must choose the new direction') : format(_('Turn ${sat} (${dir}).'), { sat: view.satName(option.satId), dir: directionLabel(sel.dir) });
             } else {
                 hint = _('${you} must choose a satellite to turn');
-                view.sheet.show({ title: _('Choose a satellite to turn'), lines: [_('Active satellites can be turned. The new direction may be the same as the current one')] });
             }
         } else if (sel.op === 'budget') {
             hint = _('${you} will raise your budget by 1 (Action bonus). Confirm to raise');
@@ -190,9 +189,9 @@ export class LaunchState extends ActionState {
                     if (sel.satId === option.satId) {
                         picks.set(option.satId, { state: 'selected' });
                     } else if (state.usable) {
-                        picks.set(option.satId, { state: state.pay.kind === 'free' ? 'selectable' : 'sellable', note: costNote(option.cost, state.pay) });
+                        picks.set(option.satId, { state: state.pay.kind === 'free' ? 'selectable' : 'sellable', cost: option.cost });
                     } else {
-                        picks.set(option.satId, { state: 'blocked', note: option.blocked === null ? costNote(option.cost, state.pay) : launchBlockedText(option.blocked) });
+                        picks.set(option.satId, { state: 'blocked', reason: option.blocked === null ? costNote(option.cost, state.pay) : launchBlockedText(option.blocked) });
                     }
                 }
             }
@@ -202,7 +201,7 @@ export class LaunchState extends ActionState {
                 } else if (option.blocked === null) {
                     picks.set(option.satId, { state: 'selectable' });
                 } else {
-                    picks.set(option.satId, { state: 'blocked', note: turnBlockedText(option.blocked) });
+                    picks.set(option.satId, { state: 'blocked', reason: turnBlockedText(option.blocked) });
                 }
             }
             area?.setSatPicks(picks, (satId) => {
@@ -270,7 +269,7 @@ export class LaunchState extends ActionState {
     }
 
     /**
-     * 向きの選択（区域の周囲の矢印とボトムシートの方向パッド）、プレビュー、コストの内訳。
+     * 向きの選択（区域の周囲の矢印とトレイの方向パッド）、プレビュー、コストの行。
      * @param {number} cell 向きを決める区域（打ち上げは発射拠点、転回は衛星のいる区域）
      * @param {number} satId
      * @param {number} colorIndex
@@ -290,7 +289,7 @@ export class LaunchState extends ActionState {
             view.pieces.setPreview({ kind: 'satellite', cell, colorIndex, shape, dir: sel.dir });
         }
         if (p.quote === null) {
-            view.sheet.show({ title: p.title, lines: p.lines, pad: { onPick: pick, selected: sel.dir } });
+            view.tray.show([{ label: p.title, body: [costLine(p.lines), directionPad({ onPick: pick, selected: sel.dir })] }]);
             return;
         }
         this.costBox({ title: p.title, lines: p.lines, quote: p.quote, mods: p.mods, sel, reserved: [], pad: { onPick: pick, selected: sel.dir } });

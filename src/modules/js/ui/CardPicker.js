@@ -1,18 +1,21 @@
 /**
  * 手札などのカードを並べて選ぶ部品（企画の残すカード、効果の問いの CARDS、売却の同梱など。仕様書 012 §4.4）。
- * 選択は複数（max 枚まで）か単一（max = 1 のとき、選び直すと入れ替わる）。選べないカードはグレーにして理由をツールチップに出す。
+ * 選択は複数（max 枚まで）か単一（max = 1 のとき、選び直すと入れ替わる）。選べないカードは暗くして（pe-off）、押したときに理由を出す（014 §6.3）。
+ * カードの行は手札と同じ大きさ + 英語名のキャプション（トレイ。014 §5）。`small` は効果の窓の小さな一覧。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { createCard } from '../cards/CardView.js';
 import { cardInfo } from '../cards/card-text.js';
 import { projectKey } from '../cards/sprite-layout.js';
+import { format } from '../states/logic/common.js';
 import { el } from './dom.js';
+import { refuse } from './refuse.js';
 import { tipLine } from './Tips.js';
 
 export class CardPicker {
     /**
      * @param {import('./GameView.js').GameView} view
-     * @param {{ ids: number[], selected?: number[], max?: number, disabled?: Map<number, string> | Set<number>, onChange?: (ids: number[]) => void }} opts
+     * @param {{ ids: number[], selected?: number[], max?: number, disabled?: Map<number, string> | Set<number>, onChange?: (ids: number[]) => void, small?: boolean, interactive?: boolean }} opts small = 小さな一覧、interactive = false は見せるだけ（選択中でないので押しても何も出さない）
      */
     constructor(view, opts) {
         this.view = view;
@@ -21,7 +24,8 @@ export class CardPicker {
         this.max = opts.max ?? Number.POSITIVE_INFINITY;
         this.disabled = opts.disabled ?? new Set();
         this.onChange = opts.onChange ?? (() => {});
-        this.root = el('div', { class: 'pe-picker', role: 'group' });
+        this.interactive = opts.interactive !== false;
+        this.root = el('div', { class: `pe-picker${opts.small === true ? '' : ' pe-picker-hand'}`, role: 'group' });
         this.render();
     }
 
@@ -68,12 +72,16 @@ export class CardPicker {
         for (const id of this.ids) {
             const key = projectKey(id);
             const off = this.isDisabled(id);
-            const card = createCard(this.view.env, key, { classes: ['pe-picker-card', off ? 'pe-unselectable' : 'pe-selectable', ...(this.selected.has(id) ? ['pe-selected'] : [])] });
+            const card = createCard(this.view.env, key, { classes: ['pe-picker-card', off ? 'pe-off' : (this.interactive ? 'pe-can' : ''), ...(this.selected.has(id) ? ['pe-picked'] : [])] });
             card.dataset.id = String(id);
             card.setAttribute('role', 'checkbox');
             card.setAttribute('aria-checked', this.selected.has(id) ? 'true' : 'false');
             card.setAttribute('aria-label', cardInfo(key)?.name ?? key);
-            if (!off) {
+            if (off) {
+                if (this.interactive) {
+                    card.addEventListener('click', () => refuse(this.view.env, this.disabled instanceof Map ? this.disabled.get(id) : undefined));
+                }
+            } else {
                 card.tabIndex = 0;
                 card.addEventListener('click', () => this.toggle(id));
                 card.addEventListener('keydown', (e) => {
@@ -102,6 +110,7 @@ export class CardPicker {
         } else if (this.selected.size < this.max) {
             this.selected.add(id);
         } else {
+            refuse(this.view.env, format(_('You can choose up to ${max} card(s)'), { max: this.max }));
             return;
         }
         this.render();

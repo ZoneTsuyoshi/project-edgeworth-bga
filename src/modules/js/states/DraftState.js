@@ -1,6 +1,6 @@
 /**
  * 15 SetupDraftPick（全員同時）: 手元のカードから 1 枚を選び、残りを左隣へ回す。これを 4 回繰り返す（013 §6）。
- * 選ぶカードは選択パネルの CardPicker（012 未確定 17）。取ったカードは手札に入る（既存の手札の欄と [Sell cards]）。確定後は全員が確定するまで選び直せる。
+ * 選ぶカードはトレイのカードの行（CardPicker。014 §5）。取ったカードは手札に入る（既存の手札の欄と [Sell cards]）。確定後は全員が確定するまで選び直せる。
  * 最後の 1 枚は、左隣から回ってきたものが自動で手札に入る。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -50,7 +50,7 @@ export class DraftState extends ActionState {
     }
 
     /**
-     * 見出しの文（パネルの欄ラベルと添え書き）。
+     * 見出しの文（トレイのラベルと、ステータスバーのタイトルに足す説明）。
      * @returns {{ title: string, label: string, note: string } | null}
      */
     headingText() {
@@ -74,7 +74,7 @@ export class DraftState extends ActionState {
     }
 
     /**
-     * 選択パネル（見出し + カード）を出す。
+     * トレイにカードの行を出す（ラベル = 何枚目か。説明はステータスバーのタイトルに）。
      * @param {CardPicker} picker
      */
     showPanel(picker) {
@@ -83,11 +83,17 @@ export class DraftState extends ActionState {
         if (view === null || text === null) {
             return;
         }
-        view.panel.show({
-            title: text.title,
-            hint: text.note,
-            body: [el('div', { class: 'pe-choice-section' }, [el('div', { class: 'pe-choice-label' }, [text.label]), picker.root])],
-        });
+        view.tray.show([{ label: text.title, body: picker.root }]);
+    }
+
+    /**
+     * ステータスバーのタイトル（何をするか + 回し方の説明）。
+     * @param {string} lead
+     * @returns {string}
+     */
+    titleWith(lead) {
+        const text = this.headingText();
+        return text === null ? lead : [lead, text.label, text.note].filter((t) => t !== '').join('. ');
     }
 
     renderEdit() {
@@ -106,7 +112,7 @@ export class DraftState extends ActionState {
             },
         });
         this.showPanel(picker);
-        this.bga.statusBar.setTitle(_('${you} must keep 1 card. Click the card you want to keep'));
+        this.bga.statusBar.setTitle(this.titleWith(_('${you} must keep 1 card')));
         const pick = this.pick;
         this.bga.statusBar.addActionButton(
             this.confirmed === null ? _('Confirm') : _('Confirm the new choice'),
@@ -130,10 +136,9 @@ export class DraftState extends ActionState {
             return;
         }
         const ids = this.cards.includes(id) ? this.cards : [...this.cards, id];
-        const picker = new CardPicker(view, { ids, selected: [id], max: 1, disabled: new Set(ids) });
+        const picker = new CardPicker(view, { ids, selected: [id], max: 1, disabled: new Set(ids.filter((c) => c !== id)), interactive: false });
         const card = picker.root.querySelector(`.pe-picker-card[data-id="${id}"]`);
         if (card !== null) {
-            card.classList.remove('pe-unselectable');
             card.classList.add('pe-planned');
             card.append(el('span', { class: 'pe-plan-badge' }, [_('Picked')]));
         }

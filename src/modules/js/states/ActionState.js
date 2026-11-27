@@ -15,6 +15,7 @@
 import { ChoiceState } from './ChoiceState.js';
 import { el } from '../ui/dom.js';
 import { HandTargets } from './HandTargets.js';
+import { costLine, directionPad } from '../ui/Tray.js';
 import { format, privateOf, sellableHand, sellsWholeHand, sellTotal, validMods } from './logic/common.js';
 import { modOptionText, modName } from './texts.js';
 import { tipText } from '../ui/Tips.js';
@@ -238,6 +239,7 @@ export class ActionState extends ChoiceState {
                 this.handActive = id;
             },
             refresh: () => this.refresh(),
+            addButton: (label, callback, opts) => this.bga.statusBar.addActionButton(label, callback, opts),
         });
         for (const def of this.handDefs) {
             this.handSlots.get(def.id)?.replaceChildren(targets.section(def.id));
@@ -288,7 +290,7 @@ export class ActionState extends ChoiceState {
         }
         view.stateFrame.leaveSelection();
         view.satelliteHandler = null;
-        view.panel.hide();
+        view.tray.hide();
         this.resetHandFields();
         this.clearHandTools();
         const me = view.m.me;
@@ -345,37 +347,47 @@ export class ActionState extends ChoiceState {
     // ---- コストの内訳・起動の修正・売却の同梱（配備・打ち上げ・通信確立で共通） ----
 
     /**
-     * コストの内訳（ボトムシート）、使える起動の修正の選択、足りないときの売却の促し（選択パネル）を出す。
+     * トレイに、コストと結果の行（1 行）・方向パッド・起動の修正の選択・足りないときの売却の欄を出す（014 §5）。
      * 数値（コスト）はサーバーが args で渡した値。売却が足りなければ、売るカードを選ぶまで [Confirm] は押せない。
      * @param {object} p
-     * @param {string} p.title ボトムシートの見出し
-     * @param {string[]} p.lines 内訳の行
+     * @param {string} p.title トレイのラベル
+     * @param {string[]} p.lines コストと結果の文（`·` でつないで 1 行にする）
      * @param {{ cost: number, pay: ReturnType<typeof import('./logic/common.js').payState> }} p.quote
      * @param {import('./logic/common.js').ModsInfo | null} p.mods 使える起動の修正
      * @param {{ sell: number[], useMods: string[] }} p.sel 選択（売却と起動の修正を書き換える）
      * @param {number[]} p.reserved 売れないカード（配備するカード）
-     * @param {HTMLElement[]} [p.subject] 選択パネルの見出し部品
      * @param {{ onPick: (dir: string) => void, selected?: string | null }} [p.pad] 方向パッド
      * @param {import('./HandTargets.js').HandTarget} [p.before] 売却の欄の前に置く手札の欄（配備するカードなど。売る欄と手札を使い分ける）
+     * @param {string} [p.tip] コストの行のツールチップ（補足の説明。トレイには文を出さない）
      */
     costBox(p) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const sel = p.sel;
+        const pay = p.quote.pay;
         const left = this.maya + sellTotal(sel.sell.length, this.price) - p.quote.cost;
-        view.sheet.show({
-            title: p.title,
-            lines: [...p.lines, format(_('You will have ${left} Maya left'), { left })],
-            pad: p.pad,
-            extra: p.mods === null ? [] : [this.modsBox(p.mods, sel)],
-        });
-        view.panel.hide();
-        if (p.quote.pay.kind === 'sell') {
-            view.panel.show({
-                title: _('Pay for the action'),
+        const needMore = pay.kind === 'sell' && sel.sell.length < pay.need;
+        /** @type {string | undefined} */
+        let warn;
+        if (pay.kind === 'short') {
+            warn = format(_('Not enough Maya (short ${short})'), { short: pay.short });
+        } else if (needMore) {
+            warn = format(_('Needs ${short} more Maya: sell at least ${need} card(s)'), { short: pay.short, need: pay.need });
+        }
+        const row = costLine([...p.lines, left >= 0 ? format(_('${left} Maya left'), { left }) : ''], { warn });
+        if (p.tip !== undefined) {
+            view.tips.text(row, p.tip);
+        }
+        /** @type {import('../ui/Tray.js').TraySection[]} */
+        const sections = [{
+            label: p.title,
+            body: [row, p.pad === undefined ? null : directionPad(p.pad), p.mods === null ? null : this.modsBox(p.mods, sel)],
+        }];
+        if (pay.kind === 'sell') {
+            sections.push({
+                label: _('Pay for the action'),
                 body: [
-                    ...(p.subject ?? []),
-                    ...(p.before === undefined ? [] : [el('div', { class: 'pe-choice-section' }, [this.handField(p.before)])]),
-                    this.sellPrompt(p.quote.pay, p.reserved, sel.sell, (ids) => {
+                    p.before === undefined ? null : this.handField(p.before),
+                    this.sellPrompt(pay, p.reserved, sel.sell, (ids) => {
                         sel.sell = ids;
                         this.refresh();
                     }),
@@ -384,6 +396,7 @@ export class ActionState extends ChoiceState {
         } else {
             sel.sell = [];
         }
+        view.tray.show(sections);
     }
 
     /**
@@ -413,18 +426,17 @@ export class ActionState extends ChoiceState {
     // ---- 売却 ----
 
     /**
-     * マヤが足りないときの売却の促し（008 §2-6、012 追補 2026-11-14 B-2）。必要な最小枚数と、売るカードの欄（選択パネルに載せる）。
+     * マヤが足りないときの売るカードの欄（008 §2-6、012 追補 2026-11-14 B-2、014 §5.1）。必要な最小枚数は欄のタイトル（ステータスバー）に出す。
      * 売るカードは手札のゾーンで選ぶ（欄が選択中のとき）。選んだカードは選択に同梱して確定する。予約済みのカード（配備するカードなど）は選べない。
      * @param {{ need: number, short: number }} pay
      * @param {number[]} reserved 売れないカード（手札のゾーンで印を付ける）
      * @param {number[]} selected 今選んでいるカード
      * @param {(ids: number[]) => void} onChange
      * @param {string} [id] 欄の識別子（同じ画面に複数あるとき）
-     * @returns {HTMLElement}
+     * @returns {HTMLElement} 欄の置き場
      */
     sellPrompt(pay, reserved, selected, onChange, id = 'sell') {
-        const enough = selected.length >= pay.need;
-        const slot = this.handField({
+        return this.handField({
             id,
             label: _('Cards to sell'),
             badge: _('Sell'),
@@ -435,17 +447,6 @@ export class ActionState extends ChoiceState {
             title: format(_('Choose at least ${need} card(s) to sell (+${price} Maya each): ${n} / ${need} chosen'), { need: pay.need, price: this.price, n: selected.length }),
             onChange,
         });
-        return el('div', { class: `pe-sellprompt${enough ? ' pe-sellprompt-ok' : ''}` }, [
-            el('div', { class: 'pe-sellprompt-text' }, [
-                format(_('Needs ${short} more Maya. Choose at least ${need} card(s) to sell (+${price} Maya each): ${n} / ${need} chosen'), {
-                    short: pay.short,
-                    need: pay.need,
-                    price: this.price,
-                    n: selected.length,
-                }),
-            ]),
-            slot,
-        ]);
     }
 
     /**

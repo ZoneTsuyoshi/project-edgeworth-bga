@@ -76,21 +76,6 @@ export class PlayerArea {
     }
 
     /**
-     * 自分のアクションカードの行を別の場所（計画フェイズの選択パネル）へ移す。null で自分の領域の元の場所へ戻す。
-     * 同じ行が画面に 2 つ同時に出ないよう、要素そのものを移す。
-     * @param {HTMLElement | null} container
-     */
-    moveActionsTo(container) {
-        if (container === null) {
-            if (this.actionsBox.parentElement !== this.actionsGroup) {
-                this.actionsGroup.append(this.actionsBox);
-            }
-            return;
-        }
-        container.append(this.actionsBox);
-    }
-
-    /**
      * 衛星を選べるようにする（map に無い衛星は選択の対象外）。null で解除。
      * @param {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>> | null} picks
      * @param {(satId: number) => void} [onPick]

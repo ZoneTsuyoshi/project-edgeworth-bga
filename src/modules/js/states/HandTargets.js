@@ -1,14 +1,14 @@
 /**
- * 手札を選ぶ目的（欄）を登録し、手札のゾーンを選択中の欄に割り当てる部品（仕様書 012 追補 2026-11-14 B-2）。
- * 欄 = パネルの見出し + 選んだカードの一覧（名前 + ×）。欄が複数あるときは各欄に [Choose from hand] を置く。
+ * 手札を選ぶ目的（欄）を登録し、手札のゾーンを選択中の欄に割り当てる部品（仕様書 012 追補 2026-11-14 B-2、014 §5.1「欄」の共通の形）。
+ * 欄 = トレイの 1 行「ラベル + 今の値（文字）」。選択中の欄は pe-picked。欄が 2 つ以上のとき、選択中でない欄の行に BGA 標準の secondary ボタン [Choose from hand]。
+ * 選んだカードの [×] は無く、手札のカードをもう一度押すと外れる（トグル）。
  * 選択中の欄だけが手札のゾーン（HandView.setSelectable / setChosen）を使い、他の欄で選んだカードは手札の上に印（setPlanned）を付けて候補から外す。
  * 判定（次に移る欄、他の欄に取られたカードを候補から外す）は logic/hand-targets.js の純関数。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { el } from '../ui/dom.js';
-import { tipText } from '../ui/Tips.js';
 import {
-  advanceActive, candidatesFor, pickFromHand, plannedMarks, removeCard, resolveActive, targetComplete,
+  advanceActive, candidatesFor, pickFromHand, plannedMarks, resolveActive, targetComplete,
 } from './logic/hand-targets.js';
 import { cardName } from './texts.js';
 
@@ -25,7 +25,7 @@ import { cardName } from './texts.js';
  * @property {string} [title] 選択中のときのステータスバーのタイトル
  * @property {number[]} [exclude] この欄の候補にできないカード（他の目的に予約済み。印は付く）
  * @property {Map<number, string>} [reasons] 手札のゾーンで押せないカードの理由（title）
- * @property {(cardId: number) => string} [itemText] 選んだカードの一覧の行の文言（省略はカード名）。組の行など
+ * @property {(cardId: number) => string} [itemText] 今の値の文言（省略はカード名）。組の行など
  * @property {HTMLElement} [extra] 欄の中に足す部品（残すカードだけの小さな一覧など）
  * @property {(ids: number[]) => void} onChange 選択が変わった（HandTargets が上限と他の欄との重なりを整えた後の並び）
  */
@@ -38,18 +38,8 @@ import { cardName } from './texts.js';
  * @property {boolean} [idleWhenComplete] 未完了の欄がなく欄が複数のときは、手札を使わない状態から始める
  * @property {(id: string | null) => void} setActive 選択中の欄を覚える（描き直しはしない）
  * @property {() => void} refresh 画面を描き直す
+ * @property {(label: string, callback: () => void, opts?: { color?: 'primary' | 'secondary' | 'alert', destination?: HTMLElement, disabled?: boolean, tooltip?: string }) => unknown} addButton BGA 標準のボタン（destination = 欄の行）
  */
-
-/**
- * 要素に文字だけのツールチップを付けて返す（空なら付けない）。
- * @param {HTMLElement} node
- * @param {string | undefined} text
- * @returns {HTMLElement}
- */
-function tipped(node, text) {
-  tipText(node, text);
-  return node;
-}
 
 export class HandTargets {
     /**
@@ -80,7 +70,7 @@ export class HandTargets {
     }
 
     /**
-     * 欄の部品（見出し + [Choose from hand] + 選んだカードの一覧）。
+     * 欄の行（ラベル + 今の値。選択中は pe-picked。選択中でない欄にだけ [Choose from hand]）。
      * @param {string} id
      * @returns {HTMLElement}
      */
@@ -91,33 +81,23 @@ export class HandTargets {
         }
         const active = this.active === id;
         const several = this.targets.length > 1;
-        const items = target.selected.map((cardId) => el('li', { class: 'pe-handfield-item', dataset: { id: cardId } }, [
-            el('span', { class: 'pe-handfield-name' }, [target.itemText?.(cardId) ?? cardName(cardId)]),
-            el('button', {
-                type: 'button',
-                class: 'pe-btn pe-btn-small',
-                'aria-label': _('Remove'),
-                onClick: () => this.change(id, removeCard(target.selected, cardId)),
-            }, ['×']),
-        ]));
-        return el('div', { class: `pe-handfield${active ? ' pe-handfield-active' : ''}${target.disabled === undefined ? '' : ' pe-handfield-off'}`, dataset: { target: id } }, [
-            el('div', { class: 'pe-handfield-head' }, [
-                el('div', { class: 'pe-choice-label' }, [target.label]),
-                several ? tipped(el('button', {
-                    type: 'button',
-                    class: 'pe-btn pe-btn-small',
-                    disabled: target.disabled !== undefined,
-                    'aria-pressed': active ? 'true' : 'false',
-                    onClick: () => {
-                        this.opts.setActive(id);
-                        this.opts.refresh();
-                    },
-                }, [_('Choose from hand')]), target.disabled) : null,
+        const names = target.selected.map((cardId) => target.itemText?.(cardId) ?? cardName(cardId));
+        const tools = el('span', { class: 'pe-field-tools' });
+        const row = el('div', { class: `pe-field${active ? ' pe-picked' : ''}${target.disabled === undefined ? '' : ' pe-field-off'}`, dataset: { target: id }, 'aria-current': active ? 'true' : null }, [
+            el('div', { class: 'pe-field-main' }, [
+                el('span', { class: 'pe-field-label' }, [target.label]),
+                el('span', { class: `pe-field-value${names.length === 0 ? ' pe-field-empty' : ''}` }, [names.length === 0 ? (target.disabled ?? _('None')) : names.join(', ')]),
+                tools,
             ]),
-            target.disabled === undefined ? null : el('div', { class: 'pe-handfield-note' }, [target.disabled]),
-            items.length === 0 ? null : el('ul', { class: 'pe-handfield-list' }, items),
             target.extra ?? null,
         ]);
+        if (several && !active) {
+            this.opts.addButton(_('Choose from hand'), () => {
+                this.opts.setActive(id);
+                this.opts.refresh();
+            }, { color: 'secondary', destination: tools, disabled: target.disabled !== undefined, tooltip: target.disabled });
+        }
+        return row;
     }
 
     /**

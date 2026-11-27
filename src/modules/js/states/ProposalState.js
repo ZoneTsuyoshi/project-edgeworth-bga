@@ -6,6 +6,7 @@
  */
 import { CardPicker } from '../ui/CardPicker.js';
 import { el } from '../ui/dom.js';
+import { costLine } from '../ui/Tray.js';
 import { nameOfNameId } from '../cards/name-id.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
@@ -49,7 +50,7 @@ export class ProposalState extends ActionState {
     }
 
     /**
-     * 確定済みの企画（残すカード）を、選択パネルに「予定」として出す。手札から捨てる予定のカードは手札の上に印を付ける。
+     * 確定済みの企画（残すカード）を、トレイに「予定」として出す。手札から捨てる予定のカードは手札の上に印を付ける。
      * @param {Record<string, any>} choice
      */
     showPlan(choice) {
@@ -59,11 +60,8 @@ export class ProposalState extends ActionState {
             return;
         }
         const sel = proposalSelectionFrom(choice);
-        const picker = new CardPicker(view, { ids: sel.keep, selected: sel.keep, disabled: new Set(sel.keep) });
-        view.panel.show({
-            title: _('Planned: the cards you will keep'),
-            body: [el('div', { class: 'pe-choice-section' }, [picker.root])],
-        }, { scroll: false });
+        const picker = new CardPicker(view, { ids: sel.keep, selected: sel.keep, interactive: false });
+        view.tray.show([{ label: _('Planned: the cards you will keep'), body: picker.root }]);
         view.areas.get(me)?.hand.setPlanned(new Map(sel.handDiscard.map((id) => [id, _('Discard')])));
     }
 
@@ -103,31 +101,30 @@ export class ProposalState extends ActionState {
         const keepDone = keepComplete(plan, sel);
 
         const check = validateProposal(plan, sel, { hand, maya: this.maya, price: this.price });
-        /** @type {HTMLElement[]} */
-        const body = [];
+        const option70 = plan.options.find((o) => o.kind === EXTRA_DISCARD);
+        /** @type {import('../ui/Tray.js').TraySection[]} */
+        const sections = [];
 
-        // 引いたカード（決定済みの画面では出さない）
-        if (!decided) {
-            const keepPicker = new CardPicker(view, {
-                ids: plan.drawn,
-                selected: sel.keep,
-                max: required,
-                onChange: (ids) => {
-                    sel.keep = ids;
-                    this.refresh();
-                },
-            });
-            body.push(el('div', { class: 'pe-choice-section' }, [
-                el('div', { class: 'pe-choice-label' }, [format(_('Cards you drew: keep ${n} of ${total} (${chosen} chosen). The rest are discarded'), { n: required, total: plan.drawn.length, chosen: sel.keep.length })]),
-                keepPicker.root,
-            ]));
-        }
+        // 引いたカード（決定済みの画面では出さない）。トレイの最初の節（ラベル = 見出し）
+        const keepPicker = decided ? null : new CardPicker(view, {
+            ids: plan.drawn,
+            selected: sel.keep,
+            max: required,
+            onChange: (ids) => {
+                sel.keep = ids;
+                this.refresh();
+            },
+        });
+        sections.push({
+            label: decided ? format(_('Proposal: ${name}'), { name: nameOfNameId(option70?.cardKey ?? '') }) : format(_('Proposal: choose ${n} card(s) to keep'), { n: required }),
+            body: keepPicker?.root ?? null,
+        });
 
         // P068: 手札から捨てて、その枚数だけ多く残す（手札のゾーンで選ぶ）
         if (plan.handDiscard && !decided) {
-            body.push(el('div', { class: 'pe-choice-section' }, [this.handField({
+            sections.push({ body: this.handField({
                 id: 'handDiscard',
-                label: _('Optional: discard cards from your hand too. For each one, you can keep one more drawn card'),
+                label: _('Cards to discard from hand'),
                 badge: _('Discard'),
                 candidates: hand,
                 selected: sel.handDiscard,
@@ -136,7 +133,7 @@ export class ProposalState extends ActionState {
                     sel.handDiscard = ids;
                     this.refresh();
                 },
-            })]));
+            }) });
         }
 
         // P070 / P072
@@ -150,6 +147,7 @@ export class ProposalState extends ActionState {
                 // 手札にない候補 = 残すと決めた引いたカード。欄の中の小さな一覧から選ぶ（手札のゾーンと合わせて 1 枚）
                 const kept = sel.keep.filter((id) => !hand.includes(id));
                 const keptPicker = kept.length === 0 ? undefined : new CardPicker(view, {
+                    small: true,
                     ids: kept,
                     selected: used === undefined ? [] : [used],
                     max: 1,
@@ -163,7 +161,7 @@ export class ProposalState extends ActionState {
                         this.refresh();
                     },
                 });
-                body.push(el('div', { class: 'pe-choice-section' }, [this.handField({
+                sections.push({ body: this.handField({
                     id: `extra:${option.hostKey}`,
                     label: format(_('${name}: discard 1 more card for +${reward} Maya (no sale value)'), { name, reward: option.reward }),
                     badge: _('Discard'),
@@ -181,12 +179,11 @@ export class ProposalState extends ActionState {
                         }
                         this.refresh();
                     },
-                })]));
+                }) });
             } else if (option.kind === KEEP_PURCHASE) {
                 const group = `pe-opt-${option.hostKey}`;
                 const choices = [{ pay: 0, plus: 0 }, ...option.tiers];
-                body.push(el('div', { class: 'pe-choice-section' }, [
-                    el('div', { class: 'pe-choice-label' }, [format(_('${name}: pay Maya to keep more cards'), { name })]),
+                sections.push({ label: format(_('${name}: pay Maya to keep more cards'), { name }), body: [
                     ...choices.map((t) => {
                         const affordable = t.pay === 0 || option.affordable.includes(t.pay);
                         const bySelling = option.affordableBySelling.includes(t.pay);
@@ -214,7 +211,7 @@ export class ProposalState extends ActionState {
                             ]),
                         ]);
                     }),
-                ]));
+                ] });
             }
         }
 
@@ -223,10 +220,10 @@ export class ProposalState extends ActionState {
         if (payment > 0) {
             const need = Math.max(0, Math.ceil((payment - this.maya) / Math.max(1, this.price)));
             if (need > 0) {
-                body.push(this.sellPrompt({ need, short: Math.max(0, payment - this.maya) }, [], sel.sell, (ids) => {
+                sections.push({ body: this.sellPrompt({ need, short: Math.max(0, payment - this.maya) }, [], sel.sell, (ids) => {
                     sel.sell = ids;
                     this.refresh();
-                }));
+                }) });
             } else {
                 sel.sell = [];
             }
@@ -235,13 +232,9 @@ export class ProposalState extends ActionState {
         }
 
         if (check.reason !== undefined && check.reason !== 'keepCount' && check.reason !== 'needMoreSales') {
-            body.push(el('div', { class: 'pe-choice-error', role: 'alert' }, [this.reasonText(check.reason)]));
+            sections.push({ body: costLine([], { warn: this.reasonText(check.reason) }) });
         }
-        const option70 = plan.options.find((o) => o.kind === EXTRA_DISCARD);
-        view.panel.show({
-            title: decided ? format(_('Proposal: ${name}'), { name: nameOfNameId(option70?.cardKey ?? '') }) : format(_('Proposal: choose ${n} card(s) to keep'), { n: required }),
-            body,
-        });
+        view.tray.show(sections);
         this.bga.statusBar.setTitle(decided
             ? format(_('${you} keep all ${n} drawn cards. You may also use ${name}'), { n: plan.drawn.length, name: nameOfNameId(option70?.cardKey ?? '') })
             : format(_('${you} must choose ${n} card(s) to keep (${chosen} chosen)'), { n: required, chosen: sel.keep.length }));

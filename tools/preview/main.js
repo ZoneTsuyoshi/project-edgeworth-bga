@@ -93,7 +93,7 @@ const env = {
     },
     animationsActive: () => params.get('anim') !== 'off',
     currentPlayerId: () => (params.get('spectator') === '1' ? null : me),
-    selectionMode: () => view.stateFrame.selecting,
+    showMessage: (message) => bga.dialogs.showMessage(message, 'info'),
     addButton: (label, callback, opts) => bga.statusBar.addActionButton(label, callback, opts),
 };
 

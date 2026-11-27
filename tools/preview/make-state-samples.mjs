@@ -447,7 +447,7 @@ sample('effects-direct-satellite', {
   state: 'EffectWindowResolve',
   active: true,
   args: win([effectQ(30, 'swap_technician', { fields: [{ key: 'satellite', type: 'SATELLITE', min: 0, max: 0, candidates: [11, 12, 14], default: null }] })]),
-  steps: [{ click: '.pe-sat-pickable', nth: 2 }],
+  steps: [{ click: '.pe-sat[data-pick]:not([data-pick="blocked"])', nth: 2 }],
 });
 sample('effects-direct-hand', {
   state: 'EffectWindowResolve',

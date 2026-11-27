@@ -7,6 +7,7 @@ import { actionKey, projectKey } from './sprite-layout.js';
 import { createCard, createCardBack } from './CardView.js';
 import { cardInfo } from './card-text.js';
 import { el } from '../ui/dom.js';
+import { refuse } from '../ui/refuse.js';
 import { tipLine } from '../ui/Tips.js';
 
 /**
@@ -104,19 +105,20 @@ export class HandView {
         for (const id of this.ids) {
             const card = createCard(this.env, projectKey(id), { classes: ['pe-hand-card'] });
             card.dataset.id = String(id);
-            // 選べない理由があれば、カードの本文の下に足す（押したときのメッセージは PR 4）
+            // 選べない理由があれば、カードの本文の下に足す。押したときもメッセージで出す（014 §6.3）
             this.tips.card(card, projectKey(id), () => {
                 const reason = this.sel.allowed !== null && !this.sel.allowed.has(id) ? this.sel.reasons.get(id) : undefined;
                 return reason === undefined ? null : tipLine(reason, null, 'pe-tip-reason');
             });
             if (this.sel.allowed?.has(id)) {
-                card.classList.add('pe-selectable');
+                card.classList.add('pe-can');
                 card.tabIndex = 0;
                 card.addEventListener('click', () => this.toggle(id));
             } else if (this.sel.allowed !== null) {
-                card.classList.add('pe-unselectable');
+                card.classList.add('pe-off');
+                card.addEventListener('click', () => refuse(this.env, this.sel.reasons.get(id)));
             }
-            card.classList.toggle('pe-selected', this.sel.chosen.has(id));
+            card.classList.toggle('pe-picked', this.sel.chosen.has(id));
             const plan = this.planned.get(id);
             if (plan !== undefined) {
                 card.classList.add('pe-planned');
@@ -185,10 +187,10 @@ export class ActionRow {
 
     /**
      * @param {boolean} confirmed
-     * @param {number | null} [actionNo] 本人だけ分かる選択（010 §9）
+     * @param {number | null} [actionNo] 本人だけ分かる選択（010 §9）。null は「分からない」で、確定済みのままなら前の値を保つ
      */
     setPlot(confirmed, actionNo = null) {
-        this.plot = { confirmed, actionNo: this.mine ? actionNo : null };
+        this.plot = { confirmed, actionNo: this.mine && confirmed ? (actionNo ?? this.plot.actionNo) : null };
         this.render();
     }
 
@@ -219,15 +221,24 @@ export class ActionRow {
             }
             this.tips.card(card, actionKey(no), () => (sideways ? tipLine(_('Used last round. Returns to your hand next round.'), null, 'pe-tip-reason') : null));
             if (this.allowed?.has(no)) {
-                card.classList.add('pe-selectable');
+                card.classList.add('pe-can');
                 card.tabIndex = 0;
                 card.addEventListener('click', () => {
                     this.chosen = this.chosen === no ? null : no;
                     this.render();
                     this.onChange(this.chosen);
                 });
+            } else if (this.allowed !== null) {
+                // 選べない（横向き = 前のラウンドに使った）。押すと理由を出す（014 §6.3）
+                card.classList.add('pe-off');
+                card.addEventListener('click', () => refuse(this.env, sideways ? _('Used last round. Returns to your hand next round.') : undefined));
             }
-            card.classList.toggle('pe-selected', this.chosen === no);
+            card.classList.toggle('pe-picked', this.chosen === no);
+            // 確定済みの本人: 選んだ札に Planned の印（自分の領域には 6 枚目の裏向きのスロットを出さない。014 §2.3）
+            if (this.mine && this.plot.confirmed && this.plot.actionNo === no) {
+                card.classList.add('pe-planned');
+                card.append(el('span', { class: 'pe-plan-badge' }, [_('Planned')]));
+            }
             slot.append(el('div', { class: 'pe-action-box' }, [card]));
             if (this.mine) {
                 // 自分のアクションカードの下に英語名のキャプション（I Budget 形。014 §2.3）
@@ -235,15 +246,9 @@ export class ActionRow {
             }
             this.root.append(slot);
         }
-        // 確定済み（公開前）: 場に置いたカード。本人には選んだカードが分かる（確定の ✓ は廃止。BGA 標準のアクティブ表示に任せる。014 §4.4）
-        if (this.plot.confirmed) {
-            const back = this.plot.actionNo === null
-                ? createCardBack(this.env, 'AREV', ['pe-action-card', 'pe-action-plot'])
-                : createCard(this.env, actionKey(this.plot.actionNo), { classes: ['pe-action-card', 'pe-action-plot'] });
-            if (this.plot.actionNo !== null) {
-                back.classList.add('pe-planned');
-                back.append(el('span', { class: 'pe-plan-badge' }, [_('Planned')]));
-            }
+        // 確定済み（公開前）: 他のプレイヤーは場に裏向きの 1 枚が出る（✓ は廃止。BGA 標準のアクティブ表示に任せる。014 §4.4）。自分の領域には出さない
+        if (this.plot.confirmed && !this.mine) {
+            const back = createCardBack(this.env, 'AREV', ['pe-action-card', 'pe-action-plot']);
             this.root.append(el('div', { class: 'pe-action-slot pe-action-plotslot' }, [el('div', { class: 'pe-action-box' }, [back])]));
         }
     }

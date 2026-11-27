@@ -3,7 +3,6 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { CARD_INFO } from '../cards/card-info.js';
-import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { format } from './logic/common.js';
 
@@ -46,14 +45,13 @@ export class SetupLaunchPadPlace extends ActionState {
 
 /**
  * 22 PlanningPlot（MULTIPLE_ACTIVE）: 選べるアクション（`_private.selectable`）から 1 枚選び、[Confirm] で確定する。確定後も選び直せる（再確定。[Change my choice]）。
+ * 自分の領域の行 A のアクションカードをそのまま押して選ぶ（選べる = pe-can、横向き = pe-off、選んだ = pe-picked。確定後は選んだ札に Planned。014 §2.3）。
  */
 export class PlanningPlot extends ActionState {
     constructor(/** @type {any} */ game, /** @type {Bga} */ bga) {
         super(game, bga);
         /** @type {number | null} */
         this.no = null;
-        /** 次にパネルを出すとき画面へスクロールするか（入場時だけ） */
-        this.scrollPanel = true;
     }
 
     reset() {
@@ -71,64 +69,10 @@ export class PlanningPlot extends ActionState {
         return info === undefined ? '' : `${info.numeral} ${info.name}`;
     }
 
-    /**
-     * @param {Record<string, any>} args
-     * @param {boolean} isActive
-     */
-    onEnteringState(args, isActive) {
-        this.scrollPanel = true;
-        super.onEnteringState(args, isActive);
-    }
-
-    onLeavingState() {
-        super.onLeavingState();
-        this.peRestoreActions();
-    }
-
-    /** 描き直しのたびに、アクションカードの行を元の場所へ戻してから外す（パネルの付け直しは refresh の最後） */
-    clearUi() {
-        this.peRestoreActions();
-        super.clearUi();
-    }
-
-    refresh() {
-        super.refresh();
-        this.peShowActionsPanel();
-    }
-
-    peRestoreActions() {
-        const view = this.game.view;
-        const me = view?.m.me ?? null;
-        if (view !== null && me !== null) {
-            view.areas.get(me)?.moveActionsTo(null);
-        }
-    }
-
-    /**
-     * 計画の間、自分のアクションカードの行を選択パネル（盤面の上）に出す（012 追補 U-1 の 8）。確定後も 22 の間はパネルに置く。
-     * 同じ行が 2 か所に出ないよう、要素そのものを移す。観戦者・参加していない人には出さない。
-     */
-    peShowActionsPanel() {
-        const view = this.game.view;
-        const me = view?.m.me ?? null;
-        const area = me === null ? undefined : view?.areas.get(me);
-        if (view === null || area === undefined || this.mine === null) {
-            return;
-        }
-        const body = el('div', { class: 'pe-choice-section pe-plan-actions' });
-        view.panel.show({
-            title: _('Choose your Action Card'),
-            hint: _('Sideways cards were used last round and cannot be chosen'),
-            body: [body],
-        }, { scroll: this.scrollPanel });
-        this.scrollPanel = false;
-        area.moveActionsTo(body);
-    }
-
     renderConfirmed() {
         const view = this.game.view;
         if (view !== null && view.m.me !== null) {
-            // 確定済み: 場に置いた自分のアクションカードを表向きで見せる（他の人には裏面）
+            // 確定済み: 自分の行 A の選んだ札に Planned の印（他の人には裏向きの 1 枚が場に出る）
             view.areas.get(view.m.me)?.actions.setPlot(true, Number(this.confirmed?.action ?? null));
         }
         super.renderConfirmed();

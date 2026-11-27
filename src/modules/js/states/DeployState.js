@@ -9,9 +9,7 @@
  * 各カードのコスト（2 枚目は 1 枚目の効果を含む）はサーバーが計算した値で、ここでは見積もらない。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { createCard } from '../cards/CardView.js';
 import { projectKey } from '../cards/sprite-layout.js';
-import { el } from '../ui/dom.js';
 import { ActionState } from './ActionState.js';
 import { canShowPass, format, sideAvailability } from './logic/common.js';
 import {
@@ -240,13 +238,13 @@ export class DeployState extends ActionState {
             const pair = entry?.entry ?? null;
             if (sel.satId === satellite.satId) {
                 const quote = pair === null ? null : deployQuote(pair.data, sel.useMods, { maya: this.maya, price: this.price, sellable: hand.length - 1 });
-                picks.set(satellite.satId, { state: 'selected', note: quote === null ? undefined : costNote(quote.cost, quote.pay) });
+                picks.set(satellite.satId, { state: 'selected', cost: quote?.cost });
             } else if (entry === undefined || pair === null) {
-                picks.set(satellite.satId, { state: 'blocked', note: sel.cardId === null ? undefined : _('Cannot deploy this card here') });
+                picks.set(satellite.satId, { state: 'blocked', reason: sel.cardId === null ? undefined : _('Cannot deploy this card here') });
             } else if (entry.usable) {
-                picks.set(satellite.satId, sel.cardId === null ? { state: 'selectable' } : { state: pair.data.pay.kind === 'free' ? 'selectable' : 'sellable', note: costNote(pair.data.cost, pair.data.pay) });
+                picks.set(satellite.satId, sel.cardId === null ? { state: 'selectable' } : { state: pair.data.pay.kind === 'free' ? 'selectable' : 'sellable', cost: pair.data.cost });
             } else {
-                picks.set(satellite.satId, { state: 'blocked', note: pair.data.blocked === null ? costNote(pair.data.cost, pair.data.pay) : deployBlockedText(pair.data.blocked) });
+                picks.set(satellite.satId, { state: 'blocked', reason: pair.data.blocked === null ? costNote(pair.data.cost, pair.data.pay) : deployBlockedText(pair.data.blocked) });
             }
         }
         area?.setSatPicks(picks, (satId) => {
@@ -254,7 +252,7 @@ export class DeployState extends ActionState {
             this.refresh();
         });
 
-        // コストの内訳（ボトムシート）と、起動の修正・売却の同梱
+        // コストと結果の行（トレイ）と、起動の修正・売却の同梱
         const chosen = pairs.find((p) => p.a === sel.cardId && p.b === sel.satId);
         if (chosen !== undefined) {
             const target = chosen.data;
@@ -267,7 +265,6 @@ export class DeployState extends ActionState {
                 mods: target.mods,
                 sel,
                 reserved: [],
-                subject: [this.cardPreview(chosen.a)],
                 before: {
                     id: 'deploy',
                     label: _('Card to deploy'),
@@ -287,12 +284,6 @@ export class DeployState extends ActionState {
                 },
             });
             return { chosen, pay: quote.pay };
-        }
-        if (sel.cardId !== null || sel.satId !== null || second) {
-            view.sheet.show({
-                title: sel.cardId === null ? (second ? _('Choose another card to deploy') : _('Choose a card to deploy')) : _('Choose a satellite to deploy to'),
-                lines: [sel.cardId === null ? _('Satellites with a note can receive a card') : format(_('Selected: ${card}'), { card: cardName(sel.cardId) })],
-            });
         }
         return { chosen: undefined, pay: null };
     }
@@ -340,7 +331,7 @@ export class DeployState extends ActionState {
                 ? _('${you} must deploy a card to a satellite, or pass. Then you choose how to use the Action bonus')
                 : _('${you} must deploy a card to a satellite, or pass');
             const drawNote = drawing ? `. ${_('You will also draw 1 card')}` : (this.bonusDeclined ? `. ${_('You will not use the bonus')}` : '');
-            this.bga.statusBar.setTitle(selected === '' ? `${hint}. ${_('Choose a card and a satellite')}` : `${hint}${selected}${drawNote}`);
+            this.bga.statusBar.setTitle(selected === '' ? `${hint}. ${this.chooseNext(view, sel)}` : `${hint}${selected}${drawNote}`);
             if (stage === 'ready') {
                 this.addConfirm(ok);
                 if (this.isBonus) {
@@ -354,6 +345,22 @@ export class DeployState extends ActionState {
         } else {
             this.addReset(!(stage === 'ready' && this.isBonus));
         }
+    }
+
+    /**
+     * まだ組が決まっていないときの、次の操作の案内（カードだけ / 衛星だけ選んでいるとき）。
+     * @param {import('../ui/GameView.js').GameView} view
+     * @param {import('./logic/deploy.js').DeploySelection} sel
+     * @returns {string}
+     */
+    chooseNext(view, sel) {
+        if (sel.cardId !== null) {
+            return `${format(_('Selected: ${card}'), { card: cardName(sel.cardId) })}. ${_('Choose a satellite to deploy to')}`;
+        }
+        if (sel.satId !== null) {
+            return format(_('Choose a card to deploy to ${sat}'), { sat: view.satName(sel.satId) });
+        }
+        return _('Choose a card and a satellite');
     }
 
     /**
@@ -372,7 +379,7 @@ export class DeployState extends ActionState {
             ? ''
             : format(_('${you} have deployed ${card} to ${sat}.'), { card: cardName(info.first.card), sat: view.satName(info.first.satId) });
         const body = chosen === undefined
-            ? _('Choose another card to deploy, or confirm')
+            ? (sel.cardId !== null || sel.satId !== null ? this.chooseNext(view, sel) : _('Choose another card to deploy, or confirm'))
             : format(_('Deploy another card: ${card} to ${sat}'), { card: cardName(chosen.a), sat: view.satName(chosen.b) });
         // [Reset] を押せないときは、理由をタイトルにも出す
         const note = info.canReset ? '' : ` (${RESET_BLOCKED_TEXT()})`;
@@ -444,17 +451,12 @@ export class DeployState extends ActionState {
      * [Pass] から進む、通常の配備をしないボーナスだけの選択。1 枚引くか、ボーナスなしで見送るか。
      */
     renderPassing() {
-        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const sel = this.sel;
         sel.cardId = null;
         sel.satId = null;
         sel.sell = [];
         sel.useMods = [];
         const drawing = sel.extra?.op === 'draw';
-        view.sheet.show({
-            title: _('Pass the deployment'),
-            lines: [drawing ? _('You will draw 1 card (Action bonus)') : _('You will not deploy a card. Use the Action bonus to draw 1 card, or pass without it')],
-        });
         if (drawing) {
             this.bga.statusBar.setTitle(_('${you} will pass the deployment and draw 1 card (Action bonus). Confirm to finish'));
             this.addConfirm(true);
@@ -483,18 +485,6 @@ export class DeployState extends ActionState {
             this.bonusDeclined = false;
             this.refresh();
         }, { color: 'alert', classes: first ? 'pe-bar-undo' : undefined });
-    }
-
-    /**
-     * 小さなカード画像（選択パネルの見出し用）。
-     * @param {number} id
-     * @returns {HTMLElement}
-     */
-    cardPreview(id) {
-        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
-        const card = createCard(view.env, projectKey(id), { classes: ['pe-picker-card'] });
-        view.tips.card(card, projectKey(id));
-        return el('div', { class: 'pe-choice-subject' }, [card, el('span', {}, [cardName(id)])]);
     }
 
     /**
