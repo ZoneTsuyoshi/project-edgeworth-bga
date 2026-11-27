@@ -1,13 +1,14 @@
 {
-  // ユーザー設定（仕様書 012 §3.4・未確定事項 No.11）。ID は 100〜199。
-  // 100: コマに席順の数字を重ねる（色覚への配慮）。画面（I-10）が cssPref の class を使う。
+  // ユーザー設定（仕様書 012 §3.4・未確定事項 No.11、014 §3・§13 の決定 D）。ID は 100〜199。
+  // 100: コマ・ラウンドトラック・プレイヤーの領域・パネルに席順の数字（1〜4）の印を出す（色覚への配慮）。
+  //      画面は Game.js が this.bga.userPreferences で値を読み、変わったら body.pe-marks-on を付け外しする（cssPref は使わない）。
   // （101: 衛星カードの表示は 014 で廃止した。ロケットは紙どおりの表示だけ。）
   // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
   "100": {
-    "name": "Show player marks on pieces",
+    "name": "Show player numbers on pieces",
     "values": {
-      "0": { "name": "Off", "cssPref": "pe_marks_off" },
-      "1": { "name": "On", "cssPref": "pe_marks_on" }
+      "0": { "name": "Off" },
+      "1": { "name": "On" }
     },
     "default": 0
   }

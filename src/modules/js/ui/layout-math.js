@@ -28,8 +28,6 @@ export const SUPPLY_CARD_H_MAX = 117;
 export const SUPPLY_CHROME_H = 104;
 /** スマホの段の並び（小さい順）。拡縮ボタンはこの順に 1 つずつ移る */
 export const NARROW_STEP_ORDER = /** @type {const} */ (['overview', 'normal', 'large']);
-/** `#pe-root` の幅の上限（px。012 追補 U-2） */
-export const ROOT_MAX_WIDTH = 1400;
 /** `#pe-root` の左右の余白（px。操作しない余白。narrow だけ 8。014 §2.1） */
 export const ROOT_GUTTER = 12;
 export const ROOT_GUTTER_NARROW = 8;

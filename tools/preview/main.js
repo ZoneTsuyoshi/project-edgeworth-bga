@@ -30,6 +30,10 @@ if (params.get('theme') === 'dark') {
 if (params.get('layout') === 'narrow' || (params.get('layout') !== 'wide' && window.innerWidth < 980)) {
     document.body.classList.add('pv-narrow');
 }
+// ?marks=1: 設定 100（席順の印）をオンにする
+if (params.get('marks') === '1') {
+    document.body.classList.add('pe-marks-on');
+}
 if (params.get('tools') === '1') {
     document.body.classList.add('pv-tools');
 }

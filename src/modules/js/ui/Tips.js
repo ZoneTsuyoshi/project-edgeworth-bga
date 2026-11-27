@@ -445,6 +445,10 @@ export class Tips {
       for (const f of [0.8, 0.65, 0.5, 0.4, 0]) {
         attempts.push({ w: Math.min(WIDTH_WIDE, maxW), img: f === 0 ? IMG_MIN : Math.max(IMG_MIN, Math.round(imgDefault * f)) });
       }
+      // 横向きのスマホなど、低くて横に余裕がある画面: 幅を狭めて対象の横（右・左）に置く
+      for (const w of [440, 360]) {
+        attempts.push({ w: Math.min(w, maxW), img: Math.max(IMG_MIN, Math.round(imgDefault * 0.65)) }, { w: Math.min(w, maxW), img: IMG_MIN });
+      }
     } else {
       attempts.push({ w: null, img: imgDefault }, { w: Math.min(WIDTH_WIDE, maxW), img: imgDefault });
     }

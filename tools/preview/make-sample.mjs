@@ -174,6 +174,26 @@ const sample2 = {
   finalScores: null,
 };
 
+// ---- 見本 3: 4 人（見本 1 の盤面・自分に、4 人目 Daichi を足す。得点表・席順の印・パネルの確認用）----
+const ids4 = [...ids3, 2310004];
+const sample3 = structuredClone(sample1);
+sample3.players = players(ids4, ['Aoi', 'Bruno', 'Chie', 'Alexandria-Montgomery']);
+sample3.playerOrder = ids4;
+sample3.playerData[ids4[3]] = {
+  maya: 15, budget: 15, padCell: 2, handCount: 3, drawnCount: 0, missionCount: 2, cubesLeft: 15,
+  actionCards: { 1: 0, 2: 0, 3: 1, 4: 0, 5: 0 },
+  rewardValues: { T001: 0, T013: 1 },
+  satellites: satellites(3, 71, [
+    { cell: 4, dir: 'SW', fuelUsed: 1, cards: [35] },
+    { cell: null, cards: [] },
+    { cell: null, cards: [] },
+    { cell: null, cards: [] },
+    { cell: null, cards: [] },
+  ]),
+  links: [{ cell: 3, slot: 0, level: 0 }],
+};
+
+writeFileSync(path.join(DIR, 'four-players-advanced.json'), `${JSON.stringify(sample3, null, 1)}\n`);
 writeFileSync(path.join(DIR, 'three-players-advanced.json'), `${JSON.stringify(sample1, null, 1)}\n`);
 writeFileSync(path.join(DIR, 'two-players-standard-6col.json'), `${JSON.stringify(sample2, null, 1)}\n`);
 console.log('サンプルを書きました:', DIR);

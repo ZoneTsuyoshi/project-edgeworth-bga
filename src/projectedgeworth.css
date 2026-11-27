@@ -304,9 +304,10 @@ body {
     color: var(--pe-ink-dim);
 }
 
+/* 取り消し線 + 少し薄く（文字のコントラスト比 4.5:1 を保つため 0.6。check:ui の 8 番） */
 .pe-round-skipped {
     text-decoration: line-through;
-    opacity: 0.4;
+    opacity: 0.6;
 }
 
 /* そのアクションを選んだプレイヤー（アクション選択ボーナスの保持者）の色の四角 */
@@ -639,6 +640,17 @@ body {
     filter: drop-shadow(0 1px 1px rgb(0 0 0 / 55%));
     pointer-events: auto;
     cursor: pointer;
+}
+
+/* 押せる範囲は 32 × 32 px 以上にする（小さいコマでも押せる。check:ui の 3 番）。コマの回転に合わせて回るが正方形なので範囲は変わらない */
+.pe-sat-piece::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 32px);
+    height: max(100%, 32px);
+    transform: translate(-50%, -50%);
 }
 
 /* 効果の問いの対象の衛星コマ（金色の光。コマは回るので outline ではなく影で囲む） */
@@ -1218,7 +1230,6 @@ body {
     height: 18px;
     color: #d32f2f;
     pointer-events: none;
-    filter: drop-shadow(0 0 1px #000);
     transform: translate(-50%, -50%);
 }
 
@@ -1769,7 +1780,6 @@ html[data-theme="dark"] .pe-tip-facts dt {
 .pe-tip-info svg {
     width: 24px;
     height: 24px;
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 60%));
 }
 
 /* トレイ（#pe-tray。盤面の下。箱なし。レールとラベル、その下に中身。014 §5）。選択パネルとボトムシートを 1 つにした。開いても盤面は上下しない */
@@ -1935,7 +1945,7 @@ html[data-theme="dark"] .pe-tip-facts dt {
 }
 
 .pe-field-off {
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 .pe-field.pe-picked {
@@ -1951,12 +1961,6 @@ html[data-theme="dark"] .pe-tip-facts dt {
     border-radius: 2px;
     background: var(--pe-check) no-repeat left 8px center / 22px 22px;
     pointer-events: none;
-}
-
-/* ホバー専用のスタイルは .notouch-device を前置する（必須の情報はホバーだけに置かない。012 §10 教訓 9） */
-.notouch-device .pe-chip:hover,
-.notouch-device .pe-strip:hover {
-    outline: 2px solid var(--pe-can);
 }
 
 /* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 640 px 未満） ---- */
@@ -2102,7 +2106,7 @@ html[data-theme="dark"] .pe-tip-facts dt {
     color: #0a1122;
 }
 
-/* 名声の内訳の表（#pe-score。箱なし。上端の線とラベル。中身は変えない。幅の調整は PR 6） */
+/* 名声の内訳の表（#pe-score。箱なし。上端の線とラベル。中身は変えない） */
 .pe-scoresheet {
     padding: 8px 0 0;
     border-top: 1px solid var(--pe-line);
@@ -2112,31 +2116,81 @@ html[data-theme="dark"] .pe-tip-facts dt {
     display: none;
 }
 
-.pe-score-scroll {
-    overflow-x: auto;
-}
-
+/* 横スクロールなし（014 §2.2・§13 の決定 C）。行のラベルの列は 34 %、プレイヤーの列は均等。見出しの名前は 1 行で省略記号 */
 .pe-score-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 13px;
 }
 
 .pe-score-table th,
 .pe-score-table td {
-    padding: 4px 8px;
+    padding: 4px 6px;
     border-bottom: 1px solid var(--pe-line);
     text-align: left;
     vertical-align: top;
+    overflow-wrap: anywhere;
 }
 
 .pe-score-table thead th {
+    height: 32px;
+    vertical-align: middle;
+}
+
+.pe-score-table tbody th {
+    font-weight: normal;
+    color: var(--pe-ink-dim);
+}
+
+.pe-score-table col:first-child {
+    width: 34%;
+}
+
+.pe-score-headbox {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pe-root[data-layout="narrow"] .pe-score-headbox {
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+}
+
+.pe-score-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 達成の印（SVG）。達成 = 緑、未達成 = 補助色の短い線 */
+.pe-score-mark {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    vertical-align: -2px;
+    color: var(--pe-ink-dim);
+}
+
+.pe-score-mark svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.pe-score-mark-ok {
+    color: var(--pe-ok);
 }
 
 .pe-score-rank {
-    margin-left: 6px;
-    padding: 0 6px;
+    flex: none;
+    padding: 0 4px;
     border-radius: 2px;
     background: var(--pe-pick);
     font-size: 12px;
@@ -2164,6 +2218,11 @@ html[data-theme="dark"] .pe-tip-facts dt {
 .pe-score-table .pe-score-total th {
     border-top: 2px solid var(--pe-ink);
     font-size: 15px;
+}
+
+.pe-root[data-layout="narrow"] .pe-score-table th,
+.pe-root[data-layout="narrow"] .pe-score-table td {
+    padding: 4px 3px;
 }
 
 .pe-root[data-layout="narrow"] .pe-picker:not(.pe-picker-hand) .pe-picker-slot,
@@ -2280,6 +2339,12 @@ html[data-theme="dark"] .pe-tip-facts dt {
     box-shadow: 0 0 0 2px var(--pe-pick);
 }
 
+/* 卓の中に置く BGA 標準のボタンは、押せる範囲を 32 px 以上にする（C.2・check:ui の 3 番。見た目は BGA のまま） */
+.pe-root .bgabutton {
+    min-width: 32px;
+    min-height: 32px;
+}
+
 .pe-bicon,
 .bgabutton .pe-dir-icon {
     width: 16px;
@@ -2391,4 +2456,75 @@ html[data-theme="dark"] .pe-tip-facts dt {
 
 .pe-root[data-layout="narrow"] .pe-effect-queue {
     flex-direction: row;
+}
+
+/* ---- 13 設定 100: 席順の印（014 §3・§13 の決定 D） ----
+   印はいつも DOM にあり、body.pe-marks-on のときだけ出す。白い数字・濃い地・白い細い縁（小さいコマの上でも読める）。 */
+.pe-mark {
+    display: none;
+}
+
+.pe-marks-on .pe-mark {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 2px;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    background: #0a1122;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    color: #fff;
+    pointer-events: none;
+}
+
+.pe-marks-on .pe-mark-sat,
+.pe-marks-on .pe-mark-cube,
+.pe-marks-on .pe-mark-base {
+    position: absolute;
+}
+
+.pe-marks-on .pe-mark-sat {
+    top: calc(50% + var(--oy, 0) * var(--pe-hex-w, 52px) - 0.22 * var(--pe-hex-w, 52px));
+    left: calc(50% + var(--ox, 0) * var(--pe-hex-w, 52px) + 0.2 * var(--pe-hex-w, 52px));
+    transform: translate(-50%, -50%);
+}
+
+.pe-marks-on .pe-mark-cube {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pe-marks-on .pe-mark-base {
+    top: 0;
+    left: 100%;
+    transform: translate(-30%, -30%);
+}
+
+.pe-marks-on .pe-mark-name {
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
+/* ラウンドトラックの四角は数字入りの 14 px（プレイヤーの色の地に暗い数字） */
+.pe-marks-on .pe-round-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    color: #0a1122;
+}
+
+.pe-marks-on .pe-round-mark::after {
+    content: attr(data-order);
 }

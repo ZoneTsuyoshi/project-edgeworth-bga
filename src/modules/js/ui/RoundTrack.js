@@ -25,7 +25,7 @@ function stepLabels() {
 export class RoundTrack {
     /**
      * @param {HTMLElement} root `#pe-round`
-     * @param {(playerId: number) => { color: string, name: string } | null} lookup プレイヤーの色（b / g / r / y）と名前
+     * @param {(playerId: number) => { color: string, name: string, order: number } | null} lookup プレイヤーの色（b / g / r / y）・名前・席順（設定 100 の印）
      */
     constructor(root, lookup) {
         this.root = root;
@@ -60,7 +60,7 @@ export class RoundTrack {
                 if (info === null) {
                     return [];
                 }
-                const mark = el('span', { class: 'pe-round-mark', role: 'img', 'aria-label': info.name, dataset: { color: info.color } });
+                const mark = el('span', { class: 'pe-round-mark', role: 'img', 'aria-label': info.name, dataset: { color: info.color, order: info.order } });
                 tipText(mark, info.name);
                 return [mark];
             });

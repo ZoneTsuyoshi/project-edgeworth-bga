@@ -6,6 +6,7 @@
  */
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
+import { seatMark } from './marks.js';
 import { tipText } from './Tips.js';
 import { buildStats, CUBES_TOTAL } from './PlayerStats.js';
 import { format } from '../states/logic/common.js';
@@ -75,6 +76,7 @@ export class PlayerPanel {
         }
         const marks = el('span', { class: 'pe-panel-marks' }, [
             badge,
+            seatMark(p.order, 'pe-mark-panel'),
             jump,
         ]);
         this.root.replaceChildren(el('div', { class: 'pe-panel-row' }, [...stats, marks]));

@@ -261,5 +261,6 @@ export class ActionRow {
  */
 function actionCaption(no) {
     const info = /** @type {Record<string, any> | null} */ (cardInfo(actionKey(no)));
-    return info === null ? String(no) : `${info.numeral} ${info.name}`;
+    // 短い表記（narrow の幅 64 px でも 2 行以内: `IV Link`、`III Launch / Turn`）
+    return info === null ? String(no) : `${info.numeral} ${String(info.name).replace(/^Establish /, '')}`;
 }
