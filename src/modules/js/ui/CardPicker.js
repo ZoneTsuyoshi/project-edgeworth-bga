@@ -7,6 +7,7 @@ import { createCard } from '../cards/CardView.js';
 import { cardInfo } from '../cards/card-text.js';
 import { projectKey } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
+import { tipLine } from './Tips.js';
 
 export class CardPicker {
     /**
@@ -72,10 +73,7 @@ export class CardPicker {
             card.setAttribute('role', 'checkbox');
             card.setAttribute('aria-checked', this.selected.has(id) ? 'true' : 'false');
             card.setAttribute('aria-label', cardInfo(key)?.name ?? key);
-            if (off) {
-                const reason = this.disabled instanceof Map ? this.disabled.get(id) : undefined;
-                card.title = reason ?? '';
-            } else {
+            if (!off) {
                 card.tabIndex = 0;
                 card.addEventListener('click', () => this.toggle(id));
                 card.addEventListener('keydown', (e) => {
@@ -85,7 +83,10 @@ export class CardPicker {
                     }
                 });
             }
-            this.view.tooltip.bind(card, key);
+            this.view.tips.card(card, key, () => {
+                const reason = off && this.disabled instanceof Map ? this.disabled.get(id) : undefined;
+                return reason === undefined || reason === '' ? null : tipLine(reason, null, 'pe-tip-reason');
+            });
             this.root.append(el('div', { class: 'pe-picker-slot' }, [card, el('span', { class: 'pe-picker-name' }, [cardInfo(key)?.name ?? key])]));
         }
     }

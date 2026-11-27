@@ -73,9 +73,29 @@ export class BoardView {
         /** @type {{ x: number, y: number, cell: number } | null} */
         let down = null;
         const cellOf = (/** @type {EventTarget | null} */ target) => {
-            const node = /** @type {HTMLElement | null} */ (/** @type {Element | null} */ (target)?.closest?.('.pe-cell'));
+            // キューブ・発射拠点のコマ（ツールチップのためクリックを受ける）の上でも、その区域を選べる
+            const node = /** @type {HTMLElement | null} */ (/** @type {Element | null} */ (target)?.closest?.('.pe-cell, .pe-pbox-cube, .pe-pbox-base'));
             return node === null ? null : Number(node.dataset.cell);
         };
+        this.piecesLayer.addEventListener('pointerdown', (e) => {
+            const cell = cellOf(e.target);
+            down = cell === null ? null : { x: e.clientX, y: e.clientY, cell };
+        });
+        this.piecesLayer.addEventListener('pointermove', (e) => {
+            if (down !== null && Math.hypot(e.clientX - down.x, e.clientY - down.y) > MOVE_THRESHOLD_PX) {
+                down = null;
+            }
+        });
+        this.piecesLayer.addEventListener('pointerup', (e) => {
+            const cell = cellOf(e.target);
+            if (down !== null && cell !== null && cell === down.cell) {
+                this.onPick(cell);
+            }
+            down = null;
+        });
+        this.piecesLayer.addEventListener('pointercancel', () => {
+            down = null;
+        });
         this.tilesLayer.addEventListener('pointerdown', (e) => {
             const cell = cellOf(e.target);
             down = cell === null ? null : { x: e.clientX, y: e.clientY, cell };

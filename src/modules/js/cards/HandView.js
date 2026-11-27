@@ -7,6 +7,7 @@ import { actionKey, projectKey } from './sprite-layout.js';
 import { createCard, createCardBack } from './CardView.js';
 import { cardInfo } from './card-text.js';
 import { el } from '../ui/dom.js';
+import { tipLine } from '../ui/Tips.js';
 
 /**
  * 選択できるカードの集まり。クリックで選択を切り替える（単一 / 複数）。
@@ -28,12 +29,12 @@ class Selectable {
 export class HandView {
     /**
      * @param {import('./CardView.js').Env} env
-     * @param {import('./Tooltip.js').Tooltip} tooltip
+     * @param {import('../ui/Tips.js').Tips} tips
      * @param {HTMLElement} root
      */
-    constructor(env, tooltip, root) {
+    constructor(env, tips, root) {
         this.env = env;
-        this.tooltip = tooltip;
+        this.tips = tips;
         this.root = root;
         root.classList.add('pe-hand');
         /** @type {number[]} */
@@ -67,7 +68,7 @@ export class HandView {
     /**
      * 選択モードにする。ids が null で解除。
      * @param {number[] | null} ids 選べるカード
-     * @param {{ multi?: boolean, onChange?: (ids: number[]) => void, reasons?: Map<number, string> }} [opts] reasons = 押せないカードの理由（title）
+     * @param {{ multi?: boolean, onChange?: (ids: number[]) => void, reasons?: Map<number, string> }} [opts] reasons = 押せないカードの理由（ツールチップ）
      */
     setSelectable(ids, opts = {}) {
         this.sel.allowed = ids === null ? null : new Set(ids);
@@ -103,17 +104,17 @@ export class HandView {
         for (const id of this.ids) {
             const card = createCard(this.env, projectKey(id), { classes: ['pe-hand-card'] });
             card.dataset.id = String(id);
-            this.tooltip.bind(card, projectKey(id));
+            // 選べない理由があれば、カードの本文の下に足す（押したときのメッセージは PR 4）
+            this.tips.card(card, projectKey(id), () => {
+                const reason = this.sel.allowed !== null && !this.sel.allowed.has(id) ? this.sel.reasons.get(id) : undefined;
+                return reason === undefined ? null : tipLine(reason, null, 'pe-tip-reason');
+            });
             if (this.sel.allowed?.has(id)) {
                 card.classList.add('pe-selectable');
                 card.tabIndex = 0;
                 card.addEventListener('click', () => this.toggle(id));
             } else if (this.sel.allowed !== null) {
                 card.classList.add('pe-unselectable');
-                const reason = this.sel.reasons.get(id);
-                if (reason !== undefined) {
-                    card.title = reason;
-                }
             }
             card.classList.toggle('pe-selected', this.sel.chosen.has(id));
             const plan = this.planned.get(id);
@@ -151,13 +152,13 @@ export const ACTION_SIDEWAYS = 2;
 export class ActionRow {
     /**
      * @param {import('./CardView.js').Env} env
-     * @param {import('./Tooltip.js').Tooltip} tooltip
+     * @param {import('../ui/Tips.js').Tips} tips
      * @param {HTMLElement} root
      * @param {{ mine: boolean }} opts
      */
-    constructor(env, tooltip, root, opts) {
+    constructor(env, tips, root, opts) {
         this.env = env;
-        this.tooltip = tooltip;
+        this.tips = tips;
         this.root = root;
         this.mine = opts.mine;
         root.classList.add('pe-actions');
@@ -215,9 +216,8 @@ export class ActionRow {
             card.dataset.no = String(no);
             if (sideways) {
                 card.classList.add('pe-sideways');
-                card.title = _('Used last round. Returns to your hand next round.');
             }
-            this.tooltip.bind(card, actionKey(no));
+            this.tips.card(card, actionKey(no), () => (sideways ? tipLine(_('Used last round. Returns to your hand next round.'), null, 'pe-tip-reason') : null));
             if (this.allowed?.has(no)) {
                 card.classList.add('pe-selectable');
                 card.tabIndex = 0;

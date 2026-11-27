@@ -10,12 +10,14 @@
  *   npm run preview:shots -- --query "theme=dark" --suffix dark --states planning --widths 1440
  *   npm run preview:shots -- --query "sample=two-players-standard-6col" --suffix 2p6col --states none --widths 1440
  *   npm run preview:shots -- --spec path/to/spec.json      自分で書いた手順（steps）の再生
+ *   npm run preview:shots -- --tips                        ツールチップの撮影だけ（既定の撮影にも含む）。撮るたびに、ツールチップが見える領域に入り、対象と重ならないことを確かめて TIP 行で出す
  *
  * 状態 `none` は状態の操作 UI なし（?state= を付けない）。360・390 は mobile + dpr 2 + ?layout=narrow。
  * --viewport で、ページ全体ではなく画面 1 枚分だけを撮る（スクロール・sticky の確認用）。
  * spec = { shots: [{ name, width, height?, mobile?, dpr?, query?, state?, fullPage?, steps?: [...] }] }
  * steps（PR 3 のツールチップの確認に使う）:
  *   { eval: "js", log?: true } | { hover: "css", dx?, dy? } | { click: "css" } | { tap: "css" } | { wait: ms } | { scrollTo: "css", block? } | { scrollY: px } | { shot: "name" }
+ *   | { checkTip: "対象の css" }（ツールチップの矩形が見える領域の中にあり、対象と重ならないことを確かめて標準出力に出す。014 §10 の自動検査 7 番）
  * 終了時に、ページの横のはみ出し（scrollWidth > innerWidth）と、ページ内の例外（#pv-log の ERROR 行）を標準出力に出す。Chrome が無いときは案内を出して終了コード 0。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -38,6 +40,51 @@ const EXTRA_SHOTS = [
     { name: 'w1440-none-2p6col', width: 1440, state: 'none', query: 'sample=two-players-standard-6col' },
     { name: 'w1440-none-fame', width: 1440, state: 'none', query: 'fame=1' },
     { name: 'w390-none-fame', width: 390, state: 'none', query: 'fame=1' },
+];
+/**
+ * ツールチップの撮影（014 §7）。ホバー（マウス）は 1440 × 900 と 1366 × 768、タップ・情報の印（タッチ）は 390 × 844、横向きのスマホは 844 × 390。
+ * 各撮影のあとに checkTip で画面内・対象と重ならないことを確かめる。
+ */
+const TIP_TARGETS = [
+    ['hand', '#pe-me .pe-hand-card'],
+    ['paper', '#pe-me .pe-paper-card'],
+    ['sat', '#pe-me .pe-sat-card'],
+    ['reward', '.pe-reward-card'],
+    ['counter', '.player-board .pe-counter-maya'],
+    ['piece', '.pe-sat-piece'],
+];
+/** 1440 だけで撮る、盤面・ラウンドトラック・場の文字だけのツールチップ */
+const TIP_TARGETS_EXTRA = [
+    ['cube', '.pe-cube'],
+    ['base', '.pe-base-piece'],
+    ['round', '.pe-round-step:nth-child(3)'],
+    ['deck', '.pe-deck'],
+    ['badge', '.pe-base-badge'],
+];
+/** @param {number} width @param {number} height @param {string} query @param {string} suffix @param {string[][]} [targets] */
+function tipHoverShots(width, height, query, suffix, targets = TIP_TARGETS) {
+    return targets.map(([name, sel]) => ({
+        name: `tip-w${width}-${name}${suffix}`,
+        width,
+        height,
+        state: 'none',
+        query,
+        fullPage: false,
+        steps: [{ hover: sel }, { wait: 1100 }, { checkTip: sel }],
+    }));
+}
+const TIP_SHOTS = [
+    ...tipHoverShots(1440, 900, '', ''),
+    ...tipHoverShots(1440, 900, '', '', TIP_TARGETS_EXTRA),
+    ...tipHoverShots(1366, 768, '', ''),
+    ...tipHoverShots(1366, 768, 'theme=dark', '-dark'),
+    { name: 'tip-w390-tap-hand', width: 390, height: 844, state: 'none', fullPage: false, steps: [{ tap: '#pe-me .pe-hand-card' }, { wait: 300 }, { checkTip: '#pe-me .pe-hand-card' }] },
+    { name: 'tip-w390-tap-hand-dark', width: 390, height: 844, state: 'none', query: 'theme=dark', fullPage: false, steps: [{ tap: '#pe-me .pe-hand-card' }, { wait: 300 }, { checkTip: '#pe-me .pe-hand-card' }] },
+    // 選択中のカード（配備の選択。最初の 1 枚が選択済み）の情報の印。押すとツールチップが開く
+    { name: 'tip-w390-info-mark', width: 390, height: 844, state: 'deploy-main', fullPage: false, steps: [{ wait: 400 }, { eval: "document.querySelectorAll('.pe-tip-info').length", log: true }] },
+    { name: 'tip-w390-info-open', width: 390, height: 844, state: 'deploy-main', fullPage: false, steps: [{ wait: 400 }, { tap: '.pe-tip-info' }, { wait: 300 }, { checkTip: '.pe-tip-info' }] },
+    { name: 'tip-w844x390-sat', width: 844, height: 390, mobile: true, state: 'none', fullPage: false, steps: [{ tap: '#pe-me .pe-sat-card' }, { wait: 300 }, { checkTip: '#pe-me .pe-sat-card' }] },
+    { name: 'tip-w844x390-hand', width: 844, height: 390, mobile: true, state: 'none', fullPage: false, steps: [{ tap: '#pe-me .pe-hand-card' }, { wait: 300 }, { checkTip: '#pe-me .pe-hand-card' }] },
 ];
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
@@ -203,6 +250,33 @@ async function devtools(port, path, method = 'GET') {
  * @property {Record<string, any>[]} [steps]
  */
 
+/**
+ * ツールチップの矩形が見える領域（端から 8 px、上はステータスバーの下）の中にあり、対象の矩形と重ならないことを確かめる。
+ * @param {Page} page
+ * @param {string} selector 対象の css
+ * @returns {Promise<string>} `OK ...` または `FAIL ...`
+ */
+async function checkTip(page, selector) {
+    return page.eval(`(() => {
+        const tip = document.getElementById('pe-tip');
+        const anchor = document.querySelector(${JSON.stringify(selector)});
+        if (!tip || tip.hidden) return 'FAIL ツールチップが出ていない';
+        if (!anchor) return 'FAIL 対象が無い';
+        const t = tip.getBoundingClientRect();
+        const a = anchor.getBoundingClientRect();
+        const bar = document.getElementById('page-title');
+        const top = Math.max(8, (bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0) + 8);
+        const vw = Math.min(window.innerWidth, document.documentElement.clientWidth), vh = window.innerHeight;
+        const problems = [];
+        if (t.left < 8 - 0.5 || t.right > vw - 8 + 0.5 || t.top < top - 0.5 || t.bottom > vh - 8 + 0.5) problems.push('画面の外にはみ出している');
+        const ox = Math.min(t.right, a.right) - Math.max(t.left, a.left), oy = Math.min(t.bottom, a.bottom) - Math.max(t.top, a.top);
+        if (ox > 0.5 && oy > 0.5) problems.push('対象と重なっている');
+        if (tip.scrollHeight > tip.clientHeight + 1) problems.push('中身が切れている（scrollHeight ' + tip.scrollHeight + ' > ' + tip.clientHeight + '）');
+        const r = (x) => Math.round(x);
+        return (problems.length ? 'FAIL ' + problems.join(' / ') : 'OK') + ' tip=' + [r(t.left), r(t.top), r(t.width), r(t.height)] + ' anchor=' + [r(a.left), r(a.top), r(a.width), r(a.height)] + ' view=' + vw + 'x' + vh + ' barBottom=' + r(top - 8);
+    })()`);
+}
+
 /** @param {Page} page @param {Shot} shot @param {string} base @param {boolean} fullPageDefault */
 async function runShot(page, shot, base, fullPageDefault) {
     const mobile = shot.mobile ?? shot.width <= 480;
@@ -258,6 +332,8 @@ async function runShot(page, shot, base, fullPageDefault) {
             await page.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: r.x, y: r.y }] });
             await sleep(60);
             await page.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        } else if (step.checkTip !== undefined) {
+            console.log(`TIP ${shot.name}:`, await checkTip(page, step.checkTip));
         } else if (step.wait !== undefined) {
             await sleep(step.wait);
         } else if (step.scrollTo !== undefined) {
@@ -291,7 +367,9 @@ async function main() {
     }
     /** @type {Shot[]} */
     let shots;
-    if (typeof args.spec === 'string') {
+    if (args.tips === true) {
+        shots = TIP_SHOTS;
+    } else if (typeof args.spec === 'string') {
         shots = JSON.parse(readFileSync(resolve(args.spec), 'utf8')).shots;
     } else {
         const widths = typeof args.widths === 'string' ? args.widths.split(',').map(Number) : Object.keys(WIDTHS).map(Number);
@@ -301,6 +379,7 @@ async function main() {
         shots = widths.flatMap((width) => states.map((state) => ({ name: `w${width}-${state}${suffix}`, width, state, query })));
         if (typeof args.widths !== 'string' && typeof args.states !== 'string') {
             shots.push(...EXTRA_SHOTS.map((shot) => ({ ...shot, query: [shot.query, query].filter((q) => q !== '').join('&') })));
+            shots.push(...TIP_SHOTS);
         }
     }
     const fullPage = args.viewport !== true;

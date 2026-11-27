@@ -7,6 +7,7 @@
 import { CARD_INFO } from '../cards/card-info.js';
 import { rankScores } from '../states/logic/score.js';
 import { clear, el } from './dom.js';
+import { tipText } from './Tips.js';
 
 /** @returns {Record<string, string>} 区分の見出し（001 §12） */
 export function sectionLabels() {
@@ -136,11 +137,11 @@ export class ScoreSheet {
                 scope: 'col',
                 class: `pe-score-player pe-score-selectable${s.playerId === this.selected ? ' pe-score-selected' : ''}`,
                 dataset: { player: s.playerId },
-                title: _('Show this player\'s mission areas on the board'),
             }, [
                 model.players[s.playerId]?.name ?? String(s.playerId),
                 el('span', { class: 'pe-score-rank' }, [`#${s.rank}`]),
             ]);
+            tipText(th, _('Show this player\'s mission areas on the board'));
             th.addEventListener('click', () => this.onSelect(s.playerId));
             return th;
         })]);

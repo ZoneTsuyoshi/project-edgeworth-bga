@@ -39,6 +39,7 @@ export class StateFrame {
      * @param {boolean} isActive 自分が操作できるか
      */
     enter(_stateName, args, isActive) {
+        this.view.tips.hide();
         const m = this.view.m;
         const confirmed = (args.confirmed ?? []).map((/** @type {unknown} */ v) => int(v));
         // 確定済みかどうかだけを持つ（パネルの ✓ と回転は廃止。BGA 標準のアクティブ表示に任せる。014 §4.4）。内容は出さない（010 §9.2）
@@ -56,6 +57,7 @@ export class StateFrame {
 
     /** 状態を出るとき */
     leave() {
+        this.view.tips.hide();
         this.leaveSelection();
         const m = this.view.m;
         if (m.me !== null) {

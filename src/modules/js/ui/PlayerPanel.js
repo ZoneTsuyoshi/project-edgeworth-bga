@@ -6,6 +6,7 @@
  */
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { el } from './dom.js';
+import { tipText } from './Tips.js';
 import { buildStats, CUBES_TOTAL } from './PlayerStats.js';
 import { format } from '../states/logic/common.js';
 
@@ -68,8 +69,12 @@ export class PlayerPanel {
             onClick: () => document.getElementById(`pe-player-${p.id}`)?.scrollIntoView({ block: 'start', behavior: this.env.animationsActive() ? 'smooth' : 'auto' }),
         });
         jump.innerHTML = JUMP_ICON;
+        const badge = this.isBase ? el('span', { class: 'pe-base-badge', role: 'img', 'aria-label': _('Base player (first in turn order)') }, ['1']) : null;
+        if (badge !== null) {
+            tipText(badge, _('Base player (first in turn order)'));
+        }
         const marks = el('span', { class: 'pe-panel-marks' }, [
-            this.isBase ? el('span', { class: 'pe-base-badge', role: 'img', 'aria-label': _('Base player (first in turn order)'), title: _('Base player (first in turn order)') }, ['1']) : null,
+            badge,
             jump,
         ]);
         this.root.replaceChildren(el('div', { class: 'pe-panel-row' }, [...stats, marks]));

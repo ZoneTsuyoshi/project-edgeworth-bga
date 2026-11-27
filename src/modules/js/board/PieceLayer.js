@@ -9,6 +9,7 @@
 import { cellOriginUnits, cellRowCol, cubeStackOffset, nearestAngle, neighbor, SATELLITE_ROTATION, satelliteStackOffset, BASE_CENTER, SLOT_CENTERS, SLOT_SIZE, shiftOf, TILE_ASPECT } from './geometry.js';
 import { applySprite, COLOR_LETTERS, pieceSprite } from '../cards/sprite-layout.js';
 import { el } from '../ui/dom.js';
+import { tipText } from '../ui/Tips.js';
 
 /** 衛星コマの幅（区域の幅に対する割合。012 §3.6） */
 const SATELLITE_WIDTH = 0.45;
@@ -45,13 +46,15 @@ function wait(ms) {
 export class PieceLayer {
     /**
      * @param {import('./BoardView.js').BoardView} boardView
-     * @param {{ onSatelliteClick?: (satId: number) => void }} [opts]
+     * @param {{ onSatelliteClick?: (satId: number) => void, playerName?: (playerId: number) => string, satelliteTip?: (satId: number) => string }} [opts] playerName / satelliteTip = ツールチップの文（014 §7）
      */
     constructor(boardView, opts = {}) {
         this.view = boardView;
         this.env = boardView.env;
         this.layer = boardView.piecesLayer;
         this.onSatelliteClick = opts.onSatelliteClick ?? (() => {});
+        this.playerName = opts.playerName ?? (() => '');
+        this.satelliteTip = opts.satelliteTip ?? (() => '');
         /** @type {Map<string, HTMLElement>} */
         this.boxes = new Map();
         /** @type {Map<number, number>} 衛星の表示中の角度（累積） */
@@ -164,8 +167,8 @@ export class PieceLayer {
             class: 'pe-base-piece',
             dataset: { color: COLOR_LETTERS[colorIndex] ?? 'b', player: playerId },
             style: { width: `${BASE_WIDTH * 100}%`, left: `${BASE_CENTER.x * 100}%`, top: `${BASE_CENTER.y * 100}%` },
-            title: _('Launch base'),
         });
+        tipText(piece, () => `${_('Launch base')}: ${this.playerName(playerId)}`);
         applySprite(piece, pieceSprite(`base_${COLOR_LETTERS[colorIndex] ?? 'b'}`), this.env.imgUrl);
         box.append(piece);
     }
@@ -213,14 +216,25 @@ export class PieceLayer {
             box.querySelectorAll('.pe-stack-badge').forEach((b) => b.remove());
         }
         for (const boxes of groups.values()) {
+            // 重なっているときは、上から順に持ち主の一覧をツールチップに出す（各キューブとバッジに同じ文）
+            const stacked = [...boxes].sort((x, y) => Number(y.dataset.level) - Number(x.dataset.level));
+            const owners = stacked.map((box) => this.playerName(Number(box.querySelector('.pe-cube')?.getAttribute('data-player'))));
+            const text = boxes.length >= 2 ? `${_('Cubes (top first)')}: ${owners.join(', ')}` : `${_('Cube')}: ${owners[0]}`;
+            for (const box of boxes) {
+                const cube = box.querySelector('.pe-cube');
+                if (cube !== null) {
+                    tipText(cube, text);
+                }
+            }
             if (boxes.length >= 2) {
-                const top = boxes.reduce((a, b) => (Number(b.dataset.level) > Number(a.dataset.level) ? b : a));
+                const top = stacked[0];
                 const slot = SLOT_CENTERS[Number(top.dataset.slot)] ?? SLOT_CENTERS[0];
-                top.append(el('span', {
+                const badge = el('span', {
                     class: 'pe-stack-badge',
                     style: { left: `${(slot.x + 0.1) * 100}%`, top: `${(slot.y + 0.1) * 100}%` },
-                    title: _('Several cubes are stacked here'),
-                }, [`×${boxes.length}`]));
+                }, [`×${boxes.length}`]);
+                tipText(badge, text);
+                top.append(badge);
             }
         }
     }
@@ -264,7 +278,10 @@ export class PieceLayer {
         this.angles.set(sat.satId, angle);
         piece.style.setProperty('--rot', `${angle}deg`);
         const remaining = Math.max(0, sat.fuelCapacity - sat.fuelUsed);
-        piece.title = sat.fuelUsed > sat.fuelCapacity ? `${_('Fuel')}: ${_('Out of fuel')}` : `${_('Fuel')} ${remaining} / ${sat.fuelCapacity}`;
+        if (sat.satId >= 0) {
+            const satId = sat.satId;
+            tipText(piece, () => this.satelliteTip(satId));
+        }
         // 区域の幅 96 px 以上のときだけコマの下に残量の細いバーを出す（CSS が --pe-fuel-ratio を使う）
         box.style.setProperty('--pe-fuel-ratio', String(sat.fuelCapacity > 0 ? Math.min(1, remaining / sat.fuelCapacity) : 0));
     }

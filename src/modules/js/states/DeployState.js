@@ -493,7 +493,7 @@ export class DeployState extends ActionState {
     cardPreview(id) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const card = createCard(view.env, projectKey(id), { classes: ['pe-picker-card'] });
-        view.tooltip.bind(card, projectKey(id));
+        view.tips.card(card, projectKey(id));
         return el('div', { class: 'pe-choice-subject' }, [card, el('span', {}, [cardName(id)])]);
     }
 

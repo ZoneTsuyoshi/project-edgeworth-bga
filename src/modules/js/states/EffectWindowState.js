@@ -377,11 +377,11 @@ export class EffectWindowState extends ActionState {
             return el('li', { class: 'pe-order-row', dataset: { entry: entryId } }, [
                 el('span', { class: 'pe-order-no' }, [String(index + 1)]),
                 this.cardChip(entry?.cardKey ?? '', key),
-                entry?.forced === true ? el('span', { class: 'pe-order-forced', title: _('Mandatory effect') }, [_('Mandatory')]) : null,
+                entry?.forced === true ? this.tipped(el('span', { class: 'pe-order-forced' }, [_('Mandatory')]), _('Mandatory effect')) : null,
                 el('span', { class: 'pe-order-moves' }, [
-                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', title: _('Move to the top'), 'aria-label': _('Move to the top'), disabled: index === 0, onClick: () => set(moveEntry(order, entryId, 'top')) }, ['⤒']),
-                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', title: _('Move up'), 'aria-label': _('Move up'), disabled: index === 0, onClick: () => set(moveEntry(order, entryId, -1)) }, ['▲']),
-                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', title: _('Move down'), 'aria-label': _('Move down'), disabled: index === order.length - 1, onClick: () => set(moveEntry(order, entryId, 1)) }, ['▼']),
+                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', 'aria-label': _('Move to the top'), disabled: index === 0, onClick: () => set(moveEntry(order, entryId, 'top')) }, ['⤒']),
+                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', 'aria-label': _('Move up'), disabled: index === 0, onClick: () => set(moveEntry(order, entryId, -1)) }, ['▲']),
+                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', 'aria-label': _('Move down'), disabled: index === order.length - 1, onClick: () => set(moveEntry(order, entryId, 1)) }, ['▼']),
                 ]),
             ]);
         });
@@ -398,7 +398,18 @@ export class EffectWindowState extends ActionState {
     // ---- EFFECT ----
 
     /**
-     * カード名のチップ（拡大表示つき）。
+     * 要素に文字だけのツールチップを付けて返す（`title` 属性は使わない。014 §7）。
+     * @param {HTMLElement} node
+     * @param {string | undefined} text
+     * @returns {HTMLElement}
+     */
+    tipped(node, text) {
+        /** @type {import('../ui/GameView.js').GameView} */ (this.game.view).tips.text(node, text);
+        return node;
+    }
+
+    /**
+     * カード名のチップ（ツールチップつき）。
      * @param {string} nameId
      * @param {string | null} key
      * @returns {HTMLElement}
@@ -407,7 +418,7 @@ export class EffectWindowState extends ActionState {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const chip = el('span', { class: 'pe-card-chip', tabindex: 0 }, [nameOfNameId(nameId)]);
         if (key !== null) {
-            view.tooltip.bind(chip, key);
+            view.tips.card(chip, key);
         }
         return chip;
     }
@@ -559,7 +570,7 @@ export class EffectWindowState extends ActionState {
     smallCard(key) {
         const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
         const card = createCard(view.env, key, { classes: ['pe-picker-card'] });
-        view.tooltip.bind(card, key);
+        view.tips.card(card, key);
         return card;
     }
 
@@ -630,7 +641,7 @@ export class EffectWindowState extends ActionState {
             ...children,
         ]);
         /** @param {string} label @param {boolean} on @param {() => void} fn @param {string} [title] */
-        const chip = (label, on, fn, title) => el('button', { type: 'button', class: `pe-chip-btn${on ? ' pe-selected' : ''}`, 'aria-pressed': on ? 'true' : 'false', title, onClick: fn }, [label]);
+        const chip = (label, on, fn, title) => this.tipped(el('button', { type: 'button', class: `pe-chip-btn${on ? ' pe-selected' : ''}`, 'aria-pressed': on ? 'true' : 'false', onClick: fn }, [label]), title);
 
         switch (field.type) {
             case 'SATELLITE':

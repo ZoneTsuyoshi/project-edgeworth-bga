@@ -169,28 +169,6 @@ export function cardSizes(layout, rootWidth = Number.POSITIVE_INFINITY) {
 }
 
 /**
- * 拡大表示の幅（px。012 §4.1: 通常 360、衛星カード 540、スマホは min(92 vw, ...)）。
- * @param {boolean} landscape 衛星カード（横長）か
- * @param {number} viewWidth 見えている幅（px）
- * @returns {number}
- */
-export function zoomWidth(landscape, viewWidth) {
-  const base = landscape ? 540 : 360;
-  return Math.min(Math.floor(viewWidth * 0.92), base);
-}
-
-/**
- * 拡大表示の高さの上限（012 §4.6、§10 教訓 3）。`100vh` ではなく `window.innerHeight` からステータスバー下端を引く。
- * @param {number} innerHeight window.innerHeight
- * @param {number} barBottom ステータスバーの下端（px。無ければ 0）
- * @param {number} [margin]
- * @returns {number}
- */
-export function zoomAvailableHeight(innerHeight, barBottom, margin = 8) {
-  return Math.max(0, innerHeight - Math.max(margin, barBottom + margin) - margin);
-}
-
-/**
  * 選択できる区域の外接矩形が収まる最大の段階を選ぶ（012 §3.8 選択モード。narrow のみ）。
  * @param {number} viewportWidth 盤面のビューポートの幅（px）
  * @param {number} spanCols 選べる区域の外接矩形の幅（区域数。0.5 区域ぶんの余白込み）

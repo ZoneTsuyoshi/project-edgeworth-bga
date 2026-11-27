@@ -1,5 +1,5 @@
 /**
- * カードの英語テキスト（拡大表示のテキストパネルと配備カードのチップ。仕様書 012 §4.2、§4.6、§8.2）。
+ * カードの英語テキスト（ツールチップの本文と配備カードの情報。仕様書 014 §7、012 §4.2、§8.2）。
  * 元データは 002（`card-info.js`、scripts/build-card-info.mjs が生成）。ラベルは `_()` で翻訳できるようにする。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -111,9 +111,15 @@ export function effectTextHtml(text, imgUrl) {
   });
 }
 
+/** 名声の星（SVG。記号の文字は使わない。014 §1.2） */
+export const FAME_SVG = '<svg class="pe-tip-fame" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8z" fill="currentColor"/></svg>';
+/** 歯車（起動効果）の線 */
+export const GEAR_PATH = 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8.5 5.2v-3.4l-2.1-.4a6.6 6.6 0 0 0-.9-2.1l1.2-1.8-2.4-2.4-1.8 1.2a6.6 6.6 0 0 0-2.1-.9L12.1 2H8.7l-.4 2.1a6.6 6.6 0 0 0-2.1.9L4.4 3.8 2 6.2l1.2 1.8c-.4.7-.7 1.4-.9 2.1l-2.1.4v3.4l2.1.4c.2.7.5 1.4.9 2.1L2 18.2l2.4 2.4 1.8-1.2c.7.4 1.4.7 2.1.9l.4 2.1h3.4l.4-2.1c.7-.2 1.4-.5 2.1-.9l1.8 1.2 2.4-2.4-1.2-1.8c.4-.7.7-1.4.9-2.1l2.1-.4Z';
+const GEAR_SVG = `<svg class="pe-tip-gear" viewBox="0 0 24 24" aria-hidden="true"><path d="${GEAR_PATH}" transform="scale(.9) translate(1.3 1.3)" fill="currentColor"/></svg>`;
+
 /**
- * 拡大表示のテキストパネル（HTML 文字列。値は escape 済み）。
- * 名前・種類・コスト・名声・効果タイミング・効果タイプ・稼働条件・英語の効果文（012 §4.6）。
+ * ツールチップの本文（HTML 文字列。値は escape 済み。014 §7）。
+ * 名前 → アイコンつきの数値の行（コスト・名声・燃料庫）→ 種類・効果のタイミング・タイプ・稼働条件（アイコン + 語）→ 英語の効果文。
  * @param {string} key
  * @param {(file: string) => string} imgUrl 画像ファイル名 → URL
  * @returns {string}
@@ -123,34 +129,42 @@ export function cardTextHtml(key, imgUrl) {
   if (c === null) {
     return `<div class="pe-tip-name">${escapeHtml(key)}</div>`;
   }
+  const icon = (/** @type {string} */ symbol) => effectTextHtml(`[${symbol}]`, imgUrl);
+  /** @type {string[]} */
+  const stats = [];
+  const stat = (/** @type {string} */ iconHtml, /** @type {string} */ label, /** @type {unknown} */ value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      stats.push(`<li class="pe-tip-stat">${iconHtml}<b>${escapeHtml(value)}</b><span class="pe-tip-stat-label">${escapeHtml(label)}</span></li>`);
+    }
+  };
   /** @type {string[]} */
   const rows = [];
-  const row = (/** @type {string} */ label, /** @type {unknown} */ value) => {
+  const row = (/** @type {string} */ label, /** @type {unknown} */ value, /** @type {string} */ iconHtml = '') => {
     if (value !== undefined && value !== null && value !== '') {
-      rows.push(`<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`);
+      rows.push(`<dt>${escapeHtml(label)}</dt><dd>${iconHtml}${escapeHtml(value)}</dd>`);
     }
   };
   if (c.group === 'project') {
-    row(_('Type'), typeLabels()[c.type ?? ''] ?? c.type);
-    row(_('Cost'), c.cost);
-    row(_('Fame'), c.fame);
-    row(_('Fuel slots'), c.fuelSlots);
+    stat(icon('Maya'), _('Cost'), c.cost);
+    stat(FAME_SVG, _('Fame'), c.fame);
+    stat(icon('Fuel'), _('Fuel slots'), c.fuelSlots);
+    row(_('Type'), typeLabels()[c.type ?? ''] ?? c.type, icon(c.type ?? ''));
   } else if (c.group === 'satellite') {
     const s = /** @type {Record<string, any>} */ (/** @type {unknown} */ (c));
-    row(_('Launch cost'), s.launchCost);
-    row(_('Fame'), c.fame);
-    row(_('Fuel slots'), c.fuelSlots);
+    stat(icon('Maya'), _('Launch cost'), s.launchCost);
+    stat(FAME_SVG, _('Fame'), c.fame);
+    stat(icon('Fuel'), _('Fuel slots'), c.fuelSlots);
   } else if (c.group === 'reward') {
     const r = /** @type {Record<string, any>} */ (/** @type {unknown} */ (c));
     row(_('Compared by'), r.compare);
-    row(_('Fame by rank (1st / 2nd / 3rd / 4th)'), Array.isArray(r.points) ? r.points.join(' / ') : '');
+    row(_('Fame by rank (1st / 2nd / 3rd / 4th)'), Array.isArray(r.points) ? r.points.join(' / ') : '', FAME_SVG);
   } else if (c.group === 'mission') {
     const m = /** @type {Record<string, any>} */ (/** @type {unknown} */ (c));
-    row(_('Fame (partial / full)'), `${m.fameEasy} / ${m.fameFull}`);
+    row(_('Fame (partial / full)'), `${m.fameEasy} / ${m.fameFull}`, FAME_SVG);
   }
   if (c.group === 'project' || c.group === 'satellite') {
     row(_('Timing'), timingLabels()[c.timing ?? ''] ?? c.timing);
-    row(_('Effect type'), kindLabels()[c.kind ?? ''] ?? c.kind);
+    row(_('Effect type'), kindLabels()[c.kind ?? ''] ?? c.kind, c.kind === 'ACTIVATED' ? GEAR_SVG : '');
     row(_('Condition'), c.active === 'ACTIVE_ONLY' ? _('Active satellites only') : _('Any satellite'));
   }
   let text = c.text ?? '';
@@ -160,6 +174,7 @@ export function cardTextHtml(key, imgUrl) {
   }
   const name = c.group === 'action' ? `${/** @type {any} */ (c).numeral} ${c.name}` : c.name;
   return `<div class="pe-tip-name">${escapeHtml(name)}</div>`
+    + (stats.length > 0 ? `<ul class="pe-tip-stats">${stats.join('')}</ul>` : '')
     + (rows.length > 0 ? `<dl class="pe-tip-facts">${rows.join('')}</dl>` : '')
     + (text === '' ? '' : `<p class="pe-tip-effect">${effectTextHtml(text, imgUrl)}</p>`);
 }

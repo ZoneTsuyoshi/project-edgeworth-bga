@@ -19,7 +19,7 @@ test('002 の英語文に出る記号がすべて置き換わる', () => {
 test('記号ごとの画像と代替テキスト', () => {
   const out = symbolsToHtml('[Fuel]', resolve);
   assert.match(out, /aria-label="Fuel"/);
-  assert.match(out, /title="Fuel"/);
+  assert.doesNotMatch(out, /title=/);
   assert.match(out, /role="img"/);
   assert.match(out, /background-image:url\(icon_fuel\)/);
   assert.match(symbolsToHtml('[C]', resolve), /aria-label="Area C".*area_C/);

@@ -8,6 +8,7 @@ import { applySprite, cardSprite, COLOR_LETTERS, pieceSprite } from '../cards/sp
 import { cardInfo } from '../cards/card-text.js';
 import { fameBreakdown } from '../states/logic/score.js';
 import { el } from './dom.js';
+import { tipText } from './Tips.js';
 import { format } from '../states/logic/common.js';
 import { sectionLabels } from './ScoreSheet.js';
 
@@ -25,7 +26,9 @@ export const REGIONS_TOTAL = 8;
  * @returns {HTMLElement}
  */
 function counter(cls, title, icon, value) {
-    return el('span', { class: `pe-counter ${cls}`, title, role: 'img', 'aria-label': title }, [...(Array.isArray(icon) ? icon : [icon]), el('span', { class: 'pe-counter-value' }, [String(value)])]);
+    const node = el('span', { class: `pe-counter ${cls}`, role: 'img', 'aria-label': title.replaceAll('\n', ', ') }, [...(Array.isArray(icon) ? icon : [icon]), el('span', { class: 'pe-counter-value' }, [String(value)])]);
+    tipText(node, title);
+    return node;
 }
 
 /**

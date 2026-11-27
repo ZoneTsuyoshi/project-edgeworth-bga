@@ -14,13 +14,13 @@ import { el } from './dom.js';
 export class PlayerArea {
     /**
      * @param {import('../cards/CardView.js').Env} env
-     * @param {import('../cards/Tooltip.js').Tooltip} tooltip
+     * @param {import('./Tips.js').Tips} tips
      * @param {import('./normalize.js').PlayerModel} player
      * @param {{ mine: boolean }} opts
      */
-    constructor(env, tooltip, player, opts) {
+    constructor(env, tips, player, opts) {
         this.env = env;
-        this.tooltip = tooltip;
+        this.tips = tips;
         this.player = player;
         this.mine = opts.mine;
         /** @type {Map<number, SatelliteView>} */
@@ -43,8 +43,8 @@ export class PlayerArea {
         this.handBox = el('div');
         /** 手札のレールの右端のボタンの置き場（[Sell cards]。BGA の addActionButton の destination） */
         this.handTools = el('div', { class: 'pe-hand-tools' });
-        this.actions = new ActionRow(env, tooltip, this.actionsBox, { mine: opts.mine });
-        this.hand = new HandView(env, tooltip, this.handBox);
+        this.actions = new ActionRow(env, tips, this.actionsBox, { mine: opts.mine });
+        this.hand = new HandView(env, tips, this.handBox);
         /**
          * @param {string} label
          * @param {HTMLElement} body
@@ -149,7 +149,7 @@ export class PlayerArea {
             seen.add(s.satId);
             const existing = this.sats.get(s.satId);
             if (existing === undefined) {
-                const view = new SatelliteView(this.env, this.tooltip, s, { mine: this.mine, ownerName: p.name });
+                const view = new SatelliteView(this.env, this.tips, s, { mine: this.mine, ownerName: p.name });
                 this.sats.set(s.satId, view);
                 this.satsBox.append(view.root);
             } else {
@@ -186,7 +186,7 @@ export class PlayerArea {
     renderMissionCards() {
         const p = this.player;
         const faces = this.revealed ?? (this.mine ? this.lastMissions : null);
-        renderMissions(this.env, this.tooltip, this.missionsBox, faces, p.missionCount || 2, this.frames);
+        renderMissions(this.env, this.tips, this.missionsBox, faces, p.missionCount || 2, this.frames);
     }
 
     /**
