@@ -46,27 +46,38 @@
        "max": 0,
        "candidates": [
         {
-         "card": 5,
-         "sat": 13
+         "card": 1,
+         "sat": 11
         },
         {
-         "card": 6,
-         "sat": 13
+         "card": 3,
+         "sat": 11
+        },
+        {
+         "card": 4,
+         "sat": 11
+        },
+        {
+         "card": 10,
+         "sat": 12
         }
        ],
        "default": {
-        "5": 13,
-        "6": 13
+        "1": 11,
+        "3": 11,
+        "4": 11,
+        "10": 12
        }
       }
      ],
      "preview": {
       "satellites": [
-       13,
-       15
+       11,
+       12,
+       14
       ]
      },
-     "hostSat": 13
+     "hostSat": 11
     }
    ],
    "hand": [
@@ -82,7 +93,22 @@
  },
  "steps": [
   {
-   "click": ".pe-assign-row .pe-chip-btn"
+   "click": ".pe-sat[data-sat-id=\"11\"] .pe-paper-card[data-key=\"P001\"]"
+  },
+  {
+   "click": ".pe-sat[data-sat-id=\"12\"]"
+  },
+  {
+   "click": ".pe-sat[data-sat-id=\"11\"] .pe-paper-card[data-key=\"P004\"]"
+  },
+  {
+   "click": ".pe-sat[data-sat-id=\"12\"]"
+  },
+  {
+   "click": ".pe-move .bgabutton[aria-label=\"Remove\"]"
+  },
+  {
+   "clickText": "Use"
   }
  ]
 }

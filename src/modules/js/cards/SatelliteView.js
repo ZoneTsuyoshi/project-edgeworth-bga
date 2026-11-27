@@ -144,6 +144,8 @@ export class SatelliteView {
         this.plans = [];
         /** 問いの対象の衛星として強調するか（効果の窓。効果を持つカードのある衛星） */
         this.subject = false;
+        /** @type {number | null} 問いの発生源の配備カード（効果の窓。pe-subject の破線で囲む） */
+        this.subjectCard = null;
         /** @type {{ cards: Map<number, 'selectable' | 'selected'>, onPick: (card: number) => void } | null} 配備カードを押して選ぶ（ジャグラーの付け替え） */
         this.cardPicks = null;
         // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
@@ -208,6 +210,23 @@ export class SatelliteView {
         this.root.querySelector(':scope > .pe-subject-tag')?.remove();
         if (this.subject) {
             this.root.prepend(el('div', { class: 'pe-subject-tag', role: 'status' }, [_('This effect is for this satellite')]));
+        }
+    }
+
+    /**
+     * 問いの発生源の配備カードを強調する（`pe-subject`。このロケットに無いカードなら何も出ない）。null で解除。
+     * @param {number | null} card プロジェクトカードの番号
+     */
+    setSubjectCard(card) {
+        this.subjectCard = card;
+        this.applySubjectCard();
+    }
+
+    /** 発生源の配備カードの強調を今の subjectCard に合わせる */
+    applySubjectCard() {
+        for (const node of /** @type {NodeListOf<HTMLElement>} */ (this.root.querySelectorAll('.pe-paper-card[data-key]'))) {
+            const card = Number.parseInt((node.dataset.key ?? '').slice(1), 10);
+            node.classList.toggle('pe-subject', this.subjectCard !== null && card === this.subjectCard);
         }
     }
 
@@ -289,6 +308,7 @@ export class SatelliteView {
         this.applyCardPicks();
         this.applyPick();
         this.applySubject();
+        this.applySubjectCard();
         this.applyPlans();
     }
 

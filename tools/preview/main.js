@@ -2,9 +2,10 @@
  * BGA の外で画面を描く簡易プレビュー（tools/preview/index.html）。getAllDatas の見本 JSON（010 §8.2）を読み、
  * ui/GameView.js に渡す。通知は同じ表（notifications.js）で再生できる。静的サーバーで開く: `npx http-server . -p 8765` → /tools/preview/
  * BGA の枠に近い見た目（上部バー・ステータスバー・右の列・フッター。仕様書 014 §10）。画像は `npm run preview:shots`（tools/preview/shoot.mjs）。
+ * 見本の steps: click（css。nth 番目）/ clickText（ステータスバーのボタンの文字）/ cellClick（区域）/ notify（[通知名, args]）/ wait。
  * クエリ: ?sample=three-players-advanced|two-players-standard-6col、?theme=dark（BGA 風の枠だけが変わる）、?layout=narrow|wide（narrow = パネルをゲームの上へ。
  *   指定が無ければ幅 980 px 未満で narrow）、?touch=1、?spectator=1、?fame=1、?tools=1（開発用のボタン）、?demo=select|dpad|move、
- *   ?state=<samples/states/ の見本名>（状態の操作 UI。BGA の statusBar / actions / dialogs / gameArea は代用品。steps で操作を再生する）
+ *   ?state=<samples/states/ の見本名>（状態の操作 UI。BGA の statusBar / actions / dialogs / gameArea は代用品。steps で操作を再生する。?nosteps=1 で再生しない）
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { GameView } from '../../src/modules/js/ui/GameView.js';
@@ -103,8 +104,9 @@ const buttonBox = /** @type {HTMLElement} */ (document.getElementById('pv-button
 const logBox = /** @type {HTMLElement} */ (document.getElementById('pv-log'));
 const bga = {
     statusBar: {
-        setTitle: (/** @type {string} */ text) => {
-            titleBox.textContent = text.replaceAll('${you}', 'You');
+        setTitle: (/** @type {string} */ text, /** @type {Record<string, string>} */ args = {}) => {
+            // BGA は ${you} と、args のキー（${card_name} など）を埋める
+            titleBox.textContent = Object.entries({ you: 'You', ...args }).reduce((t, [k, v]) => t.replaceAll(`\${${k}}`, String(v)), text);
         },
         /**
          * BGA の `statusBar.addActionButton(label, callback, params)` の代用。クラス（bgabutton + bgabutton_blue / bgabutton_red / bgabutton_gray）、
@@ -113,7 +115,8 @@ const bga = {
         addActionButton: (/** @type {string} */ label, /** @type {() => void} */ fn, /** @type {{ color?: string, disabled?: boolean, classes?: string | string[], destination?: HTMLElement, tooltip?: string, title?: string }} */ opts = {}) => {
             const b = document.createElement('button');
             b.type = 'button';
-            b.textContent = label;
+            // BGA の label は HTML（SVG のアイコンのボタンに使う）
+            b.innerHTML = label;
             b.disabled = opts.disabled === true;
             const color = opts.color ?? 'primary';
             b.className = `bgabutton bgabutton_${color === 'secondary' ? 'gray' : color === 'alert' ? 'red' : 'blue'}`;
@@ -255,7 +258,8 @@ if (statePlan !== null) {
     for (const [name, args] of plan.notifications ?? []) {
         await dispatchNotification(view, name, args);
     }
-    for (const step of plan.steps ?? []) {
+    // ?nosteps=1: 見本の steps を再生しない（撮影の道具が自分の手順で操作するとき）
+    for (const step of params.get('nosteps') === '1' ? [] : plan.steps ?? []) {
         await sleep(120);
         if (step.click !== undefined) {
             const node = document.querySelectorAll(step.click)[(step.nth ?? 1) - 1];
@@ -265,6 +269,9 @@ if (statePlan !== null) {
             } else {
                 node?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
             }
+        } else if (step.notify !== undefined) {
+            // 通知の再生（効果の窓の N34 effectQuestions など）
+            await dispatchNotification(view, step.notify[0], step.notify[1]);
         } else if (step.clickText !== undefined) {
             [...buttonBox.querySelectorAll('button')].find((b) => b.textContent === step.clickText)?.click();
         } else if (step.cellClick !== undefined) {

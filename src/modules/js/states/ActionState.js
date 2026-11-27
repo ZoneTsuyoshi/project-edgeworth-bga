@@ -18,18 +18,7 @@ import { HandTargets } from './HandTargets.js';
 import { costLine, directionPad } from '../ui/Tray.js';
 import { format, privateOf, sellableHand, sellsWholeHand, sellTotal, validMods } from './logic/common.js';
 import { modOptionText, modName } from './texts.js';
-import { tipText } from '../ui/Tips.js';
-
-/**
- * 要素に文字だけのツールチップを付けて返す。
- * @param {HTMLElement} node
- * @param {string} text
- * @returns {HTMLElement}
- */
-function tipped(node, text) {
-  tipText(node, text);
-  return node;
-}
+import { pressButton } from '../ui/buttons.js';
 
 export class ActionState extends ChoiceState {
     /**
@@ -64,6 +53,10 @@ export class ActionState extends ChoiceState {
         this.handShown = null;
         /** 未完了の欄がなく欄が複数のとき、手札を使わない状態から始めるか（企画） */
         this.handIdle = false;
+        /** @type {HandTargets | null} 今の画面の欄の管理（描き直しのたびに作り直す） */
+        this.handTargets = null;
+        /** 欄のタイトルでステータスバーを上書きしない（効果の窓は自分でタイトルを決める） */
+        this.fixedTitle = false;
     }
 
     /** 売却に使う手札の今の状態（通知で更新されるモデルから読む） */
@@ -222,6 +215,7 @@ export class ActionState extends ChoiceState {
     mountHandTargets() {
         const view = this.game.view;
         const me = view?.m.me ?? null;
+        this.handTargets = null;
         if (view === null || me === null || this.handDefs.length === 0) {
             this.handShown = null;
             return;
@@ -241,11 +235,12 @@ export class ActionState extends ChoiceState {
             refresh: () => this.refresh(),
             addButton: (label, callback, opts) => this.bga.statusBar.addActionButton(label, callback, opts),
         });
+        this.handTargets = targets;
         for (const def of this.handDefs) {
             this.handSlots.get(def.id)?.replaceChildren(targets.section(def.id));
         }
         targets.apply();
-        const title = targets.activeTitle();
+        const title = this.fixedTitle ? null : targets.activeTitle();
         if (title !== null) {
             this.bga.statusBar.setTitle(title);
         }
@@ -264,22 +259,6 @@ export class ActionState extends ChoiceState {
         if (view !== null && me !== null) {
             view.areas.get(me)?.handTools.replaceChildren();
         }
-    }
-
-    /**
-     * 選択パネルの中の置き場に BGA 標準のボタンを置く（効果の窓の [Use] [Skip] など。012 追補 U-1 の 6）。
-     * @param {HTMLElement} container
-     * @param {string} label
-     * @param {() => void} callback
-     * @param {{ color?: 'primary' | 'secondary' | 'alert', disabled?: boolean, tooltip?: string }} [opts]
-     */
-    pePanelButton(container, label, callback, opts = {}) {
-        this.bga.statusBar.addActionButton(label, callback, {
-            color: opts.color ?? 'primary',
-            disabled: opts.disabled === true,
-            tooltip: opts.tooltip,
-            destination: container,
-        });
     }
 
     /** 盤面・手札・衛星の選択の表示をすべて外す */
@@ -400,26 +379,28 @@ export class ActionState extends ChoiceState {
     }
 
     /**
-     * 起動の修正の選択（チェックボックス。使うとコストが下がる。各ラウンド 1 回。011 §6-3）。
+     * 起動の修正の選択（トグルのボタン。使うとコストが下がる。各ラウンド 1 回。011 §6-3、014 §5.1）。
+     * BGA 標準の secondary ボタン。オンは `pe-picked` と `aria-pressed="true"`。
      * @param {import('./logic/common.js').ModsInfo} mods
      * @param {{ useMods: string[] }} sel
      * @returns {HTMLElement}
      */
     modsBox(mods, sel) {
+        const view = /** @type {import('../ui/GameView.js').GameView} */ (this.game.view);
+        const row = el('div', { class: 'pe-opts', role: 'group', 'aria-label': _('Use an activated effect to lower the cost (once per round)') });
+        for (const option of mods.options) {
+            const on = sel.useMods.includes(option.hostKey);
+            const button = pressButton(this.bga, row, modOptionText(option), on, () => {
+                sel.useMods = validMods(mods, on ? sel.useMods.filter((k) => k !== option.hostKey) : [...sel.useMods, option.hostKey]);
+                this.refresh();
+            });
+            if (button !== null) {
+                view.tips.text(button, modName(option.hostKey));
+            }
+        }
         return el('div', { class: 'pe-mods' }, [
             el('div', { class: 'pe-mods-title' }, [_('Use an activated effect to lower the cost (once per round)')]),
-            ...mods.options.map((option) => el('label', { class: 'pe-mod' }, [
-                el('input', {
-                    type: 'checkbox',
-                    checked: sel.useMods.includes(option.hostKey),
-                    onChange: (/** @type {Event} */ e) => {
-                        const on = /** @type {HTMLInputElement} */ (e.target).checked;
-                        sel.useMods = validMods(mods, on ? [...sel.useMods, option.hostKey] : sel.useMods.filter((k) => k !== option.hostKey));
-                        this.refresh();
-                    },
-                }),
-                tipped(el('span', {}, [modOptionText(option)]), modName(option.hostKey)),
-            ])),
+            row,
         ]);
     }
 

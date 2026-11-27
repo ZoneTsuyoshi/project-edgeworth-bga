@@ -17,7 +17,7 @@ import {
   keepComplete, optionPayment, parseProposal, proposalActionArgs, proposalMode, proposalSelectionFrom, pruneExtraUses, requiredKeep, reservedHand, validateProposal,
 } from '../../src/modules/js/states/logic/proposal.js';
 import {
-  answerFields, assignmentLayout, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, mayaToPay, moveCard, moveEntry, moveTargets, pairCost, parseWaiting, parseWindow, reservedCards, salesNeeded, satellitePicks, subjectSatellite, useEffectArgs, validateField, validateQuestion,
+  answerFields, assignmentLayout, assignmentMoves, cardsInHand, clampSelection, fieldDefault, initialOrder, initialValues, lowerFirst, mayaToPay, moveCard, moveEntry, moveTargets, numberChoices, pairCost, parseWaiting, parseWindow, pickFocus, queueQuestions, questionKey, reservedCards, salesNeeded, satellitePicks, stepNumber, subjectSatellite, useEffectArgs, validateField, validateQuestion,
 } from '../../src/modules/js/states/logic/effects.js';
 import { fameBreakdown, mergePublicFame, missionFrames, missionSlot, parsePublicFame, playerScore, revealedMissions, rankScores, scoreFromNotification, scoresFromGamedatas } from '../../src/modules/js/states/logic/score.js';
 
@@ -672,4 +672,45 @@ test('[Pass] は何も選んでいないときだけ出す（012 追補 U-1）',
   assert.equal(canShowPass(null, [3]), false);
   assert.equal(hasPicked(), false);
   assert.equal(hasPicked('launch'), true);
+});
+
+test('効果の窓: 注目中の問いは、残っていれば維持、無ければ先頭（ORDER が先。014 §5.1）', () => {
+  const e = (/** @type {number} */ entryId) => ({ type: 'EFFECT', entryId, cardKey: 'x', mandatory: false, cost: { kind: 'NONE' }, fields: [], preview: {}, hostSat: null });
+  const order = { type: 'ORDER', entries: [{ entryId: 7, cardKey: 'a', forced: false }, { entryId: 8, cardKey: 'b', forced: true }], defaultOrder: [7, 8] };
+  assert.equal(questionKey(e(10)), 'e:10');
+  assert.equal(questionKey(order), 'o:7,8');
+  assert.equal(pickFocus([e(10), e(11), e(12)], null), 'e:10');
+  assert.equal(pickFocus([e(10), e(11), e(12)], 'e:11'), 'e:11');
+  assert.equal(pickFocus([e(10), e(12)], 'e:11'), 'e:10');
+  assert.equal(pickFocus([e(11), order], 'e:11'), 'e:11');
+  assert.equal(pickFocus([e(11), order], null), 'o:7,8');
+  assert.equal(pickFocus([], 'e:1'), null);
+  // 待ち列は EFFECT が 2 件以上のときだけ（1 件・ORDER は出さない）
+  assert.equal(queueQuestions([e(10)]).length, 0);
+  assert.equal(queueQuestions([order]).length, 0);
+  assert.deepEqual(queueQuestions([e(10), e(11)]).map((q) => q.entryId), [10, 11]);
+});
+
+test('効果の窓: 数値の入力の形（8 通り以下はボタン、多ければ [−] 値 [+]）と、[−] [+] の押した後の値', () => {
+  const f = (/** @type {number} */ min, /** @type {number} */ max) => ({ key: 'amount', type: 'AMOUNT', min, max, candidates: [], default: null });
+  assert.deepEqual(numberChoices(f(1, 3)), [1, 2, 3]);
+  assert.equal(numberChoices(f(0, 7))?.length, 8);
+  assert.equal(numberChoices(f(0, 8)), null);
+  assert.equal(numberChoices(f(1, 20)), null);
+  assert.deepEqual(numberChoices(f(3, 2)), []);
+  assert.equal(stepNumber(null, 1, 2, 9), 2);
+  assert.equal(stepNumber(null, -1, 2, 9), 2);
+  assert.equal(stepNumber(5, 1, 2, 9), 6);
+  assert.equal(stepNumber(9, 1, 2, 9), 9);
+  assert.equal(stepNumber(2, -1, 2, 9), 2);
+});
+
+test('効果の窓: ${todo} は先頭を小文字にする。付け替えの移動は変えたカードだけ', () => {
+  assert.equal(lowerFirst('A satellite'), 'a satellite');
+  assert.equal(lowerFirst('a card to deploy and a satellite'), 'a card to deploy and a satellite');
+  assert.equal(lowerFirst('2 card(s)'), '2 card(s)');
+  assert.equal(lowerFirst(''), '');
+  const candidates = [{ card: 1, sat: 11 }, { card: 3, sat: 11 }, { card: 10, sat: 12 }];
+  assert.deepEqual(assignmentMoves({ 1: 11, 3: 11, 10: 12 }, candidates), []);
+  assert.deepEqual(assignmentMoves({ 1: 14, 3: 11, 10: 11 }, candidates), [{ card: 1, from: 11, to: 14 }, { card: 10, from: 12, to: 11 }]);
 });

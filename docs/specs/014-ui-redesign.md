@@ -468,6 +468,19 @@ ROUND 3    Planning › I Budget › II Deploy › III Launch/Turn › IV Link �
 
 [Use] が押せないとき（`validateQuestion` が `ok: false`、売却が足りない、`busy`）は、ボタンを無効（灰色）にする。理由は、ステータスバーのタイトルの `${todo}`（上のとおり）に出す。`tooltip` には出さない。
 
+実装で決めた細部（PR 5。2026-11-28）:
+
+- 注目中の問い・待ち列・数値の形・移動の抽出は `states/logic/effects.js` の純関数（`questionKey`・`pickFocus`・`queueQuestions`・`numberChoices`・`stepNumber`・`lowerFirst`・`assignmentMoves`）。待ち列は EFFECT が 2 件以上で ORDER が無いときだけ出し、トレイの左に発生源のカード（56 px。選択中は `pe-picked`、他は `pe-can`、`role="button"`・`aria-pressed`・Enter / Space）を並べる。narrow は問いの上に横並び。注目は `focus`（questionKey）で持ち、`load`（`update`）で `pickFocus`、切り替えると `handActive` を捨てて最初の未入力の欄に戻る。入力値は従来どおり `entryId` ごと。
+- 「欄」は `HandTargets` に `kind: 'direct'`（手札を使わない欄）を足して、区域・衛星・手札に無いカードも同じ仕組み（入力先は 1 つ、次の未入力の欄へ進む、アクティブでない欄に `Choose`）にした。区域・衛星の欄は `selected` に区域・衛星の番号を 1 つ（必須。`need: 1`）、手札に無いカードの欄は `extra` の関数（選択中のときだけトレイのカードの行 `CardPicker`）。手札の印・他の欄に取られたカードの判定は手札の欄だけ（`handStates`）。盤面・ロケットの入力口は `drivers`（欄の id → `area` / `satellite` / `pairs`）に持ち、入力先の欄が決まった後（`mountHandTargets` の後）に、入力先の欄のものだけを出す。盤面・ロケットを押すと `handTargets.change(id, …)` で次の未入力の欄へ進む。配備の組が未入力でも、組にした衛星の予定の札（`plans`）は入力先でなくても出す。付け替えは欄でなく常に入力先（行は常に `pe-picked`）。
+- ステータスバー: `fixedTitle`（`ActionState`）を立て、欄のタイトル（`HandTarget.title`）でバーを上書きしない。タイトルは §12 のとおり `${card_name}`・`${todo}` を args で渡す（プレビューの `setTitle` も args を埋める）。足りないのが売却だけのときは、今までの売る枚数の案内（`Choose at least ${need} card(s) to sell …`）をタイトルにする。配備の組の途中（カードだけ・衛星だけ）の案内は、`${todo}` に反映せず `a card to deploy and a satellite` のまま（押せる部品の強調が次の入力を示す）。[Use] と [Confirm order] の `tooltip` は `This choice is final`。タイトルから `Your choices are final once you press the button` を外した。
+- ボタンは `ui/buttons.js`（`pressButton` = 選択肢・トグル、`iconButton` = ◀ ▶ − + ×）。どちらも `addActionButton(…, { color: 'secondary', destination })`。選んだものは `classes: 'pe-picked'` と `aria-pressed`、記号のボタンは SVG のラベル + `title` 引数 + `aria-label`（戻り値が要素のとき）。方向は SVG の矢印 + 語。**注意**: `destination` で `#pe-root` の中に置いた `title` 引数のボタンは、BGA が DOM の `title` 属性にするため、PR 6 の自動検査 §10 の 4（`#pe-root` の `[title]` が 0）に入る。PR 6 は、トレイの中の標準ボタンの `title` を検査の例外にするか、`title` 引数をやめて `aria-label` のみにするかを決める。
+- 付け替え: 移動の行は `${card} → ${sat}`（`assignmentMoves` = もとの置き先と違うカード）。取り消し [×] はそのカードをもとの置き先へ戻す（`moveCard`。置き先が 4 枚で戻せないときは変わらない）。カードを押して選んだ状態は `${card} — choose a satellite` の行。何も無いときは `None`。
+- 数値: 候補の無い `AMOUNT` は `numberChoices`（`max - min + 1` が 8 以下）でボタン、それより多ければ [−] 値 [+]（値が無いときは `None`。最初の [+] / [−] は下限の値）。上限・下限では押せない。
+- 発生源の強調: `SatelliteView.setSubjectCard` / `PlayerArea.setSubjectCard`。発生源が自分の衛星に配備されたプロジェクトカードのときだけ、その配備カードを `pe-subject`（衛星カードが発生源の効果は、これまでの土台の衛星カードの強調のまま）。強調は注目中の問いだけ。
+- 欄の行のラベル（新）: `Satellite`・`Area`・`Direction`（既存）・`Payment`・`Amount`・`Cards`・`Option`・`Moves`。待ち列の `aria-label`: `Card effects to resolve`。新しい操作の文: `This choice is final`、`Choose`（§12）。ORDER の説明文（`The order of these effects changes the result. …`）は hint なので出さない。`Move to the top`・`Move up`・`Move down`・`Choose: ${field}`・`Your choices are final once you press the button`・`${you} must resolve your card effects` は使わなくなった。
+- 代価の行・結果の行は、コストと結果の行（`costLine`）の形。足りないときの文は警告（アイコン + 警告色）。
+- 撮影の道具: 見本の steps に `notify`（`[通知名, args]`）、`?nosteps=1`（見本の steps を再生しない）を足した。効果の窓の見本は、入力をそろえて [Use]（[Confirm order]・[Skip]）を押すところまで進める。
+
 ### 6. 操作の見た目（1 つの言語）
 
 #### 6.1 共通のクラス（カード・ロケット・アクションカード・コマに同じ意味で使う）

@@ -69,7 +69,13 @@
  },
  "steps": [
   {
-   "click": ".pe-order-row[data-entry=\"3\"] button[aria-label=\"Move to the top\"]"
+   "click": ".pe-order-slot[data-entry=\"3\"] .bgabutton[aria-label=\"Move earlier\"]"
+  },
+  {
+   "click": ".pe-order-slot[data-entry=\"3\"] .bgabutton[aria-label=\"Move earlier\"]"
+  },
+  {
+   "clickText": "Confirm order"
   }
  ]
 }

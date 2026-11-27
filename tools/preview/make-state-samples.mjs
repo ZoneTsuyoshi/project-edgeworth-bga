@@ -109,7 +109,7 @@ sample('deploy-main', {
   state: 'DeployMainChoose',
   active: true,
   args: choice({ hand: HAND, sellValue: 3, targets: deployTargets(), bonus: false, stage: 0, canReset: false }),
-  steps: [{ click: '.pe-hand-card[data-id="3"]' }, { click: '.pe-sat[data-sat-id="11"]' }, { click: '.pe-mod input' }],
+  steps: [{ click: '.pe-hand-card[data-id="3"]' }, { click: '.pe-sat[data-sat-id="11"]' }, { click: '.pe-mods .bgabutton' }],
 });
 sample('deploy-main-sell', {
   state: 'DeployMainChoose',
@@ -369,12 +369,47 @@ sample('proposal-plain', {
 const waiting = [{ player_id: OTHERS[0], sources: ['procurement_officer'] }, { player_id: OTHERS[1], sources: ['twin_deploy_technician', 'juggler'] }];
 const win = (questions, pending = []) => ({ windowId: 'DE', round: 3, waiting: [{ player_id: ME, sources: ['procurement_officer'] }, ...waiting], _private: { windowId: 'DE', pending, questions, hand: HAND, sellValue: 3 } });
 const effectQ = (entryId, cardKey, o = {}) => ({ type: 'EFFECT', entryId, cardKey, mandatory: false, cost: { kind: 'NONE' }, fields: [], preview: {}, ...o });
+const useBtn = { clickText: 'Use' };
+const sat = (id) => ({ click: `.pe-sat[data-sat-id="${id}"]` });
+const queue = (entry) => ({ click: `.pe-effect-queue [data-entry="${entry}"]` });
+const opt = (field, nth = 1) => ({ click: `.pe-field-opts[data-field="${field}"] .bgabutton`, nth });
+// 付け替えの見本: 自分の衛星 11（P001・P004・P003）と 12（P010）に配備済みのカード
+const JUGGLER = [{ card: 1, sat: 11 }, { card: 3, sat: 11 }, { card: 4, sat: 11 }, { card: 10, sat: 12 }];
+const card = (satId, no) => ({ click: `.pe-sat[data-sat-id="${satId}"] .pe-paper-card[data-key="P${String(no).padStart(3, '0')}"]` });
+const order3 = [{ entryId: 1, cardKey: 'twin_deploy_technician', forced: false }, { entryId: 2, cardKey: 'first_penguin', forced: true }, { entryId: 3, cardKey: 'juggler', forced: false }];
+// 順番の問い。3 番目の効果を 2 回「Move earlier」で先頭へ → [Confirm order]
 sample('effects-order', {
   state: 'EffectWindowResolve',
   active: true,
-  args: win([{ type: 'ORDER', entries: [{ entryId: 1, cardKey: 'twin_deploy_technician', forced: false }, { entryId: 2, cardKey: 'first_penguin', forced: true }, { entryId: 3, cardKey: 'juggler', forced: false }], defaultOrder: [2, 1, 3] }]),
-  steps: [{ click: '.pe-order-row[data-entry="3"] button[aria-label="Move to the top"]' }],
+  args: win([{ type: 'ORDER', entries: order3, defaultOrder: [2, 1, 3] }]),
+  steps: [
+    { click: '.pe-order-slot[data-entry="3"] .bgabutton[aria-label="Move earlier"]' },
+    { click: '.pe-order-slot[data-entry="3"] .bgabutton[aria-label="Move earlier"]' },
+    { clickText: 'Confirm order' },
+  ],
 });
+// 順番を確定すると N34 で次の問い（EFFECT 2 件。待ち列）が届く
+sample('effects-order-flow', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([{ type: 'ORDER', entries: order3, defaultOrder: [2, 1, 3] }]),
+  steps: [
+    { click: '.pe-order-slot[data-entry="1"] .bgabutton[aria-label="Move later"]' },
+    { clickText: 'Confirm order' },
+    {
+      notify: ['effectQuestions', win([
+        effectQ(2, 'first_penguin', { mandatory: true, fields: [{ key: 'area', type: 'AREA', min: 1, max: 1, candidates: [22, 32, 34], default: null }] }),
+        effectQ(3, 'juggler', {
+          fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: JUGGLER, default: { 1: 11, 3: 11, 4: 11, 10: 12 } }],
+          preview: { satellites: [11, 12, 14] },
+        }),
+      ])._private],
+    },
+    { cellClick: 32 },
+    useBtn,
+  ],
+});
+// 1 件ずつ（待ち列）。11（配備の組 + 起動の修正 + 売却）→ 12（段階）→ 10（マヤ不足で売却）→ 10 を Skip
 sample('effects-use', {
   state: 'EffectWindowResolve',
   active: true,
@@ -394,8 +429,24 @@ sample('effects-use', {
       preview: { tiers: { 2: 1, 3: 2, 4: 3, 5: 4 } },
     }),
   ]),
-  steps: [{ click: '.pe-effect[data-entry="11"] .pe-chip-btn' }],
+  steps: [
+    queue(11),
+    { click: '.pe-hand-card[data-id="44"]' },
+    sat(13),
+    opt('useMods'),
+    { click: '.pe-hand-card[data-id="3"]' },
+    { click: '.pe-hand-card[data-id="18"]' },
+    useBtn,
+    queue(12),
+    opt('tier', 2),
+    useBtn,
+    queue(10),
+    { click: '.pe-hand-card[data-id="70"]' },
+    useBtn,
+    { clickText: 'Skip' },
+  ],
 });
+// 複数の欄（区域・方向・衛星・手札）、付け替え、組（通信確立）。注目の切り替えで入力値が保たれる
 sample('effects-fields', {
   state: 'EffectWindowResolve',
   active: true,
@@ -409,8 +460,8 @@ sample('effects-fields', {
       ],
     }),
     effectQ(21, 'juggler', {
-      fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: [{ card: 5, sat: 13 }, { card: 6, sat: 13 }], default: { 5: 13, 6: 13 } }],
-      preview: { satellites: [13, 15] },
+      fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: JUGGLER, default: { 1: 11, 3: 11, 4: 11, 10: 12 } }],
+      preview: { satellites: [11, 12, 14] },
     }),
     effectQ(22, 'ground_link', {
       cost: { kind: 'DISCARD_COST', amount: 2, canPay: true },
@@ -418,42 +469,98 @@ sample('effects-fields', {
       preview: { links: [{ sat: 11, cell: 22, cost: 8, areaCost: 5, pioneer: 3, special: 0, costWithMods: 8 }, { sat: 14, cell: 34, cost: 26, areaCost: 20, pioneer: 6, special: 0, costWithMods: 26 }] },
     }),
   ]),
-  steps: [],
+  steps: [
+    { cellClick: 22 },
+    opt('direction'),
+    sat(11),
+    queue(21),
+    queue(20),
+    { click: '.pe-hand-card[data-id="18"]' },
+    useBtn,
+    queue(21),
+    card(11, 1),
+    sat(14),
+    useBtn,
+    queue(22),
+    opt('pairs'),
+    useBtn,
+  ],
 });
-// 付け替え（P022）: 配備カード → 置き先の衛星の順に押す。衛星に紐づく問い（P082）: 対象の衛星を強調する
+// 付け替え（P022）: 配備カード → 置き先の衛星の順に押す。決めた移動が 1 行ずつ出て、取り消せる
 sample('effects-juggler', {
   state: 'EffectWindowResolve',
   active: true,
   args: win([effectQ(40, 'juggler', {
     mandatory: true,
-    fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: [{ card: 5, sat: 13 }, { card: 6, sat: 13 }], default: { 5: 13, 6: 13 } }],
-    preview: { satellites: [13, 15] },
-    hostSat: 13,
+    fields: [{ key: 'assignment', type: 'ASSIGNMENT', min: 0, max: 0, candidates: JUGGLER, default: { 1: 11, 3: 11, 4: 11, 10: 12 } }],
+    preview: { satellites: [11, 12, 14] },
+    hostSat: 11,
   })]),
-  steps: [{ click: '.pe-assign-row .pe-chip-btn' }],
+  steps: [
+    card(11, 1),
+    sat(12),
+    card(11, 4),
+    sat(12),
+    { click: '.pe-move .bgabutton[aria-label="Remove"]' },
+    useBtn,
+  ],
 });
+// 衛星に紐づく問い（P082）: 対象の衛星と発生源のカードを強調する
 sample('effects-subject-satellite', {
   state: 'EffectWindowResolve',
   active: true,
-  args: win([effectQ(41, 'triad_booster', {
+  args: win([effectQ(41, 'course_corrector', {
     fields: [],
     preview: { areas: 1, fuel: 1 },
     hostSat: 11,
   })]),
-  steps: [],
+  steps: [useBtn],
 });
 // 衛星・手札を直接選ぶ（P024 の衛星、S005 の手札。衛星カード・盤面のコマ・手札を押して選ぶ）
 sample('effects-direct-satellite', {
   state: 'EffectWindowResolve',
   active: true,
   args: win([effectQ(30, 'swap_technician', { fields: [{ key: 'satellite', type: 'SATELLITE', min: 0, max: 0, candidates: [11, 12, 14], default: null }] })]),
-  steps: [{ click: '.pe-sat[data-pick]:not([data-pick="blocked"])', nth: 2 }],
+  steps: [{ click: '.pe-sat[data-pick]:not([data-pick="blocked"])', nth: 2 }, useBtn],
 });
 sample('effects-direct-hand', {
   state: 'EffectWindowResolve',
   active: true,
   args: win([effectQ(31, 'stealth_moon', { fields: [{ key: 'cards', type: 'CARDS', min: 0, max: 2, candidates: HAND, default: null }] })]),
-  steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-hand-card[data-id="70"]' }],
+  steps: [{ click: '.pe-hand-card[data-id="18"]' }, { click: '.pe-hand-card[data-id="70"]' }, useBtn],
+});
+// 数値（候補の無い AMOUNT）: 8 通り以下は選択肢のボタン、それより多ければ [−] 値 [+]
+sample('effects-number', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([
+    effectQ(50, 'acceleration_booster', { fields: [{ key: 'amount', type: 'AMOUNT', min: 1, max: 5, candidates: [], default: null }] }),
+    effectQ(51, 'procurement_officer', { fields: [{ key: 'amount', type: 'AMOUNT', min: 0, max: 20, candidates: [], default: null }] }),
+  ]),
+  steps: [
+    opt('amount', 3),
+    useBtn,
+    queue(51),
+    { click: '.pe-opts .bgabutton[aria-label="Increase"]' },
+    { click: '.pe-opts .bgabutton[aria-label="Increase"]' },
+    { click: '.pe-opts .bgabutton[aria-label="Increase"]' },
+    { click: '.pe-opts .bgabutton[aria-label="Decrease"]' },
+    useBtn,
+  ],
+});
+// 必須の効果（Skip が無い）。入力が足りないあいだは [Use] が無効で、タイトルが次にすることを言う
+sample('effects-mandatory', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(60, 'first_penguin', { mandatory: true, fields: [{ key: 'area', type: 'AREA', min: 1, max: 1, candidates: [22, 32, 34], default: null }] })]),
+  steps: [{ cellClick: 34 }, useBtn],
+});
+// 手札に無いカードを選ぶ（トレイのカードの行）
+sample('effects-cards-tray', {
+  state: 'EffectWindowResolve',
+  active: true,
+  args: win([effectQ(70, 'stealth_moon', { fields: [{ key: 'cards', type: 'CARDS', min: 1, max: 1, candidates: [12, 27, 41], default: null }] })]),
+  steps: [{ click: '.pe-picker-slot:nth-child(2) .pe-picker-card' }, useBtn],
 });
 sample('effects-waiting', {
   state: 'EffectWindowResolve',

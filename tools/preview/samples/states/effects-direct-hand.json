@@ -75,6 +75,9 @@
   },
   {
    "click": ".pe-hand-card[data-id=\"70\"]"
+  },
+  {
+   "clickText": "Use"
   }
  ]
 }
