@@ -1,7 +1,7 @@
 /**
  * 画面全体（仕様書 012 §2）。getAllDatas（010 §8.2）の値から DOM を組み立て、通知（notifications.js）がモデルを書き換えて部分的に描き直す。
  * BGA のグローバルに依存しない（依存は Env で注入する）ので、tools/preview/index.html でも動く。
- * レイアウト: フェイズ帯 → 場の情報 → 盤面 → 自分の領域 → 他プレイヤー。BGA のプレイヤーパネルとログはゲーム領域の外。
+ * レイアウト（014 §2.1）: ラウンドトラック → 盤面（+ 場）→ トレイ → 得点表 → 自分の領域 → 他プレイヤー。BGA のプレイヤーパネルとログはゲーム領域の外。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { BoardView } from '../board/BoardView.js';
@@ -10,16 +10,18 @@ import { PieceLayer } from '../board/PieceLayer.js';
 import { FieldView } from '../cards/FieldView.js';
 import { satelliteName } from '../cards/SatelliteView.js';
 import { Tooltip } from '../cards/Tooltip.js';
+import { COLOR_LETTERS } from '../cards/sprite-layout.js';
 import { BottomSheet } from './BottomSheet.js';
 import { ChoicePanel } from './ChoicePanel.js';
 import { el } from './dom.js';
 import { Layout } from './Layout.js';
 import { normalizeGamedatas } from './normalize.js';
-import { PhaseBand } from './PhaseBand.js';
 import { PlayerArea } from './PlayerArea.js';
 import { PlayerPanel } from './PlayerPanel.js';
+import { RoundTrack } from './RoundTrack.js';
 import { ScoreSheet } from './ScoreSheet.js';
 import { StateFrame } from './StateFrame.js';
+import { Tray } from './Tray.js';
 import { missionFrames, revealedMissions, scoresFromGamedatas } from '../states/logic/score.js';
 
 export class GameView {
@@ -44,20 +46,23 @@ export class GameView {
         this.root = el('div', { id: 'pe-root', class: 'pe-root' });
         host.append(this.root);
 
-        this.bandBox = el('div', { id: 'pe-phase-band' });
-        this.fieldBox = el('div', { id: 'pe-field' });
-        this.panelBox = el('section', { id: 'pe-choice-panel', 'aria-live': 'polite' });
-        this.scoreBox = el('section', { id: 'pe-score' });
+        // DOM の順と領域の名前は 014 §2.1。配置（grid）は CSS が決める
+        this.roundBox = el('div', { id: 'pe-round' });
         this.boardWrap = el('section', { id: 'pe-board-wrap', class: 'pe-board-wrap' });
-        this.sheetBox = el('div', { id: 'pe-sheet' });
+        this.supplyBox = el('div', { id: 'pe-supply' });
+        this.trayBox = el('section', { id: 'pe-tray' });
+        this.scoreBox = el('section', { id: 'pe-score' });
         this.meBox = el('div', { id: 'pe-me' });
         this.othersBox = el('div', { id: 'pe-others' });
-        this.root.append(this.bandBox, this.fieldBox, this.panelBox, this.scoreBox, this.boardWrap, this.meBox, this.othersBox);
+        this.root.append(this.roundBox, this.boardWrap, this.supplyBox, this.trayBox, this.scoreBox, this.meBox, this.othersBox);
 
-        this.band = new PhaseBand(this.bandBox);
-        this.field = new FieldView(env, this.tooltip, this.fieldBox);
+        this.roundTrack = new RoundTrack(this.roundBox, (id) => {
+            const p = this.model?.players[id];
+            return p === undefined ? null : { color: COLOR_LETTERS[p.colorIndex] ?? 'b', name: p.name };
+        });
+        this.field = new FieldView(env, this.tooltip, this.supplyBox);
+        this.field.onToggleDiscard = () => this.toggleDiscard();
         this.board = new BoardView(env, this.boardWrap);
-        this.boardWrap.append(this.sheetBox);
         this.highlights = new Highlights(this.board);
         /** @type {((satId: number) => boolean) | null} 盤面の衛星コマのタップを、操作中の状態が受ける（受けたら true。転回の衛星の選択） */
         this.satelliteHandler = null;
@@ -68,8 +73,10 @@ export class GameView {
                 }
             },
         });
-        this.sheet = new BottomSheet(this.sheetBox);
-        this.panel = new ChoicePanel(this.panelBox);
+        this.tray = new Tray(this.trayBox, env);
+        // PR 4 で、選択パネルとボトムシートはトレイ（Tray）に統合する。それまでは同じ場所（#pe-tray）に置く
+        this.sheet = new BottomSheet(this.tray.sheetBox, () => this.tray.sync());
+        this.panel = new ChoicePanel(this.tray.panelBox, () => this.tray.sync());
         this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
         /** 見出しで枠を出す人を選んだか（選んだら自動の切り替えをやめる） */
         this.outlineChosen = false;
@@ -85,9 +92,40 @@ export class GameView {
         /** @type {{ applyStage: (priv: Record<string, any>, wasReset: boolean) => void } | null} 配備（状態 61）の UI。ステージ / Reset の通知を渡す */
         this.deployUi = null;
         this.layout = new Layout(this.root, () => this.model?.board?.cols ?? 12, () => this.othersCount());
-        this.boardWrap.append(this.layout.renderTools());
+        // 拡縮の行は盤面の上の通常の流れの中（盤面に重ねない。014 §2.5）
+        this.boardWrap.prepend(this.layout.renderTools());
         this.stateFrame = new StateFrame(this);
         this.board.onPick = (cell) => this.stateFrame.handleCellPick(cell);
+        // 概観の段（narrow）は見るだけ。盤面をタップすると、その位置を中心に標準へ切り替わる（014 §2.5）
+        this.board.viewport.addEventListener('click', (e) => this.onOverviewTap(e));
+    }
+
+    /**
+     * 概観の段で盤面をタップしたとき、その位置を中心に標準の段へ切り替える。
+     * @param {MouseEvent} e
+     */
+    onOverviewTap(e) {
+        if (this.layout.layout !== 'narrow' || this.layout.narrowStep !== 'overview') {
+            return;
+        }
+        const rect = this.board.board.getBoundingClientRect();
+        const fx = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0.5;
+        this.layout.setNarrowStep('normal');
+        const viewport = this.board.viewport;
+        viewport.scrollTo({ left: Math.max(0, fx * this.board.board.offsetWidth - viewport.clientWidth / 2), behavior: 'auto' });
+    }
+
+    /** 捨て札の一覧をトレイに開く / 閉じる（もう一度押すか [Close] で閉じる。014 §4.3） */
+    toggleDiscard() {
+        if (this.tray.listOpen) {
+            this.tray.hideList();
+            return;
+        }
+        this.tray.showList({
+            title: `${_('Discard pile')} (${this.m.discard.length})`,
+            body: this.field.discardList(),
+            onClose: () => this.tray.hideList(),
+        });
     }
 
     /** @returns {number} 他プレイヤーの領域の数（観戦者は全員。まだ無ければ 2） */
@@ -112,7 +150,7 @@ export class GameView {
         this.field.setRewards(model.rewards);
         this.field.setDeck(model.deckCount);
         this.field.setDiscard(model.discard);
-        this.refreshBand();
+        this.refreshRound();
 
         // プレイヤーの領域: 自分を先頭に、他は席順（観戦者は全員を席順で同じ大きさに）
         this.areas.clear();
@@ -207,15 +245,10 @@ export class GameView {
 
     // ---- 部分的な描き直し（通知から呼ぶ） ----
 
-    /** 選ばれたアクション（公開後）でフェイズ帯の点灯を決める */
-    refreshBand() {
+    /** ラウンドトラックをモデル（ラウンド・フェイズ・アクション選択ボーナスの保持者）に合わせる */
+    refreshRound() {
         const m = this.m;
-        const selected = Object.keys(m.bonusHolders).map(Number).filter((n) => n >= 1 && n <= 5);
-        this.band.set({
-            round: m.round,
-            phase: m.phase,
-            selected: m.phase === 'PLANNING' || selected.length === 0 ? null : selected,
-        });
+        this.roundTrack.set({ round: m.round, phase: m.phase, bonusHolders: m.bonusHolders, playerOrder: m.playerOrder });
     }
 
     /** コマの層をモデルに合わせる */

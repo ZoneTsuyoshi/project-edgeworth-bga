@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import {
   BASE_CENTER, SATELLITE_DIRECTIONS, SATELLITE_ROTATION, boardSize, cellId, cellOriginUnits, cellRowCol, fromDoubled, ghostCells, hexHeight, nearestAngle, neighbor, outlineSegments, regionBorderSegments, regionCenterCell, shiftOf, SLOT_CENTERS, SLOT_SIZE, toDoubled, TILE_ASPECT,
 } from '../../src/modules/js/board/geometry.js';
-import { computeHexWidth, HEX_W_MIN, innerWidthOf, layoutOf, narrowStepFor, othersColumns, ROOT_GUTTER, satelliteWidths, shiftNarrowStep, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
+import { cardSizes, computeHexWidth, HEX_W_MAX, HEX_W_MIN, innerWidthOf, layoutOf, narrowStepFor, NARROW_STEPS, othersColumns, ROOT_GUTTER, ROOT_GUTTER_NARROW, rootMetrics, satelliteWidths, shiftNarrowStep, supplyCardSize, zoomAvailableHeight, zoomWidth } from '../../src/modules/js/ui/layout-math.js';
 
 test('行のずれと区域 ID（003 §1.1・§1.4）', () => {
   assert.equal(shiftOf(1, 0), 1);
@@ -63,37 +63,77 @@ test('地域の外周: 違う地域の辺だけ。左右の接続の辺も出る
   assert.equal(regionCenterCell(1, 2, 12), cellId(4, 7, 12));
 });
 
-test('レイアウトの計算（012 §2.2、§3.8）', () => {
-  assert.equal(layoutOf(1180), 'wide');
-  assert.equal(layoutOf(1179), 'medium');
-  assert.equal(layoutOf(700), 'medium');
-  assert.equal(layoutOf(699), 'narrow');
-  assert.equal(computeHexWidth({ rootWidth: 2400, cols: 12 }), 150);
-  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12 }), 100);
+test('レイアウトの計算（014 §2.2）', () => {
+  // しきい値 960 / 640
+  assert.equal(layoutOf(960), 'wide');
+  assert.equal(layoutOf(959), 'medium');
+  assert.equal(layoutOf(640), 'medium');
+  assert.equal(layoutOf(639), 'narrow');
+  // wide: min(112, 幅に収まる値（場の列 84 + 間隔 12 を引く）, 高さの上限)
+  assert.equal(HEX_W_MAX, 112);
+  assert.equal(computeHexWidth({ rootWidth: 2400, cols: 12 }), 112);
+  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12 }), 92.3);
+  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 6 }), 112);
+  // medium: 幅に収まる値（場は盤面の下なので引かない）
   assert.equal(computeHexWidth({ rootWidth: 800, cols: 12 }), 64);
-  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12 }), 52);
-  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'large' }), 76);
-  // 概観は幅に収めるが、区域の下限 32 px で止める
-  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'overview' }), HEX_W_MIN);
+  // narrow: 標準 56 / 大 80。概観は幅に収める
+  assert.deepEqual(NARROW_STEPS, { normal: 56, large: 80 });
+  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12 }), 56);
+  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'large' }), 80);
+  // 概観は見るだけの段。区域の下限 32 px を当てない（390 px の幅に 12 列を収めると 31.2 px）
+  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'overview' }), 31.2);
+  assert.ok(computeHexWidth({ rootWidth: 390, cols: 12, narrowStep: 'overview' }) < HEX_W_MIN);
   assert.equal(computeHexWidth({ rootWidth: 600, cols: 12, narrowStep: 'overview' }), 48);
   assert.equal(computeHexWidth({ rootWidth: 600, cols: 6, narrowStep: 'overview' }), 92.3);
+  // 標準・大・wide・medium は 32 px 以上
+  assert.ok(computeHexWidth({ rootWidth: 700, cols: 24 }) >= HEX_W_MIN);
   assert.equal(narrowStepFor(390, 4), 'large');
-  assert.equal(narrowStepFor(390, 7), 'normal');
+  assert.equal(narrowStepFor(390, 6.5), 'normal');
   assert.equal(narrowStepFor(390, 12.5), 'overview');
 });
 
-test('内側の幅と拡縮の段（012 追補 U-2・U-6）', () => {
+test('区域の幅の高さの上限（014 §2.2。画面の高さ × 0.62 ÷ 5.49、下限 56）', () => {
+  // 高さ 600 の画面: 600 × 0.62 ÷ 5.49 = 67.8
+  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12, innerHeight: 600 }), 67.8);
+  assert.equal(computeHexWidth({ rootWidth: 800, cols: 12, innerHeight: 500 }), 56.5);
+  // 幅の上限のほうが小さければそちら
+  assert.equal(computeHexWidth({ rootWidth: 800, cols: 12, innerHeight: 900 }), 64);
+  // 下限 56（画面が低くても、これ以上は小さくしない）
+  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12, innerHeight: 300 }), 56);
+  // 高さを渡さなければ上限なし
+  assert.equal(computeHexWidth({ rootWidth: 1250, cols: 12 }), 92.3);
+  // narrow には高さの上限を当てない
+  assert.equal(computeHexWidth({ rootWidth: 390, cols: 12, innerHeight: 300 }), 56);
+});
+
+test('場のカードの大きさ（014 §2.2）', () => {
+  // wide: 盤面の高さ（区域の幅 × 5.49）から 104 を引いて 4 で割る。上限 117
+  assert.deepEqual(supplyCardSize('wide', 112), [84, 117]);
+  assert.deepEqual(supplyCardSize('wide', 82.3), [62, 86]);
+  assert.deepEqual(supplyCardSize('wide', 56), [36, 50]);
+  assert.equal(supplyCardSize('wide', 0)[1], 0);
+  // 幅は 715 : 999 の縦横比
+  const [w, h] = supplyCardSize('wide', 90);
+  assert.ok(Math.abs(w / h - 715 / 999) < 0.02);
+  assert.deepEqual(supplyCardSize('medium', 64), [72, 101]);
+  assert.deepEqual(supplyCardSize('narrow', 56), [64, 90]);
+});
+
+test('内側の幅と拡縮の段（014 §2.1、012 追補 U-6）', () => {
   assert.equal(ROOT_GUTTER, 12);
+  assert.equal(ROOT_GUTTER_NARROW, 8);
   assert.equal(innerWidthOf(1400), 1376);
-  assert.equal(innerWidthOf(390), 366);
+  // narrow だけ余白が 8 px
+  assert.equal(innerWidthOf(390), 374);
   assert.equal(innerWidthOf(10), 0);
-  // 余白を引いた幅で data-layout を決める: 外寸 1204 → 内側 1180（wide）、外寸 1203 → medium
-  assert.equal(layoutOf(innerWidthOf(1204)), 'wide');
-  assert.equal(layoutOf(innerWidthOf(1203)), 'medium');
-  assert.equal(layoutOf(innerWidthOf(724)), 'medium');
-  assert.equal(layoutOf(innerWidthOf(723)), 'narrow');
-  // 1400 px 上限の根では、盤面は内側 1376 px で 12 列が 110 px
-  assert.equal(computeHexWidth({ rootWidth: innerWidthOf(1400), cols: 12 }), 110.1);
+  // data-layout は余白 12 px を引いた幅で決め、narrow だけ余白を 8 px にして内側の幅を求める
+  assert.deepEqual(rootMetrics(984), { layout: 'wide', width: 960 });
+  assert.deepEqual(rootMetrics(983), { layout: 'medium', width: 959 });
+  assert.deepEqual(rootMetrics(664), { layout: 'medium', width: 640 });
+  assert.deepEqual(rootMetrics(663), { layout: 'narrow', width: 647 });
+  assert.deepEqual(rootMetrics(390), { layout: 'narrow', width: 374 });
+  // 1400 px 上限の根では、盤面は内側 1376 px で、場の列を引いて 12 列が 102.4 px
+  assert.equal(computeHexWidth({ rootWidth: innerWidthOf(1400), cols: 12 }), 102.4);
   // 段は 1 つずつ移り、端で止まる
   assert.equal(shiftNarrowStep('normal', -1), 'overview');
   assert.equal(shiftNarrowStep('normal', 1), 'large');
@@ -101,6 +141,16 @@ test('内側の幅と拡縮の段（012 追補 U-2・U-6）', () => {
   assert.equal(shiftNarrowStep('large', 1), 'large');
   assert.equal(shiftNarrowStep('overview', 1), 'normal');
   assert.equal(shiftNarrowStep('large', -1), 'normal');
+});
+
+test('カードの大きさの名前は小文字にそろえて CSS 変数にする（--pe-actionother-w の不具合）', () => {
+  // Layout.update は `--pe-${name.toLowerCase()}-w` を入れる。CSS が読む名前は --pe-actionother-w（小文字）
+  for (const layout of /** @type {const} */ (['wide', 'medium', 'narrow'])) {
+    const names = Object.keys(cardSizes(layout)).map((n) => n.toLowerCase());
+    assert.ok(names.includes('actionother'));
+    assert.ok(!names.includes('reward'), '褒賞は場のカード（supplyCardSize）に統一');
+  }
+  assert.deepEqual(cardSizes('narrow').actionOther, [36, 50]);
 });
 
 test('拡大表示の寸法（012 §4.1、§4.6）', () => {
@@ -163,7 +213,9 @@ test('ミッションの枠: 集合の外に接する辺だけ（1 区域は 6 �
 });
 
 test('他プレイヤーの列数と衛星カードの流動の幅（012 追補 U-6）', () => {
-  // wide だけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列
+  // wide で幅 1180 px 以上のときだけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列
+  assert.equal(othersColumns('wide', 3, 1180), 2);
+  assert.equal(othersColumns('wide', 3, 1179), 1);
   assert.equal(othersColumns('wide', 3), 2);
   assert.equal(othersColumns('wide', 2), 2);
   assert.equal(othersColumns('wide', 1), 1);

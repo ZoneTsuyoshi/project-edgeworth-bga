@@ -3,26 +3,55 @@
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 
-/** 区域の幅の上限（wide。px） */
-export const HEX_W_MAX = 150;
-/** 区域の幅の下限（px。これより小さくは拡縮しない） */
+/** wide の区域の幅の上限（px。014 §2.2） */
+export const HEX_W_MAX = 112;
+/** 区域の幅の下限（px。標準・大・wide・medium。概観には当てない。014 §2.5） */
 export const HEX_W_MIN = 32;
-/** スマホ（narrow）の段階: 標準 52 px、大 76 px（012 §3.8）。概観は画面幅に収める */
-export const NARROW_STEPS = { normal: 52, large: 76 };
+/** スマホ（narrow）の段階: 標準 56 px、大 80 px（014 §2.2）。概観は画面幅に収める（見るだけの段） */
+export const NARROW_STEPS = { normal: 56, large: 80 };
+/** レイアウトのしきい値（`#pe-root` の内側の幅。px。014 §2.2） */
+export const WIDE_MIN_WIDTH = 960;
+export const MEDIUM_MIN_WIDTH = 640;
+/** 他プレイヤーを 2 列にする幅の下限（wide のうち。014 §2.2） */
+export const OTHERS_TWO_COLUMNS_MIN_WIDTH = 1180;
+/** 高さの上限: 盤面（区域の幅の 5.49 倍の高さ）が画面の高さのこの割合に収まるようにする（wide・medium。014 §2.2） */
+export const BOARD_HEIGHT_RATIO = 0.62;
+/** 盤面の高さ ÷ 区域の幅（区域の高さ H = 幅 × 503 ÷ 435 と盤面の高さ 4.75 H の積。012 §3.2） */
+export const BOARD_HEIGHT_PER_HEX = 5.49;
+/** 高さの上限の下限（区域の幅。px） */
+export const HEX_W_HEIGHT_FLOOR = 56;
+/** wide の場の列の幅（カードの幅の上限 = 高さ 117 のカード）と、盤面との間隔（px） */
+export const SUPPLY_COLUMN_W = 84;
+export const SUPPLY_GAP = 12;
+/** wide の場のカードの高さの上限と、ラベル 3 つ・間隔のぶん（px。盤面の高さから引く。014 §2.2） */
+export const SUPPLY_CARD_H_MAX = 117;
+export const SUPPLY_CHROME_H = 104;
 /** スマホの段の並び（小さい順）。拡縮ボタンはこの順に 1 つずつ移る */
 export const NARROW_STEP_ORDER = /** @type {const} */ (['overview', 'normal', 'large']);
 /** `#pe-root` の幅の上限（px。012 追補 U-2） */
 export const ROOT_MAX_WIDTH = 1400;
-/** `#pe-root` の左右の余白（px。操作しない余白。012 追補 U-2） */
+/** `#pe-root` の左右の余白（px。操作しない余白。narrow だけ 8。014 §2.1） */
 export const ROOT_GUTTER = 12;
+export const ROOT_GUTTER_NARROW = 8;
 
 /**
- * `#pe-root` の外寸の幅から、左右の余白を引いた内側の幅。盤面の幅と data-layout の判定はこの値で行う。
+ * `#pe-root` の外寸の幅 → data-layout と内側の幅。data-layout は余白 12 px を引いた幅で決め、narrow だけ余白を 8 px にして内側の幅を求める。
+ * @param {number} outerWidth `#pe-root` の外寸の幅（px）
+ * @returns {{ layout: 'wide' | 'medium' | 'narrow', width: number }}
+ */
+export function rootMetrics(outerWidth) {
+  const layout = layoutOf(Math.max(0, outerWidth - ROOT_GUTTER * 2));
+  const gutter = layout === 'narrow' ? ROOT_GUTTER_NARROW : ROOT_GUTTER;
+  return { layout, width: Math.max(0, outerWidth - gutter * 2) };
+}
+
+/**
+ * `#pe-root` の外寸の幅から、左右の余白を引いた内側の幅。盤面の幅の計算はこの値で行う。
  * @param {number} rootWidth `#pe-root` の外寸の幅（px）
  * @returns {number}
  */
 export function innerWidthOf(rootWidth) {
-  return Math.max(0, rootWidth - ROOT_GUTTER * 2);
+  return rootMetrics(rootWidth).width;
 }
 
 /**
@@ -42,10 +71,10 @@ export function shiftNarrowStep(step, delta) {
  * @returns {'wide' | 'medium' | 'narrow'}
  */
 export function layoutOf(rootWidth) {
-  if (rootWidth >= 1180) {
+  if (rootWidth >= WIDE_MIN_WIDTH) {
     return 'wide';
   }
-  if (rootWidth >= 700) {
+  if (rootWidth >= MEDIUM_MIN_WIDTH) {
     return 'medium';
   }
   return 'narrow';
@@ -62,24 +91,48 @@ export function fitHexWidth(rootWidth, cols) {
 }
 
 /**
- * 区域の幅 `--pe-hex-w`（px）を決める。
- * wide: 幅 ÷ (cols + 0.5) を 150 px で頭打ち。medium: 幅 ÷ (cols + 0.5)。narrow: 段階（概観 / 標準 / 大）。
+ * 区域の幅 `--pe-hex-w`（px）を決める（014 §2.2）。
+ * wide: min(112, 幅に収まる値（場の列のぶんを引く）, 高さの上限)。medium: min(幅に収まる値, 高さの上限)。narrow: 段階（概観 / 標準 56 / 大 80）。
+ * 高さの上限 = 画面の高さ × 0.62 ÷ 5.49（下限 56）。
  * @param {object} p
  * @param {number} p.rootWidth `#pe-root` の内側の幅（px。`innerWidthOf`）
  * @param {number} p.cols 盤面の列数（12 / 9 / 6）
  * @param {'overview' | 'normal' | 'large'} [p.narrowStep] スマホの段階
+ * @param {number} [p.innerHeight] `window.innerHeight`（高さの上限。無ければ上限なし）
+ * @param {'wide' | 'medium' | 'narrow'} [p.layout] data-layout（`rootMetrics`）。無ければ `layoutOf(rootWidth)`
  * @returns {number} px（小数 1 桁に丸める）
  */
-export function computeHexWidth({ rootWidth, cols, narrowStep = 'normal' }) {
-  const layout = layoutOf(rootWidth);
-  const fit = fitHexWidth(rootWidth, cols);
+export function computeHexWidth({ rootWidth, cols, narrowStep = 'normal', innerHeight = Number.POSITIVE_INFINITY, layout = layoutOf(rootWidth) }) {
   let w;
   if (layout === 'narrow') {
-    w = narrowStep === 'overview' ? fit : NARROW_STEPS[narrowStep];
+    if (narrowStep === 'overview') {
+      return Math.round(fitHexWidth(rootWidth, cols) * 10) / 10;
+    }
+    w = NARROW_STEPS[narrowStep];
   } else {
-    w = layout === 'wide' ? Math.min(HEX_W_MAX, fit) : fit;
+    const avail = layout === 'wide' ? rootWidth - SUPPLY_COLUMN_W - SUPPLY_GAP : rootWidth;
+    const heightCap = Math.max(HEX_W_HEIGHT_FLOOR, (innerHeight * BOARD_HEIGHT_RATIO) / BOARD_HEIGHT_PER_HEX);
+    w = Math.min(layout === 'wide' ? HEX_W_MAX : Number.POSITIVE_INFINITY, fitHexWidth(avail, cols), heightCap);
   }
   return Math.round(Math.max(HEX_W_MIN, w) * 10) / 10;
+}
+
+/**
+ * 場（褒賞・山札・捨て札）のカードの大きさ（px。014 §2.2）。wide は盤面の右の縦 1 列（4 枚）で、高さ = min(117, ⌊(盤面の高さ − 104) ÷ 4⌋)。
+ * medium は 72 × 101、narrow は 64 × 90。
+ * @param {'wide' | 'medium' | 'narrow'} layout
+ * @param {number} hexWidth 区域の幅（px）
+ * @returns {[number, number]} [幅, 高さ]
+ */
+export function supplyCardSize(layout, hexWidth) {
+  if (layout === 'medium') {
+    return [72, 101];
+  }
+  if (layout === 'narrow') {
+    return [64, 90];
+  }
+  const height = Math.max(0, Math.min(SUPPLY_CARD_H_MAX, Math.floor((hexWidth * BOARD_HEIGHT_PER_HEX - SUPPLY_CHROME_H) / 4)));
+  return [Math.round((height * 715) / 999), height];
 }
 
 /**
@@ -94,7 +147,6 @@ export function cardSizes(layout) {
     action: narrow ? [60, 84] : [84, 117],
     actionOther: narrow ? [36, 50] : [48, 67],
     mission: narrow ? [60, 84] : [84, 117],
-    reward: narrow ? [76, 106] : [108, 151],
   };
 }
 
@@ -154,13 +206,14 @@ export const SAT_COUNT = 5;
 export const OTHERS_GAP = 10;
 
 /**
- * 他プレイヤーの領域を並べる列数。wide だけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列。
+ * 他プレイヤーの領域を並べる列数。wide で幅 1180 px 以上のときだけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列（014 §2.2）。
  * @param {'wide' | 'medium' | 'narrow'} layout
  * @param {number} otherCount 他プレイヤーの人数（観戦者は全員）
+ * @param {number} [rootWidth] `#pe-root` の内側の幅
  * @returns {number}
  */
-export function othersColumns(layout, otherCount) {
-  return layout === 'wide' && otherCount >= 2 ? 2 : 1;
+export function othersColumns(layout, otherCount, rootWidth = Number.POSITIVE_INFINITY) {
+  return layout === 'wide' && otherCount >= 2 && rootWidth >= OTHERS_TWO_COLUMNS_MIN_WIDTH ? 2 : 1;
 }
 
 /**

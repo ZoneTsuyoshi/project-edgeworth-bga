@@ -1,6 +1,6 @@
 /**
- * 場の情報（仕様書 012 §2.3、§4.7）: 褒賞カード 2 枚、プロジェクトカードの山札（枚数）と捨て札（一番上の 1 枚）。
- * 見出しの文字は出さず、各グループに aria-label と title を付ける。ラウンドはフェイズ帯にだけ出す（012 追補 U-4・U-5）。
+ * 場（`#pe-supply`。仕様書 014 §4.3）: 褒賞カード 2 枚、プロジェクトカードの山札（枚数）と捨て札（一番上の 1 枚）。
+ * 枠・見出しの箱は無く、各スロットの上に 12 px のラベル（REWARDS・DECK・DISCARD）を置く。捨て札を押すと、一覧がトレイに開く（GameView が差す）。
  * ミッション（本人は表、他プレイヤーは裏）もここで作る。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
@@ -18,18 +18,23 @@ export class FieldView {
         this.env = env;
         this.tooltip = tooltip;
         this.root = root;
-        root.classList.add('pe-field');
+        root.classList.add('pe-supply');
         this.rewardsBox = el('div', { class: 'pe-rewards' });
-        this.deckBox = el('div', { class: 'pe-deck', title: _('Project deck') });
-        this.discardBox = el('button', { type: 'button', class: 'pe-discard', title: _('Discard pile'), onClick: () => this.openDiscard() });
+        this.deckBox = el('div', { class: 'pe-deck' });
+        this.discardBox = el('button', { type: 'button', class: 'pe-discard', 'aria-label': _('Discard pile'), onClick: () => this.onToggleDiscard() });
+        /** @type {() => void} 捨て札を押したとき（トレイに一覧を開く / 閉じる。GameView が差す） */
+        this.onToggleDiscard = () => {};
+        const slot = (/** @type {string} */ label, /** @type {HTMLElement} */ body, /** @type {string} */ cls) => el('div', { class: `pe-supply-slot ${cls}`, role: 'group', 'aria-label': label }, [
+            el('div', { class: 'pe-rail-label', 'aria-hidden': 'true' }, [label]),
+            body,
+        ]);
         root.append(
-            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Rewards'), title: _('Rewards') }, [this.rewardsBox]),
-            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Project deck'), title: _('Project deck') }, [this.deckBox]),
-            el('div', { class: 'pe-field-group', role: 'group', 'aria-label': _('Discard'), title: _('Discard') }, [this.discardBox]),
+            slot(_('Rewards'), this.rewardsBox, 'pe-supply-rewards'),
+            slot(_('Deck'), this.deckBox, 'pe-supply-deck'),
+            slot(_('Discard'), this.discardBox, 'pe-supply-discard'),
         );
         /** @type {number[]} */
         this.discard = [];
-        this.modal = null;
     }
 
     /**
@@ -67,35 +72,18 @@ export class FieldView {
         this.discardBox.append(createBadge(ids.length, 'pe-discard-count'));
     }
 
-    /** 捨て札の全一覧（公開情報）を開く（012 §4.7） */
-    openDiscard() {
-        this.closeDiscard();
-        const list = el('div', { class: 'pe-modal-cards' });
+    /** @returns {HTMLElement} 捨て札の全一覧（公開情報。新しい順。トレイに出す。012 §4.7、014 §4.3） */
+    discardList() {
+        if (this.discard.length === 0) {
+            return el('p', { class: 'pe-tray-empty' }, [_('Empty')]);
+        }
+        const list = el('div', { class: 'pe-tray-cards' });
         for (const id of [...this.discard].reverse()) {
             const card = createCard(this.env, projectKey(id), { classes: ['pe-hand-card'] });
             this.tooltip.bind(card, projectKey(id));
             list.append(card);
         }
-        this.modal = el('div', { class: 'pe-modal', role: 'dialog', 'aria-label': _('Discard pile') }, [
-            el('div', { class: 'pe-modal-body' }, [
-                el('div', { class: 'pe-modal-head' }, [
-                    el('span', {}, [`${_('Discard pile')} (${this.discard.length})`]),
-                    el('button', { type: 'button', class: 'pe-btn pe-btn-small', onClick: () => this.closeDiscard() }, [_('Close')]),
-                ]),
-                this.discard.length === 0 ? el('p', {}, [_('Empty')]) : list,
-            ]),
-        ]);
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                this.closeDiscard();
-            }
-        });
-        document.body.append(this.modal);
-    }
-
-    closeDiscard() {
-        this.modal?.remove();
-        this.modal = null;
+        return list;
     }
 }
 

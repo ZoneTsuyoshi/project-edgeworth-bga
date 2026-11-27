@@ -167,7 +167,7 @@ export class ScoreSheet {
             ]);
         })))]);
         this.root.append(
-            el('div', { class: 'pe-choice-title' }, [_('Final fame')]),
+            el('div', { class: 'pe-rail-label pe-choice-title' }, [_('Final fame')]),
             el('div', { class: 'pe-score-scroll' }, [el('table', { class: 'pe-score-table' }, [el('thead', {}, [head]), el('tbody', {}, [...body, total, missions])])]),
         );
     }

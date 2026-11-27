@@ -117,7 +117,7 @@ export const HANDLERS = {
         }
       }
     }
-    view.refreshBand();
+    view.refreshRound();
     view.refreshAllPlayers();
     view.refreshMarks();
   },
@@ -157,7 +157,7 @@ export const HANDLERS = {
       holders.push(pid);
     }
     m.bonusHolders[String(no)] = holders;
-    view.refreshBand();
+    view.refreshRound();
     view.refreshPlayer(pid);
     view.refreshMarks();
   },
@@ -172,7 +172,7 @@ export const HANDLERS = {
       holders.push(pid);
     }
     m.bonusHolders[key] = holders;
-    view.refreshBand();
+    view.refreshRound();
     view.refreshPlayer(pid);
     view.refreshMarks();
   },
@@ -182,7 +182,7 @@ export const HANDLERS = {
     const m = view.m;
     // I-07 は phase を 1〜5（アクション番号）または 'orbit' で送る。flow_phase の綴りにそろえる
     m.phase = PHASE_BY_NUMBER[/** @type {keyof typeof PHASE_BY_NUMBER} */ (String(a.phase).toLowerCase())] ?? String(a.phase).toUpperCase();
-    view.refreshBand();
+    view.refreshRound();
   },
 
   // N8: 引いた枚数と山の枚数だけ（手札の ID は N9 で本人に）
@@ -536,14 +536,17 @@ export const HANDLERS = {
     refreshOne(view, pid);
   },
 
-  // N31: 終了条件を満たした
+  // N31: 終了条件を満たした（ラウンドの終わりの終了判定で決まった時点。このあとすぐ換金と名声の計算へ進む）。
+  // 「このラウンドが最後」とラウンドの途中で知らせる時点は無いので、バナーは出さず、ラウンドトラックを Game end にするだけ（014 §3。ログには通知の文が出る）
   gameEndTriggered(view) {
-    view.band.set({ endNote: true });
+    view.m.phase = 'END';
+    view.refreshRound();
   },
 
   // N32: 名声の内訳。名声は終了時にだけ出す（001 §12）。BGA のパネルの得点と得点表に出るので、領域の見出しには出さない（012 追補 U-5）
   finalScore(view, a) {
-    view.band.set({ phase: 'END' });
+    view.m.phase = 'END';
+    view.refreshRound();
     view.score.add(scoreFromNotification(a));
     view.refreshMissionOutlines();
   },

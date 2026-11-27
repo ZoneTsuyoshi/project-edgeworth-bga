@@ -1,6 +1,6 @@
 /**
  * ボトムシート（仕様書 012 §2.5、§3.9、§6）。選択中の、コストの内訳・方向パッド・衛星の候補を出す。
- * スマホではツールチップに頼れないので、盤面の下に貼り付く（position: sticky）。数値はサーバーが args で渡したものをそのまま出す。
+ * 盤面の下のトレイ（#pe-tray。014 §5）に出す（position: sticky はやめた）。PR 4 でトレイ（ui/Tray.js）に統合して削除する。数値はサーバーが args で渡したものをそのまま出す。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { SATELLITE_DIRECTIONS } from '../board/geometry.js';
@@ -10,9 +10,11 @@ import { clear, el } from './dom.js';
 export class BottomSheet {
     /**
      * @param {HTMLElement} root
+     * @param {() => void} [onChange] 表示 / 非表示が変わったとき（トレイの開閉）
      */
-    constructor(root) {
+    constructor(root, onChange = () => {}) {
         this.root = root;
+        this.onChange = onChange;
         root.classList.add('pe-sheet');
         root.hidden = true;
     }
@@ -23,7 +25,7 @@ export class BottomSheet {
     show(content) {
         clear(this.root);
         if (content.title !== undefined) {
-            this.root.append(el('div', { class: 'pe-sheet-title' }, [content.title]));
+            this.root.append(el('div', { class: 'pe-rail-label' }, [content.title]));
         }
         for (const line of content.lines ?? []) {
             this.root.append(el('div', { class: 'pe-sheet-line' }, [line]));
@@ -37,11 +39,13 @@ export class BottomSheet {
             }
         }
         this.root.hidden = false;
+        this.onChange();
     }
 
     hide() {
         clear(this.root);
         this.root.hidden = true;
+        this.onChange();
     }
 
     /**
