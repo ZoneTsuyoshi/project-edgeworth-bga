@@ -135,18 +135,36 @@ export function supplyCardSize(layout, hexWidth) {
   return [Math.round((height * 715) / 999), height];
 }
 
+/** アクションカードの縦横比（高さ ÷ 幅。プロジェクトカードと同じ 715 × 999） */
+const CARD_ASPECT = 999 / 715;
+/** narrow の自分のアクションカードの幅の上限（px）。5 枚が 1 行に入る幅 (W − 24) ÷ 5 とのうち小さいほう（014 §2.2） */
+export const ACTION_NARROW_MAX = 64;
+/** narrow で自分のアクションカード 5 枚が 1 行に入るための余白（4 つの間隔 + 左右。px） */
+export const ACTION_NARROW_PAD = 24;
+
 /**
- * カードの大きさ（px。012 §4.1 の表。narrow 以外は wide の値）。衛星カードは流動（`satelliteWidths`）。
+ * カードの大きさ（px。014 §2.2 の表）。衛星カードは流動（`satelliteWidths`）。
  * @param {'wide' | 'medium' | 'narrow'} layout
+ * @param {number} [rootWidth] `#pe-root` の内側の幅（narrow のアクションカード 5 枚が 1 行に入る幅に使う。無ければ上限の 64）
  * @returns {Record<string, [number, number]>} 種別 → [幅, 高さ]
  */
-export function cardSizes(layout) {
-  const narrow = layout === 'narrow';
+export function cardSizes(layout, rootWidth = Number.POSITIVE_INFINITY) {
+  if (layout === 'narrow') {
+    const actionW = Math.max(0, Math.min(ACTION_NARROW_MAX, Math.floor((rootWidth - ACTION_NARROW_PAD) / 5)));
+    const actionH = actionW === ACTION_NARROW_MAX ? 90 : Math.round(actionW * CARD_ASPECT);
+    return {
+      hand: [104, 145],
+      action: [actionW, actionH],
+      actionOther: [36, 50],
+      mission: [64, 90],
+    };
+  }
+  const medium = layout === 'medium';
   return {
-    hand: narrow ? [88, 123] : [120, 168],
-    action: narrow ? [60, 84] : [84, 117],
-    actionOther: narrow ? [36, 50] : [48, 67],
-    mission: narrow ? [60, 84] : [84, 117],
+    hand: medium ? [132, 184] : [150, 210],
+    action: medium ? [84, 117] : [92, 129],
+    actionOther: [44, 62],
+    mission: medium ? [84, 117] : [92, 129],
   };
 }
 
@@ -188,22 +206,18 @@ export function narrowStepFor(viewportWidth, spanCols) {
   return 'overview';
 }
 
-/** 衛星カードの幅の上限（px。012 追補 U-6）: 自分 240、スマホの自分 200、他プレイヤー 160 */
-export const SAT_W_MINE_MAX = 240;
-export const SAT_W_MINE_NARROW_MAX = 200;
-export const SAT_W_OTHER_MAX = 160;
-/** スマホの他プレイヤーの衛星の幅（横 1 列のスクロール。px） */
-export const SAT_W_OTHER_NARROW = 120;
-/** 自分の衛星を 5 機 1 行に並べる幅の下限（px）。これ未満だと配備カードのチップの名前が切れるので、3 機ずつ（3 + 2 の 2 行）にする */
-export const SAT_W_MINE_ROW_MIN = 200;
-/** プレイヤーの領域の左右の余白と枠（padding 10 px × 2 + border 1 px × 2。CSS の 10 プレイヤーの領域と合わせる） */
-export const PLAYER_AREA_PAD = 22;
-/** 衛星の間隔（px。CSS の `.pe-sats` の gap と合わせる） */
-export const SAT_GAP = 10;
+/** 自分の衛星カードの幅の上限（px。wide。014 §2.2） */
+export const SAT_W_MINE_MAX = 230;
+/** 他プレイヤーの衛星カードの幅の上限（px。wide・medium。014 §2.2） */
+export const SAT_W_OTHER_MAX = 150;
+/** 自分の衛星 5 機の間隔のぶん（px）: wide 12 × 4、medium 10 × 4。narrow は 3 列で 8 × 2。CSS の `.pe-sats` の gap と合わせる */
+export const SAT_ROW_PAD = { wide: 48, medium: 40, narrow: 16 };
+/** 他プレイヤーの衛星 5 機の間隔のぶん（px）: wide・medium 8 × 4。narrow は 6 × 4。CSS の gap と合わせる */
+export const SAT_OTHER_PAD = { wide: 32, medium: 32, narrow: 24 };
 /** 1 人分の衛星の数 */
 export const SAT_COUNT = 5;
 /** 他プレイヤーの領域の列の間隔（px。CSS の `#pe-others` の gap と合わせる） */
-export const OTHERS_GAP = 10;
+export const OTHERS_GAP = 24;
 
 /**
  * 他プレイヤーの領域を並べる列数。wide で幅 1180 px 以上のときだけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列（014 §2.2）。
@@ -217,28 +231,9 @@ export function othersColumns(layout, otherCount, rootWidth = Number.POSITIVE_IN
 }
 
 /**
- * 衛星カードの幅 5 機が 1 行に収まる幅（px。切り捨て）。
- * @param {number} areaWidth 領域（プレイヤーの面）の外寸の幅
- * @returns {number}
- */
-function fitFiveInRow(areaWidth) {
-  return fitInRow(areaWidth, SAT_COUNT);
-}
-
-/**
- * n 機が 1 行に収まる衛星カードの幅（px。切り捨て）。
- * @param {number} areaWidth 領域（プレイヤーの面）の外寸の幅
- * @param {number} n 1 行の機数
- * @returns {number}
- */
-function fitInRow(areaWidth, n) {
-  return Math.floor((areaWidth - PLAYER_AREA_PAD - SAT_GAP * (n - 1)) / n);
-}
-
-/**
- * 衛星カードの幅（px。012 追補 U-6）。`Layout.update` が px の CSS 変数として入れる（`cqw` は使わない）。
- * 自分: wide・medium は 5 機が 1 行に収まる幅（上限 240）。それが 200（`SAT_W_MINE_ROW_MIN`）未満なら 3 機ずつ 2 行の幅（上限 240）。narrow は 2 列（上限 200）。
- * 他プレイヤー: 他の列の幅から 5 機が 1 行に収まる幅（上限 160）、narrow は 120（横 1 列のスクロール）。
+ * 衛星カードの幅（px。014 §2.2 の表）。`Layout.update` が px の CSS 変数として入れる（`cqw` は使わない）。切り捨てで、1 行に収まる値にする。
+ * 自分: wide は min(230, (W − 48) ÷ 5)、medium は (W − 40) ÷ 5、narrow は 3 列で (W − 16) ÷ 3。
+ * 他プレイヤー: wide・medium は min(150, (列幅 − 32) ÷ 5)（wide の 2 列は列幅 = (W − 列の間隔) ÷ 2）、narrow は (W − 24) ÷ 5（5 機を 1 行）。
  * @param {object} p
  * @param {'wide' | 'medium' | 'narrow'} p.layout
  * @param {number} p.rootWidth `#pe-root` の内側の幅（`innerWidthOf`）
@@ -246,16 +241,14 @@ function fitInRow(areaWidth, n) {
  * @returns {{ mine: number, other: number }}
  */
 export function satelliteWidths({ layout, rootWidth, othersColumns: columns }) {
-  const floorAt = (/** @type {number} */ w) => Math.max(0, w);
+  const floorAt = (/** @type {number} */ w) => Math.max(0, Math.floor(w));
   if (layout === 'narrow') {
-    const mine = Math.floor((rootWidth - PLAYER_AREA_PAD - SAT_GAP) / 2);
-    return { mine: floorAt(Math.min(SAT_W_MINE_NARROW_MAX, mine)), other: SAT_W_OTHER_NARROW };
+    return { mine: floorAt((rootWidth - SAT_ROW_PAD.narrow) / 3), other: floorAt((rootWidth - SAT_OTHER_PAD.narrow) / SAT_COUNT) };
   }
   const columnWidth = (rootWidth - OTHERS_GAP * (columns - 1)) / columns;
-  const five = fitFiveInRow(rootWidth);
-  const mine = five >= SAT_W_MINE_ROW_MIN ? five : fitInRow(rootWidth, 3);
+  const mine = (rootWidth - SAT_ROW_PAD[layout]) / SAT_COUNT;
   return {
-    mine: floorAt(Math.min(SAT_W_MINE_MAX, mine)),
-    other: floorAt(Math.min(SAT_W_OTHER_MAX, fitFiveInRow(columnWidth))),
+    mine: floorAt(layout === 'wide' ? Math.min(SAT_W_MINE_MAX, mine) : mine),
+    other: floorAt(Math.min(SAT_W_OTHER_MAX, (columnWidth - SAT_OTHER_PAD[layout]) / SAT_COUNT)),
   };
 }

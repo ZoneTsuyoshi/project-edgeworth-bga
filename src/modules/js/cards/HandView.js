@@ -5,6 +5,7 @@
  */
 import { actionKey, projectKey } from './sprite-layout.js';
 import { createCard, createCardBack } from './CardView.js';
+import { cardInfo } from './card-text.js';
 import { el } from '../ui/dom.js';
 
 /**
@@ -120,7 +121,8 @@ export class HandView {
                 card.classList.add('pe-planned');
                 card.append(el('span', { class: 'pe-plan-badge' }, [plan]));
             }
-            this.root.append(card);
+            // 手札のカードの下に英語名のキャプション（2 行まで。カードの券面は日本語の印刷なので、ログのカード名と照らせるようにする。014 §2.3）
+            this.root.append(el('div', { class: 'pe-card-slot' }, [card, el('span', { class: 'pe-card-name' }, [cardInfo(projectKey(id))?.name ?? projectKey(id)])]));
         }
     }
 
@@ -207,10 +209,11 @@ export class ActionRow {
         this.root.replaceChildren();
         for (let no = 1; no <= 5; no++) {
             const state = this.states[no] ?? ACTION_HAND;
-            const slot = el('div', { class: 'pe-action-slot' });
+            const sideways = state === ACTION_SIDEWAYS;
+            const slot = el('div', { class: `pe-action-slot${sideways ? ' pe-action-slot-side' : ''}` });
             const card = createCard(this.env, actionKey(no), { classes: ['pe-action-card', `pe-action-state-${state}`] });
             card.dataset.no = String(no);
-            if (state === ACTION_SIDEWAYS) {
+            if (sideways) {
                 card.classList.add('pe-sideways');
                 card.title = _('Used last round. Returns to your hand next round.');
             }
@@ -225,20 +228,33 @@ export class ActionRow {
                 });
             }
             card.classList.toggle('pe-selected', this.chosen === no);
-            slot.append(card);
+            slot.append(el('div', { class: 'pe-action-box' }, [card]));
+            if (this.mine) {
+                // 自分のアクションカードの下に英語名のキャプション（I Budget 形。014 §2.3）
+                slot.append(el('span', { class: 'pe-card-name' }, [actionCaption(no)]));
+            }
             this.root.append(slot);
         }
-        // 確定済み（公開前）: 裏面を場に置き、確定の印を付ける（012 §4.4）。本人には選んだカードが分かる
+        // 確定済み（公開前）: 場に置いたカード。本人には選んだカードが分かる（確定の ✓ は廃止。BGA 標準のアクティブ表示に任せる。014 §4.4）
         if (this.plot.confirmed) {
             const back = this.plot.actionNo === null
                 ? createCardBack(this.env, 'AREV', ['pe-action-card', 'pe-action-plot'])
                 : createCard(this.env, actionKey(this.plot.actionNo), { classes: ['pe-action-card', 'pe-action-plot'] });
-            back.append(el('span', { class: 'pe-check', 'aria-label': _('Confirmed') }, ['✓']));
             if (this.plot.actionNo !== null) {
                 back.classList.add('pe-planned');
                 back.append(el('span', { class: 'pe-plan-badge' }, [_('Planned')]));
             }
-            this.root.append(el('div', { class: 'pe-action-slot pe-action-plotslot' }, [back]));
+            this.root.append(el('div', { class: 'pe-action-slot pe-action-plotslot' }, [el('div', { class: 'pe-action-box' }, [back])]));
         }
     }
+}
+
+/**
+ * アクションカードの英語名（`I Budget` 形）。
+ * @param {number} no 1〜5
+ * @returns {string}
+ */
+function actionCaption(no) {
+    const info = /** @type {Record<string, any> | null} */ (cardInfo(actionKey(no)));
+    return info === null ? String(no) : `${info.numeral} ${info.name}`;
 }

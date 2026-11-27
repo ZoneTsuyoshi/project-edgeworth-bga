@@ -1,22 +1,13 @@
 {
   // ユーザー設定（仕様書 012 §3.4・未確定事項 No.11）。ID は 100〜199。
   // 100: コマに席順の数字を重ねる（色覚への配慮）。画面（I-10）が cssPref の class を使う。
-  // 101: 衛星カードの表示（012 追補 U-8）。0 = 簡略（既定。配備カードをチップの行で見せる）、1 = 紙どおり（配備カードを衛星カードの上に重ねる詳細表示）。
-  //      Game.js が `userPreferences.get(101)` と `onChange` で GameView.setDetailAll に反映する。cssPref は使わない。
+  // （101: 衛星カードの表示は 014 で廃止した。ロケットは紙どおりの表示だけ。）
   // © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
   "100": {
     "name": "Show player marks on pieces",
     "values": {
       "0": { "name": "Off", "cssPref": "pe_marks_off" },
       "1": { "name": "On", "cssPref": "pe_marks_on" }
-    },
-    "default": 0
-  },
-  "101": {
-    "name": "Satellite cards",
-    "values": {
-      "0": { "name": "Compact" },
-      "1": { "name": "As printed" }
     },
     "default": 0
   }

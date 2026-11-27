@@ -430,7 +430,6 @@ export const HANDLERS = {
     view.pieces.setCube(p.id, link, p.colorIndex);
     view.pieces.refreshStackBadges();
     view.panels.get(p.id)?.update({});
-    view.areas.get(p.id)?.renderRegions();
   },
 
   // N24: パス（ログのみ）

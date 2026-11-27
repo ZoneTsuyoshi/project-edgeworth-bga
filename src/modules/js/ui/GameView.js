@@ -38,8 +38,6 @@ export class GameView {
         this.areas = new Map();
         /** @type {Map<number, PlayerPanel>} */
         this.panels = new Map();
-        /** 詳細表示（ゲームの設定 101 "As printed"。Game.js が読んで setDetailAll で入れる。保存はしない。012 追補 U-8） */
-        this.detailAll = false;
         /** 先送り済みの保留通知の ev_id（010 §10.5。windowClosed で空にする） */
         this.appliedEvents = new Set();
         this.tooltip = new Tooltip(env);
@@ -167,7 +165,6 @@ export class GameView {
                 area.hand.setCards(model.myHand);
                 area.refreshHand({ hand: model.myHand, missions: model.myMissions });
             }
-            area.setDetail(this.detailAll);
             this.areas.set(id, area);
             (mine ? this.meBox : this.othersBox).append(area.root);
         }
@@ -321,16 +318,6 @@ export class GameView {
     refreshAllPlayers() {
         for (const id of this.m.playerOrder) {
             this.refreshPlayer(id);
-        }
-    }
-
-    /**
-     * @param {boolean} detail 紙どおりの詳細表示（ゲームの設定 101。保存は BGA の設定が持つ）
-     */
-    setDetailAll(detail) {
-        this.detailAll = detail;
-        for (const area of this.areas.values()) {
-            area.setDetail(detail);
         }
     }
 

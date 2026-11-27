@@ -153,6 +153,20 @@ test('カードの大きさの名前は小文字にそろえて CSS 変数にす
   assert.deepEqual(cardSizes('narrow').actionOther, [36, 50]);
 });
 
+test('カードの大きさ（014 §2.2 の表）', () => {
+  assert.deepEqual(cardSizes('wide'), { hand: [150, 210], action: [92, 129], actionOther: [44, 62], mission: [92, 129] });
+  assert.deepEqual(cardSizes('medium'), { hand: [132, 184], action: [84, 117], actionOther: [44, 62], mission: [84, 117] });
+  // narrow: 手札 104 × 145、ミッション 64 × 90、他プレイヤー 36 × 50。アクションカードは 5 枚が 1 行に入る幅 (W − 24) ÷ 5、上限 64
+  assert.deepEqual(cardSizes('narrow', 374), { hand: [104, 145], action: [64, 90], actionOther: [36, 50], mission: [64, 90] });
+  assert.deepEqual(cardSizes('narrow').action, [64, 90]);
+  assert.deepEqual(cardSizes('narrow', 344).action, [64, 90]);
+  assert.equal(cardSizes('narrow', 320).action[0], 59);
+  for (const w of [280, 300, 320, 344, 374, 500, 639]) {
+    const [aw] = cardSizes('narrow', w).action;
+    assert.ok(aw * 5 + 6 * 4 <= w, `width ${w}: アクションカード 5 枚が 1 行に入る`);
+  }
+});
+
 test('拡大表示の寸法（012 §4.1、§4.6）', () => {
   assert.equal(zoomWidth(false, 1600), 360);
   assert.equal(zoomWidth(true, 1600), 540);
@@ -212,7 +226,7 @@ test('ミッションの枠: 集合の外に接する辺だけ（1 区域は 6 �
   assert.equal(outlineSegments([], 12, 0).length, 0);
 });
 
-test('他プレイヤーの列数と衛星カードの流動の幅（012 追補 U-6）', () => {
+test('他プレイヤーの列数と衛星カードの流動の幅（014 §2.2）', () => {
   // wide で幅 1180 px 以上のときだけ 2 列（他が 1 人なら 1 列）、それ以外は 1 列
   assert.equal(othersColumns('wide', 3, 1180), 2);
   assert.equal(othersColumns('wide', 3, 1179), 1);
@@ -221,24 +235,24 @@ test('他プレイヤーの列数と衛星カードの流動の幅（012 追補 
   assert.equal(othersColumns('wide', 1), 1);
   assert.equal(othersColumns('medium', 3), 1);
   assert.equal(othersColumns('narrow', 3), 1);
-  // wide（内側 1376 px）: 自分は上限 240、他は 2 列で列の幅（683 px）から 5 機が 1 行に収まる 124、1 列なら上限 160
-  assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 2 }), { mine: 240, other: 124 });
-  assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 1 }), { mine: 240, other: 160 });
-  // medium（内側 700 px）: 5 機 1 行だと 127 でチップの名前が切れるので、自分は 3 機ずつ 2 行（219）。他は 5 機 1 行（127）
-  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 700, othersColumns: 1 }), { mine: 219, other: 127 });
-  // 5 機 1 行で 200 px 以上になる幅（内側 1062 px 以上）は 5 機 1 行のまま
-  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 1062, othersColumns: 1 }), { mine: 200, other: 160 });
-  assert.equal(satelliteWidths({ layout: 'medium', rootWidth: 1061, othersColumns: 1 }).mine, 240);
-  // 領域の幅に収まる: 1 行の機数（5 機 1 行で 200 px 以上なら 5、未満なら 3）+ 間隔 + 領域の余白が根の幅以内
-  for (const w of [700, 800, 1000, 1061, 1062, 1180]) {
-    const { mine } = satelliteWidths({ layout: layoutOf(w), rootWidth: w, othersColumns: 1 });
-    const perRow = Math.floor((w - 22 - 40) / 5) >= 200 ? 5 : 3;
-    assert.ok(mine * perRow + 10 * (perRow - 1) + 22 <= w, `width ${w}`);
-    assert.ok(mine >= 200, `width ${w}: チップの名前が切れない幅`);
+  // wide（内側 1376 px）: 自分は上限 230、他は 2 列で列の幅（676 px）から (676 − 32) ÷ 5 = 128、1 列なら上限 150
+  assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 2 }), { mine: 230, other: 128 });
+  assert.deepEqual(satelliteWidths({ layout: 'wide', rootWidth: 1376, othersColumns: 1 }), { mine: 230, other: 150 });
+  // wide でも幅に収まる値のほうが小さければそちら: (1000 − 48) ÷ 5 = 190
+  assert.equal(satelliteWidths({ layout: 'wide', rootWidth: 1000, othersColumns: 1 }).mine, 190);
+  // medium（内側 700 px）: 自分は (W − 40) ÷ 5 = 132、他は min(150, (W − 32) ÷ 5) = 133。上限は無い（自分）
+  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 700, othersColumns: 1 }), { mine: 132, other: 133 });
+  assert.deepEqual(satelliteWidths({ layout: 'medium', rootWidth: 640, othersColumns: 1 }), { mine: 120, other: 121 });
+  // 1 行に収まる: 5 機 + 間隔（自分 wide 12 / medium 10、他 8）が根の幅以内
+  for (const w of [640, 700, 800, 959, 960, 1000, 1180, 1376, 1400]) {
+    const layout = layoutOf(w);
+    const { mine, other } = satelliteWidths({ layout, rootWidth: w, othersColumns: 1 });
+    assert.ok(mine * 5 + (layout === 'wide' ? 12 : 10) * 4 <= w, `width ${w}`);
+    assert.ok(other * 5 + 8 * 4 <= w, `width ${w}: 他プレイヤー`);
   }
-  // narrow: 自分は 2 列（390 px の画面 = 内側 366 px で 167、上限 200）、他は 120 固定
-  assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 366, othersColumns: 1 }), { mine: 167, other: 120 });
-  assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 336, othersColumns: 1 }), { mine: 152, other: 120 });
-  assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 699, othersColumns: 1 }), { mine: 200, other: 120 });
+  // narrow: 自分は 3 列で (W − 16) ÷ 3（390 px の画面 = 内側 374 px で 119）、他は 5 機 1 行で (W − 24) ÷ 5（同 70）
+  assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 374, othersColumns: 1 }), { mine: 119, other: 70 });
+  assert.deepEqual(satelliteWidths({ layout: 'narrow', rootWidth: 344, othersColumns: 1 }), { mine: 109, other: 64 });
+  assert.ok(satelliteWidths({ layout: 'narrow', rootWidth: 344, othersColumns: 1 }).other * 5 + 6 * 4 <= 344);
   assert.equal(satelliteWidths({ layout: 'narrow', rootWidth: 0, othersColumns: 1 }).mine, 0);
 });
