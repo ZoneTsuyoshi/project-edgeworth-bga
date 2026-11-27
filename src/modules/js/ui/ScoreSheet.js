@@ -24,6 +24,17 @@ export function sectionLabels() {
     };
 }
 
+/**
+ * ミッションの達成の有無の印（SVG。記号の文字は使わない。014 §1.2）。名前の文字と並べて出す。
+ * @param {boolean} achieved
+ * @returns {HTMLElement}
+ */
+function achievedIcon(achieved) {
+    const icon = el('span', { class: `pe-score-mark${achieved ? ' pe-score-mark-ok' : ''}`, role: 'img', 'aria-label': achieved ? _('Achieved') : _('Not achieved') });
+    icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${achieved ? 'M4.5 12.5l5 5L19.5 7' : 'M5 12h14'}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    return icon;
+}
+
 export class ScoreSheet {
     /**
      * @param {HTMLElement} root
@@ -164,11 +175,12 @@ export class ScoreSheet {
             const slot = s.outlines.find((o) => o.mission === m.mission)?.slot;
             return el('span', { class: `pe-score-part${m.achieved ? ' pe-score-ok' : ''}` }, [
                 ...(slot === undefined ? [] : [el('span', { class: `pe-mission-swatch pe-mission-${slot}`, 'aria-hidden': 'true' })]),
-                `${m.achieved ? '✓' : '–'} ${name}`,
+                achievedIcon(m.achieved),
+                name,
             ]);
         })))]);
         this.root.append(
-            el('div', { class: 'pe-rail-label pe-choice-title' }, [_('Final fame')]),
+            el('div', { class: 'pe-rail-label' }, [_('Final fame')]),
             el('div', { class: 'pe-score-scroll' }, [el('table', { class: 'pe-score-table' }, [el('thead', {}, [head]), el('tbody', {}, [...body, total, missions])])]),
         );
     }

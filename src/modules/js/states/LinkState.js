@@ -7,7 +7,6 @@
 import { ActionState } from './ActionState.js';
 import { canShowPass, format, sideAvailability, soleOption } from './logic/common.js';
 import { cellKind, linkActionArgs, linkBreakdown, linkPairs, linkQuote, linkSelectionFrom, parseLinkable, validateLink } from './logic/link.js';
-import { costNote } from './texts.js';
 
 export class LinkState extends ActionState {
     /**
@@ -107,7 +106,7 @@ export class LinkState extends ActionState {
         view.stateFrame.selectCells(cells, (cell) => {
             sel.cell = cell;
             this.refresh();
-        });
+        }, _('You cannot reach this area'));
 
         // 衛星の選択（その区域に届く衛星。先に衛星を選ぶ入口にもなる）
         /** @type {Map<number, Omit<import('../cards/SatelliteView.js').SatellitePick, 'onPick'>>} */
@@ -115,11 +114,11 @@ export class LinkState extends ActionState {
         for (const [satId, v] of satAvail) {
             const pair = v.entry;
             if (sel.satId === satId) {
-                picks.set(satId, { state: 'selected' });
+                picks.set(satId, { state: 'selected', cost: sel.cell === null || pair === null ? undefined : pair.data.total });
             } else if (v.usable && pair !== null) {
-                picks.set(satId, { state: pair.data.pay.kind === 'free' ? 'selectable' : 'sellable', note: sel.cell === null ? undefined : costNote(pair.data.total, pair.data.pay) });
+                picks.set(satId, { state: pair.data.pay.kind === 'free' ? 'selectable' : 'sellable', cost: sel.cell === null ? undefined : pair.data.total });
             } else {
-                picks.set(satId, { state: 'blocked', note: sel.cell === null ? _('Cannot establish a link') : _('Cannot reach this area') });
+                picks.set(satId, { state: 'blocked', reason: sel.cell === null ? _('Cannot establish a link') : _('Cannot reach this area') });
             }
         }
         area?.setSatPicks(picks, (satId) => {
@@ -137,15 +136,12 @@ export class LinkState extends ActionState {
             const b = linkBreakdown(option, quote.cost, this.maya);
             const lines = b.free
                 ? [_('Link cost: Free')]
-                : [
-                    format(_('Link cost: Area ${area} + Pioneer ${pioneer}${mods} = ${total} Maya'), {
-                        area: b.area,
-                        pioneer: b.pioneer,
-                        mods: b.modsReduction > 0 ? format(_(' - activated effects ${n}'), { n: b.modsReduction }) : '',
-                        total: b.total,
-                    }),
-                    _('If another player links this area at the same time, no Pioneer cost is paid between you'),
-                ];
+                : [format(_('Link cost ${total} Maya (Area ${area} + Pioneer ${pioneer}${mods})'), {
+                    total: b.total,
+                    area: b.area,
+                    pioneer: b.pioneer,
+                    mods: b.modsReduction > 0 ? format(_(' - activated effects ${n}'), { n: b.modsReduction }) : '',
+                })];
             this.costBox({
                 title: format(_('Establish a link at area ${cell} with ${sat}'), { cell: option.cell, sat: view.satName(option.satId) }),
                 lines,
@@ -153,19 +149,16 @@ export class LinkState extends ActionState {
                 mods: option.mods,
                 sel,
                 reserved: [],
+                tip: b.free ? undefined : _('If another player links this area at the same time, no Pioneer cost is paid between you'),
             });
             // 選択中の区域に、キューブのプレビュー（本人の画面だけ）
             const color = view.m.players[me].colorIndex;
             view.pieces.setPreview({ kind: 'cube', cell: option.cell, colorIndex: color });
-        } else if (sel.cell !== null || sel.satId !== null) {
-            view.sheet.show({
-                title: sel.cell === null ? _('Choose an area') : _('Choose a satellite'),
-                lines: [sel.cell === null ? _('Highlighted areas can be reached by this satellite') : _('Several of your satellites reach this area. Choose one')],
-            });
         }
 
         const hint = this.bonus ? _('${you} may establish another link (Action bonus), or pass') : _('${you} must choose an area to establish a link, or pass');
-        this.bga.statusBar.setTitle(chosen === undefined ? `${hint}. ${_('Tap a highlighted area (dashed = you need to sell cards)')}` : hint);
+        const next = sel.cell !== null && sel.satId === null ? _('Several of your satellites reach this area. Choose one') : _('Tap a highlighted area (dashed = you need to sell cards)');
+        this.bga.statusBar.setTitle(chosen === undefined ? `${hint}. ${next}` : hint);
         if (sel.cell !== null || sel.satId !== null) {
             this.bga.statusBar.addActionButton(_('Confirm'), () => {
                 if (!ok) {

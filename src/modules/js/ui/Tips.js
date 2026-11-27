@@ -38,13 +38,11 @@ const IMG_MIN = 96;
 const IMG_NARROW = 130;
 
 /**
- * 選べる / 選択中の要素を表すクラスの一覧（ここ 1 か所）。014 §6.1 の新しいクラス（`pe-can`・`pe-can-sell`・`pe-picked`）と、PR 4 で消す旧クラス。
- * PR 4 で旧クラスを消したら、`LEGACY_ACTIONABLE` と `LEGACY_PICKED` を空にするだけで済む。
+ * 選べる / 選択中の要素を表すクラスの一覧（ここ 1 か所）。014 §6.1 の `pe-can`・`pe-can-sell`・`pe-picked`。
+ * 旧クラスは PR 4 で消したので、`LEGACY_ACTIONABLE`・`LEGACY_PICKED` は空にした（互換の置き場は残さない）。
  */
-const LEGACY_ACTIONABLE = ['pe-selectable', 'pe-sat-selectable', 'pe-sat-sellable', 'pe-card-pickable'];
-const LEGACY_PICKED = ['pe-selected', 'pe-sat-selected', 'pe-card-picked'];
-const PICKED_CLASSES = ['pe-picked', ...LEGACY_PICKED];
-const ACTIONABLE_CLASSES = ['pe-can', 'pe-can-sell', ...LEGACY_ACTIONABLE, ...PICKED_CLASSES];
+const PICKED_CLASSES = ['pe-picked'];
+const ACTIONABLE_CLASSES = ['pe-can', 'pe-can-sell', ...PICKED_CLASSES];
 const ACTIONABLE_SELECTOR = ACTIONABLE_CLASSES.map((c) => `.${c}`).join(',');
 const PICKED_SELECTOR = PICKED_CLASSES.map((c) => `.${c}`).join(',');
 

@@ -528,6 +528,21 @@ ROUND 3    Planning › I Budget › II Deploy › III Launch/Turn › IV Link �
 
 - ボタンの色・並び・数（4 個以内）は 012 追補 U-1 のまま。効果の窓だけ §5.1 のとおりバーへ移す。
 
+実装で決めた細部（PR 4。2026-11-28）:
+
+- 5 つのクラスの CSS は、カード（`.pe-card`）の `::after`（輪郭 + 角の印）に当てる。印は CSS 変数の SVG（`--pe-coin`・`--pe-check`）。タッチの情報の印は左上、チェックの印は右上なので重ならない。ロケットの土台の衛星カードは、右上がコストの札なので、チェックの印だけ左下にした。売却すれば選べる衛星は、コストの札が硬貨を持つので、カードの隅の硬貨の印は付けない。盤面の矢印・方向パッドは、`pe-picked` を金の塗りにする（チェックの印は付けない。盤面の操作具）。
+- ロケットの選択の状態は、土台の衛星カードの 4 つのクラス（`pe-can` / `pe-can-sell` / `pe-picked` / `pe-off`）と、ロケットの根の `data-pick`（`selectable` / `sellable` / `blocked` / `selected`）。選べないロケットを暗くするのは、根の子（積んだカードとキャプション）にかける。`SatellitePick` の `note` は、数値の `cost`（札）と、選べない理由の `reason`（押したとき）に分けた。
+- 区域の暗い幕は `Highlights.draw`。区域を選ぶ（`pickable()` が空でない）間だけ、`entries` に無い区域と、そのゴーストを暗い六角形（不透明度 0.5）で描き、盤面に `pe-board-selecting` を付ける。方向の選択（選択中の区域 1 つだけ）や効果の窓の対象の強調では幕を出さない。選べる区域のホバーは、押せない SVG の下のタイル（`pe-hl-pick`）を明るくする。選べない区域を押したときの理由は、`StateFrame.selectCells` の第 3 引数（通信確立は `You cannot reach this area`、ほかは一般の文）。選択中の区域を押し直しても何も出さない。
+- 理由のメッセージは `ui/refuse.js`（`refuse(env, reason)`）。同じ文は 2 秒以内に繰り返さない（モジュールの記録）。選択中でない部品にはクリックの処理を付けないので、操作の番でないときは何も出ない。カード選択の上限に達したときの追加（`CardPicker`）は `You can choose up to ${max} card(s)`。
+- トレイ（`ui/Tray.js`）は `show(sections)` / `hide()` と、捨て札の `showList` / `hideList`。節は `{ label?, body }`（`label` はレールのラベル）。部品は `costLine(parts, { warn?, ok? })`（`·` でつないだ 1 行。警告は SVG のアイコン + 警告色）、`directionPad`、`CardPicker`（手札と同じ大きさ。効果の窓の小さな一覧は `small: true`）、欄の行（`HandTargets.section`）。効果の窓（PR 5 まで）は、今の一覧を 1 つの節として載せる。
+- 欄は `pe-field`（ラベル + 今の値 + 右端のボタン）。選択中の欄は `pe-picked`（金の輪郭 + 左端のチェックの印）。欄が 2 つ以上のとき、選択中でない欄にだけ `Choose from hand`。値が空のときは `None`、使えないときは理由を値の位置に出す。選んだカードの [×] は無く、手札のカードをもう一度押すと外れる。
+- 売却の促しの文（`Needs ${short} more Maya. Choose at least …`）はトレイから外した。足りないぶんは、コストの行の警告（`Needs ${short} more Maya: sell at least ${need} card(s)`。売るカードの欄の名前は `Cards to sell`）に、売る枚数の案内はステータスバーのタイトル（今までどおり）に出す。使えるマヤが足りず売っても届かないときは、警告 `Not enough Maya (short ${short})`。
+- 通信確立のコストの行は `Link cost ${total} Maya (Area ${area} + Pioneer ${pioneer}) · ${left} Maya left`。§12 の `to ${name}`（先駆コストの支払い先）は、サーバーの args がその名前を持たない（先駆コストは最悪値）ので付けていない。「同時に通信確立した場合は先駆コストが無い」の説明は、コストの行のツールチップへ移した。他の行動のコストの行も、既存の文を `·` でつなぎ、末尾に `${left} Maya left` を足す（`You will have … left` は使わなくなった）。
+- 配備のカード・衛星の「次にすること」の案内（カードだけ / 衛星だけを選んだとき）は、トレイのシートからステータスバーのタイトルに移した（`Selected: ${card}. Choose a satellite to deploy to`、`Choose a card to deploy to ${sat}`）。ドラフトの回し方の説明（`Keep 1 of … cards and pass the rest to …`）もタイトルへ（`${you} must keep 1 card. …`）。トレイのラベルは何枚目か（`Pick ${pickNo} of ${pickTotal}`）。
+- 計画（22）は、`PlayerArea.moveActionsTo` と `PlanningPlot` の移す処理を削除し、行 A をそのまま使う。確定後は、自分の行 A の選んだ札に `Planned`（`pe-planned` + `pe-plan-badge`）。自分の領域には裏向きのスロットを出さない（どの状態でも。他プレイヤーの領域は今のまま）。`ActionRow.setPlot` は、確定済みのまま `actionNo` が `null`（他の通知の描き直し）のとき、前の値を保つ。
+- 効果の窓（PR 5 で作り替える）の旧クラスは、`pe-chip-btn` の選択を `pe-picked` に、`pe-choice-section` / `pe-choice-label` を `pe-effect-sec` / `pe-effect-label` に置き換えただけ。ステータスバーのタイトルには、トレイから外した hint の要点を足した（`… Your choices are final once you press the button`）。方向の選択肢のチップは、文字の矢印をやめて名前だけにした（PR 5 でボタンに）。
+- `Env.selectionMode` は呼び出しが無いので削除し、`Env.showMessage` を足した（BGA では `bga.dialogs.showMessage(message, 'info')`。プレビューは `bga.dialogs.showMessage`）。`Tips.js` の `LEGACY_ACTIONABLE`・`LEGACY_PICKED` は削除した。
+
 ### 7. ツールチップ（作り直し）
 
 `cards/Tooltip.js` を、**1 つの管理役（委譲）**に作り直す（仮に `ui/Tips.js`）。BGA 標準の `addTooltipHtml` は使わない（理由: 画面の部品を頻繁に描き直すため id の管理が要る・タッチの動きを確かめられない・背の高い内容が画面の外へ切れる。自前なら `tools/preview` で位置と画面内の収まりを自動で確かめられる）。見た目は BGA 標準のツールチップに合わせる。

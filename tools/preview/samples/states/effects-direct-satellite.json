@@ -68,7 +68,7 @@
  },
  "steps": [
   {
-   "click": ".pe-sat-pickable",
+   "click": ".pe-sat[data-pick]:not([data-pick=\"blocked\"])",
    "nth": 2
   }
  ]

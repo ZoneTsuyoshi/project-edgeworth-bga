@@ -28,12 +28,13 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+// PE_ROOT: 別のチェックアウト（例: main の複製）を配る（操作の前後比較用）
+const ROOT = process.env.PE_ROOT === undefined ? resolve(dirname(fileURLToPath(import.meta.url)), '..', '..') : resolve(process.env.PE_ROOT);
 const OUT_DIR = join(ROOT, 'build', 'preview-shots');
 
 /** 既定の幅 → 画面の高さ（ページ全体を撮るので、高さは sticky などの見え方にだけ効く） */
 const WIDTHS = { 360: 780, 390: 844, 768: 1024, 1024: 768, 1366: 768, 1440: 900, 1920: 1080, 2560: 1440 };
-const STATES = ['none', 'launchpad', 'planning', 'deploy-main', 'link-main', 'draft', 'effects-use', 'final-score'];
+const STATES = ['none', 'launchpad', 'planning', 'planning-confirmed', 'mulligan', 'deploy-main', 'link-main', 'link-main-sell', 'launch-main', 'launch-board-turn-direction', 'draft', 'proposal', 'sell-pick', 'effects-use', 'final-score'];
 /** 既定の撮影に足す組み合わせ（014 §10。観戦者・2 人 6 列・名声オン） */
 const EXTRA_SHOTS = [
     { name: 'w1440-none-spectator', width: 1440, state: 'none', query: 'spectator=1' },
@@ -351,6 +352,11 @@ async function runShot(page, shot, base, fullPageDefault) {
     }
     const log = await page.eval(`(document.getElementById('pv-log')?.textContent ?? '')`).catch(() => '');
     const errors = String(log).split('\n').filter((line) => line.startsWith('ERROR'));
+    // 送信された操作（プレビューの performAction の記録）。前後の比較用（PE_ACTIONS=1 で出す）
+    if (process.env.PE_ACTIONS === '1') {
+        const acts = String(log).split('\n').filter((line) => line.startsWith('act'));
+        console.log(`ACT ${shot.name}: ${acts.join(' | ')}`);
+    }
     if (errors.length > 0) {
         console.log(`PAGE ERRORS ${shot.name}:\n  ${errors.join('\n  ')}`);
     }

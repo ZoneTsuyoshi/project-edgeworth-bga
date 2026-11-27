@@ -14,7 +14,7 @@ import { el } from '../ui/dom.js';
  * @property {(playerId: number) => HTMLElement | null} playerPanel BGA のプレイヤーパネル（無ければ null）
  * @property {() => boolean} animationsActive リプレイの高速再生などでは false
  * @property {() => number | null} currentPlayerId 観戦者は null
- * @property {() => boolean} selectionMode 選択モード中か
+ * @property {(message: string) => void} showMessage 選べないものを押したときの理由を出す（BGA では `bga.dialogs.showMessage(message, 'info')`。014 §6.3）
  * @property {(label: string, callback: () => void, opts?: { color?: 'primary' | 'secondary' | 'alert', destination?: HTMLElement, disabled?: boolean, classes?: string | string[] }) => unknown} addButton BGA 標準のボタンを置く（BGA では `bga.statusBar.addActionButton`。`destination` で盤面の外のバーでなく指定の要素の中へ。014 §1.2）
  */
 

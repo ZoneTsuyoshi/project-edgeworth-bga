@@ -48,7 +48,7 @@ export class Game {
             playerPanel: (playerId) => this.bga.playerPanels.getElement(playerId) ?? null,
             animationsActive: () => this.bga.gameui.bgaAnimationsActive(),
             currentPlayerId: () => (spectator ? null : Number(this.bga.players.getCurrentPlayerId())),
-            selectionMode: () => this.view?.stateFrame.selecting === true,
+            showMessage: (message) => this.bga.dialogs.showMessage(message, 'info'),
             addButton: (label, callback, opts = {}) => this.bga.statusBar.addActionButton(label, callback, opts),
         };
         this.view = new GameView(env, this.bga.gameArea.getElement());

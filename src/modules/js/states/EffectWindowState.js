@@ -7,7 +7,7 @@
  * 他のプレイヤーの待機表示（誰が・どのカードの選択中か。カードは公開情報）は、N35 effectWaiting で更新する。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
-import { directionGlyph, directionLabel } from '../board/Highlights.js';
+import { directionLabel } from '../board/Highlights.js';
 import { cardInfo, effectTextHtml } from '../cards/card-text.js';
 import { createCard } from '../cards/CardView.js';
 import { keyOfNameId, nameOfNameId } from '../cards/name-id.js';
@@ -26,7 +26,7 @@ import { cardName, costNote, modName } from './texts.js';
 /**
  * 盤面・衛星カードから直接選ぶための入口（最初の該当フィールドだけ。AREA と同じ扱い）。手札から選ぶ欄は HandTargets（B-2）が受け持つ。
  * @typedef {{ kind: 'satellite', field: import('./logic/effects.js').Field, value: any, pick: (satId: number) => void }
- *   | { kind: 'pairs', picks: Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', note?: string }>, plans: Map<number, { text: string }[]>, pick: (satId: number) => void }
+ *   | { kind: 'pairs', picks: Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', cost?: number, reason?: string }>, plans: Map<number, { text: string }[]>, pick: (satId: number) => void }
  *   | { kind: 'assignment', assignment: Record<string, any>, sats: number[], picked: number | null, pickCard: (card: number) => void, pickSat: (satId: number) => void }} DirectDriver
  */
 
@@ -147,7 +147,7 @@ export class EffectWindowState extends ActionState {
             return;
         }
         view.stateFrame.leaveSelection();
-        view.panel.hide();
+        view.tray.hide();
         const me = view.m.me;
         if (me !== null) {
             view.areas.get(me)?.hand.setSelectable(null);
@@ -218,8 +218,9 @@ export class EffectWindowState extends ActionState {
                 body.push(block);
             }
         }
-        view.panel.show({ title: _('Resolve your card effects'), hint: _('Your choices are final once you press the button, and are revealed to everyone when all players are done'), body });
-        this.bga.statusBar.setTitle(this.questions.some((q) => q.type === 'ORDER') ? _('${you} must choose the order of your card effects') : _('${you} must resolve your card effects'));
+        // 今の一覧の中身をそのまま 1 つの節としてトレイに載せる（1 件ずつの表示への作り替えは PR 5。014 §5.1）。説明はタイトルに
+        view.tray.show([{ label: _('Resolve your card effects'), body }]);
+        this.bga.statusBar.setTitle(this.questions.some((q) => q.type === 'ORDER') ? _('${you} must choose the order of your card effects') : `${_('${you} must resolve your card effects')}. ${_('Your choices are final once you press the button')}`);
         // 区域の選択は盤面でも選べる（最初の AREA フィールドの候補を強調する）
         const driver = /** @type {{ cells: number[], value: number | null, pick: (cell: number) => void } | null} */ (areaDriver);
         if (driver !== null) {
@@ -352,7 +353,7 @@ export class EffectWindowState extends ActionState {
             const targets = moveTargets(d.assignment, d.picked, d.sats);
             area.setSatPicks(new Map([...targets].map(([satId, state]) => [satId, {
                 state,
-                note: state === 'blocked' ? _('A satellite holds up to 4 cards') : undefined,
+                reason: state === 'blocked' ? _('A satellite holds up to 4 cards') : undefined,
             }])), d.pickSat);
         }
     }
@@ -388,8 +389,8 @@ export class EffectWindowState extends ActionState {
         // 窓のボタンはパネルの中の置き場に BGA 標準のボタンで置く（012 追補 U-1 の 6）
         const buttons = el('div', { class: 'pe-effect-buttons' });
         this.pePanelButton(buttons, _('Confirm order'), () => this.act('actOrderEffects', { entryIds: order }, sig.length), { color: 'primary' });
-        return el('section', { class: 'pe-choice-section pe-order' }, [
-            el('div', { class: 'pe-choice-label' }, [_('The order of these effects changes the result. Choose the order to resolve them (the initial order is the default order)')]),
+        return el('section', { class: 'pe-effect-sec pe-order' }, [
+            el('div', { class: 'pe-effect-label' }, [_('The order of these effects changes the result. Choose the order to resolve them (the initial order is the default order)')]),
             el('ol', { class: 'pe-order-list' }, rows),
             buttons,
         ]);
@@ -499,7 +500,7 @@ export class EffectWindowState extends ActionState {
             buttons.append(el('span', { class: 'pe-effect-need' }, [this.needText(check.reason, check.key, q)]));
         }
 
-        return el('section', { class: 'pe-choice-section pe-effect', dataset: { entry: q.entryId } }, [
+        return el('section', { class: 'pe-effect-sec pe-effect', dataset: { entry: q.entryId } }, [
             head,
             cost,
             ...fields,
@@ -637,11 +638,11 @@ export class EffectWindowState extends ActionState {
             changed();
         };
         const wrap = (/** @type {HTMLElement[]} */ children) => el('div', { class: 'pe-field-editor', dataset: { field: field.key, type: field.type } }, [
-            el('div', { class: 'pe-choice-label' }, [this.fieldLabel(field)]),
+            el('div', { class: 'pe-effect-label' }, [this.fieldLabel(field)]),
             ...children,
         ]);
         /** @param {string} label @param {boolean} on @param {() => void} fn @param {string} [title] */
-        const chip = (label, on, fn, title) => this.tipped(el('button', { type: 'button', class: `pe-chip-btn${on ? ' pe-selected' : ''}`, 'aria-pressed': on ? 'true' : 'false', onClick: fn }, [label]), title);
+        const chip = (label, on, fn, title) => this.tipped(el('button', { type: 'button', class: `pe-chip-btn${on ? ' pe-picked' : ''}`, 'aria-pressed': on ? 'true' : 'false', onClick: fn }, [label]), title);
 
         switch (field.type) {
             case 'SATELLITE':
@@ -659,7 +660,7 @@ export class EffectWindowState extends ActionState {
                 })))]);
             }
             case 'DIRECTION':
-                return wrap([el('div', { class: 'pe-chip-row' }, field.candidates.map((dir) => chip(`${directionGlyph(String(dir))} ${directionLabel(String(dir))}`, values[field.key] === dir, () => set(String(dir)))))]);
+                return wrap([el('div', { class: 'pe-chip-row' }, field.candidates.map((dir) => chip(directionLabel(String(dir)), values[field.key] === dir, () => set(String(dir)))))]);
             case 'AMOUNT': {
                 if (field.candidates.length === 0) {
                     return wrap([el('input', {
@@ -763,7 +764,7 @@ export class EffectWindowState extends ActionState {
                         return el('label', { class: 'pe-assign-row' }, [
                             el('button', {
                                 type: 'button',
-                                class: `pe-chip-btn${picked === card ? ' pe-selected' : ''}`,
+                                class: `pe-chip-btn${picked === card ? ' pe-picked' : ''}`,
                                 'aria-pressed': picked === card ? 'true' : 'false',
                                 onClick: () => pickCard(card),
                             }, [cardName(card)]),
@@ -890,7 +891,7 @@ export class EffectWindowState extends ActionState {
         const satReasons = satOptions(candidates, chosen, max, deployed, satIds, pending.card);
         const base = max === 1 ? [] : chosen;
         const funds = { maya: this.maya, price: this.price, handCount: this.hand.length, otherReserved: taken.size };
-        /** @type {Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', note?: string }>} */
+        /** @type {Map<number, { state: 'selectable' | 'sellable' | 'selected' | 'blocked', cost?: number, reason?: string }>} */
         const picks = new Map();
         for (const satId of satIds) {
             const reason = satReasons.get(satId) ?? null;
@@ -899,13 +900,13 @@ export class EffectWindowState extends ActionState {
             } else if (reason === null && pending.card !== null) {
                 const { cost, pay } = pairPayState(q.preview, base, [pending.card, satId], funds);
                 const note = `${costNote(cost, pay)}${isEstimated(base.length) ? ` (${_('estimated')})` : ''}`;
-                picks.set(satId, { state: pay.kind === 'short' ? 'blocked' : pay.kind === 'free' ? 'selectable' : 'sellable', note });
+                picks.set(satId, pay.kind === 'short' ? { state: 'blocked', reason: note } : { state: pay.kind === 'free' ? 'selectable' : 'sellable', cost });
             } else if (reason === null) {
                 picks.set(satId, { state: 'selectable' });
             } else {
                 picks.set(satId, {
                     state: 'blocked',
-                    note: pending.card === null ? undefined : reason === 'full' ? _('A satellite holds up to 4 cards') : _('Cannot deploy this card here'),
+                    reason: pending.card === null ? undefined : reason === 'full' ? _('A satellite holds up to 4 cards') : _('Cannot deploy this card here'),
                 });
             }
         }

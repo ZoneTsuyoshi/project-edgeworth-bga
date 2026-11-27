@@ -12,7 +12,9 @@ import { fuelSlotOrder, projectFuelSlots, SATELLITE_FUEL_SLOTS } from './fuel-sl
 import { SATELLITE_ROTATION } from '../board/geometry.js';
 import { directionLabel } from '../board/Highlights.js';
 import { el } from '../ui/dom.js';
+import { refuse } from '../ui/refuse.js';
 import { tipLine, tipText } from '../ui/Tips.js';
+import { pickClass } from './pick-state.js';
 import { format, satelliteLabel } from '../states/logic/common.js';
 
 /** 衛星カードの燃料庫の数（002 §6。初期燃料庫 1 + 燃料庫 1） */
@@ -34,10 +36,12 @@ const SATELLITE_FUEL_COUNT = 2;
  */
 
 /**
- * 選択モードの衛星。state: selectable = 選べる、sellable = 売却すれば選べる（破線）、blocked = 選べない（グレー。理由は note）、selected = 選択中。
+ * 選択モードの衛星。state: selectable = 選べる（pe-can）、sellable = 売却すれば選べる（pe-can-sell）、blocked = 選べない（pe-off。理由は reason。押したときに出す）、
+ * selected = 選択中（pe-picked）。選べるロケット・選択中のロケットには、土台の衛星カードの右上にコストの札（cost。014 §6.1）。
  * @typedef {object} SatellitePick
  * @property {'selectable' | 'sellable' | 'blocked' | 'selected'} state
- * @property {string} [note] コストや選べない理由
+ * @property {number} [cost] コスト（マヤ。あれば札を出す）
+ * @property {string} [reason] 選べない理由（blocked のとき。無ければ一般の文）
  * @property {() => void} onPick
  */
 
@@ -144,7 +148,12 @@ export class SatelliteView {
         this.cardPicks = null;
         // 選択モードでの衛星のタップ（衛星カードの長押し・詳細ボタンの操作とは分ける）
         this.root.addEventListener('click', () => {
-            if (this.pick === null || this.pick.state === 'blocked') {
+            if (this.pick === null) {
+                return;
+            }
+            if (this.pick.state === 'blocked') {
+                // 選べないロケットを押したら理由を出す（無反応にしない。014 §6.3）
+                refuse(this.env, this.pick.reason);
                 return;
             }
             this.pick.onPick();
@@ -161,16 +170,26 @@ export class SatelliteView {
         this.applyPick();
     }
 
-    /** 選択モードの見た目（枠と、コスト・選べない理由の札）を今の pick に合わせる */
+    /** 選択モードの見た目（土台の衛星カードの 4 つのクラスと、コストの札）を今の pick に合わせる */
     applyPick() {
         const pick = this.pick;
-        for (const state of ['selectable', 'sellable', 'blocked', 'selected']) {
-            this.root.classList.toggle(`pe-sat-${state}`, pick?.state === state);
+        const card = this.root.querySelector(':scope .pe-sat-card');
+        if (card === null) {
+            return;
         }
-        this.root.classList.toggle('pe-sat-pickable', pick !== null && pick.state !== 'blocked');
-        this.root.querySelector(':scope > .pe-sat-note')?.remove();
-        if (pick?.note !== undefined && pick.note !== '') {
-            this.root.prepend(el('div', { class: `pe-sat-note pe-sat-note-${pick.state}`, role: 'status' }, [pick.note]));
+        card.classList.remove('pe-can', 'pe-can-sell', 'pe-picked', 'pe-off');
+        card.querySelector(':scope > .pe-cost-tag')?.remove();
+        if (pick === null) {
+            delete this.root.dataset.pick;
+            return;
+        }
+        card.classList.add(pickClass(pick.state));
+        this.root.dataset.pick = pick.state;
+        if (pick.state !== 'blocked' && pick.cost !== undefined) {
+            // 土台の衛星カードの右上にコストの札（マヤの硬貨 + 数。文字の行は出さない）
+            const coin = el('span', { class: 'pe-icon pe-icon-maya', 'aria-hidden': 'true' });
+            applySprite(coin, pieceSprite('maya_1'), this.env.imgUrl);
+            card.append(el('span', { class: 'pe-cost-tag', role: 'img', 'aria-label': format(_('Cost ${cost}'), { cost: pick.cost }) }, [coin, String(pick.cost)]));
         }
     }
 
@@ -183,12 +202,12 @@ export class SatelliteView {
         this.applySubject();
     }
 
-    /** 問いの対象の強調を今の subject に合わせる */
+    /** 問いの対象の強調を今の subject に合わせる（土台の衛星カードの pe-subject と札） */
     applySubject() {
-        this.root.classList.toggle('pe-sat-subject', this.subject);
-        this.root.querySelector(':scope > .pe-sat-subject-tag')?.remove();
+        this.root.querySelector(':scope .pe-sat-card')?.classList.toggle('pe-subject', this.subject);
+        this.root.querySelector(':scope > .pe-subject-tag')?.remove();
         if (this.subject) {
-            this.root.prepend(el('div', { class: 'pe-sat-subject-tag', role: 'status' }, [_('This effect is for this satellite')]));
+            this.root.prepend(el('div', { class: 'pe-subject-tag', role: 'status' }, [_('This effect is for this satellite')]));
         }
     }
 
@@ -208,8 +227,8 @@ export class SatelliteView {
         for (const node of /** @type {NodeListOf<HTMLElement>} */ (this.root.querySelectorAll('.pe-paper-card[data-key]'))) {
             const card = Number.parseInt((node.dataset.key ?? '').slice(1), 10);
             const state = picks?.cards.get(card);
-            node.classList.toggle('pe-card-pickable', state !== undefined);
-            node.classList.toggle('pe-card-picked', state === 'selected');
+            node.classList.toggle('pe-can', state === 'selectable');
+            node.classList.toggle('pe-picked', state === 'selected');
             node.onclick = state === undefined ? null : (/** @type {MouseEvent} */ e) => {
                 e.stopPropagation();
                 picks?.onPick(card);
@@ -241,12 +260,7 @@ export class SatelliteView {
             children.push(el('span', { class: 'pe-plan-text' }, [plan.text]));
             return el('div', { class: 'pe-plan' }, children);
         }));
-        const note = this.root.querySelector(':scope > .pe-sat-note');
-        if (note === null) {
-            this.root.prepend(box);
-        } else {
-            note.after(box);
-        }
+        this.root.prepend(box);
     }
 
     /**

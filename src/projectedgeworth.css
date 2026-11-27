@@ -30,6 +30,8 @@ body {
     --pe-mat: rgb(14 24 44 / 82%);
     --pe-can: #fff;
     --pe-can-glow: rgb(92 200 255 / 75%);
+    --pe-coin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23f2c75c' stroke='%230a1122' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='6.5' fill='none' stroke='%230a1122' stroke-width='1.6'/%3E%3C/svg%3E");
+    --pe-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='3' fill='%23ffd23f'/%3E%3Cpath d='M5 12.5l4.5 4.5L19 7' fill='none' stroke='%230a1122' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     --pe-pick: #ffd23f;
     --pe-warn: #ff8f80;
     --pe-ok: #6fdc9a;
@@ -765,41 +767,61 @@ body {
     stroke-width: 0.025;
 }
 
+/* 選べない区域を覆う暗い幕（区域を選ぶ間だけ。左右のゴーストも。014 §6.2） */
+.pe-hl-veil polygon {
+    fill: rgb(5 10 24 / 50%);
+    stroke: none;
+}
+
+/* 売却すれば選べる区域の角の印（マヤの硬貨。文字は使わない） */
 .pe-hl-badge circle {
-    fill: var(--pe-pick);
+    fill: #f2c75c;
     stroke: #0a1224;
     stroke-width: 0.02;
 }
 
-.pe-hl-badge text {
-    fill: #0a1224;
-    font-weight: bold;
+.pe-hl-badge .pe-hl-badge-ring {
+    fill: none;
 }
 
-/* 方向の矢印ボタン（区域の幅 90 px 以上のときだけ盤面に出す。それ未満はトレイの方向パッド）。盤面の操作具として丸のまま（014 §1.2） */
+/* 選べる区域: 押せることを示し、ホバーで明るくする（ハイライトの層は押せないので、下のタイルに付ける） */
+.pe-cell.pe-hl-pick {
+    cursor: pointer;
+}
+
+.notouch-device .pe-cell.pe-hl-pick:hover {
+    filter: brightness(1.3);
+}
+
+/* 方向の矢印ボタン（区域の幅 90 px 以上のときだけ盤面に出す。それ未満はトレイの方向パッド）。盤面の操作具として白い円 + 濃色の矢印、選んだ向きは金（014 §1.2、§6.4） */
 .pe-arrow {
     position: absolute;
-    top: calc(var(--ay) * var(--pe-hex-w, 52px) - 18px);
-    left: calc(var(--ax) * var(--pe-hex-w, 52px) - 18px);
+    top: calc(var(--ay) * var(--pe-hex-w, 52px) - 20px);
+    left: calc(var(--ax) * var(--pe-hex-w, 52px) - 20px);
     display: none;
-    width: 36px;
-    height: 36px;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     padding: 0;
     border: 2px solid #0a1224;
     border-radius: 50%;
     background: #fff;
-    font-size: 18px;
-    line-height: 1;
     color: #0a1224;
     cursor: pointer;
     pointer-events: auto;
 }
 
 [data-hex-size="large"] .pe-arrow {
-    display: block;
+    display: flex;
 }
 
-.pe-arrow.pe-selected {
+.pe-arrow .pe-dir-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.pe-arrow.pe-picked {
     background: var(--pe-pick);
 }
 
@@ -840,27 +862,56 @@ body {
     background-repeat: no-repeat;
 }
 
-/* 角は画像の透過で丸い。選択の輪郭だけ border-radius（幅の約 4.2 %）で描き、outline・box-shadow でカードの大きさをずらさない */
-.pe-selectable {
+/* ---- 操作の見た目（1 つの言語。014 §6.1）。カード・ロケット（土台の衛星カード）・アクションカード・コマに同じ意味で使う ----
+   pe-can = 選べる / pe-can-sell = 売却すれば選べる / pe-picked = 選択中 / pe-off = 今は選べない / pe-subject = 問いの対象。点滅しない。
+   角は画像の透過で丸い。輪郭だけ border-radius（幅の約 4.2 %）で描き、box-shadow・outline でカードの大きさをずらさない。 */
+.pe-can {
     cursor: pointer;
 }
 
-.pe-selectable::after,
-.pe-selected::after {
+.pe-card.pe-can::after,
+.pe-card.pe-can-sell::after,
+.pe-card.pe-picked::after,
+.pe-card.pe-subject::after {
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 2;
     border-radius: 4.2% / 3%;
-    box-shadow: inset 0 0 0 2px var(--pe-can), 0 0 10px 2px var(--pe-can-glow);
+    background-repeat: no-repeat;
     pointer-events: none;
 }
 
-.pe-selected::after {
-    box-shadow: inset 0 0 0 4px var(--pe-pick), 0 0 8px 2px var(--pe-pick);
+.pe-card.pe-can::after {
+    box-shadow: 0 0 0 2px var(--pe-can), 0 0 12px 4px var(--pe-can-glow);
 }
 
-.pe-unselectable {
-    filter: grayscale(0.7) brightness(0.75);
+.pe-card.pe-can-sell::after {
+    outline: 2px dashed var(--pe-can);
+    background-image: var(--pe-coin);
+    background-position: right 4px top 4px;
+    background-size: 22px 22px;
+}
+
+.pe-card.pe-picked::after {
+    box-shadow: 0 0 0 3px var(--pe-pick);
+    background-image: var(--pe-check);
+    background-position: right 4px top 4px;
+    background-size: 24px 24px;
+}
+
+.pe-card.pe-subject::after {
+    outline: 2px dashed var(--pe-pick);
+    outline-offset: 2px;
+}
+
+.pe-off {
+    filter: brightness(0.55) saturate(0.6);
+}
+
+/* 選べるカードにマウスを乗せると 4 px 持ち上がる（ホバー専用。.notouch-device のみ。012 §10 教訓 9） */
+.notouch-device .pe-card.pe-can:not(.pe-sat-card, .pe-paper-card):hover {
+    transform: translateY(-4px);
 }
 
 .pe-used {
@@ -885,10 +936,6 @@ body {
 
 .pe-hand-card {
     width: var(--pe-hand-w);
-}
-
-.pe-hand-card.pe-selected {
-    transform: translateY(-6px);
 }
 
 .pe-card-slot {
@@ -1752,7 +1799,7 @@ html[data-theme="dark"] .pe-tip-facts dt {
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 60%));
 }
 
-/* トレイ（#pe-tray。盤面の下。箱なし。レールとラベル、その下に中身。014 §5）。PR 1 では選択パネル・ボトムシート・捨て札の一覧を同じ場所に置く */
+/* トレイ（#pe-tray。盤面の下。箱なし。レールとラベル、その下に中身。014 §5）。選択パネルとボトムシートを 1 つにした。開いても盤面は上下しない */
 #pe-tray {
     grid-area: tray;
     display: flex;
@@ -1762,15 +1809,20 @@ html[data-theme="dark"] .pe-tip-facts dt {
     border-top: 1px solid var(--pe-line);
 }
 
-#pe-tray-panel,
-#pe-tray-sheet,
+.pe-tray-sections,
 .pe-tray-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pe-tray-sec {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-/* ラベルの行: 左に 12 px のラベル、右端に BGA 標準の [Close] */
+/* ラベルの行: 左に 12 px のラベル、右端に BGA 標準のボタン（[Close]） */
 .pe-tray-head {
     display: flex;
     gap: 8px;
@@ -1790,22 +1842,40 @@ html[data-theme="dark"] .pe-tip-facts dt {
     color: var(--pe-ink-dim);
 }
 
-/* コストの内訳・方向パッド（ボトムシートの中身）。貼り付かない（014 §5） */
-.pe-sheet {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: stretch;
-}
-
-.pe-sheet-line {
-    padding: 2px 8px;
-    border-left: 2px solid var(--pe-line-strong);
-    background: var(--pe-mat);
+/* コストと結果の行: 文字だけ。1 行にまとめ、収まらないときだけ折り返す。警告はアイコン + 警告色 */
+.pe-cost-line {
+    margin: 0;
     font-size: 14px;
     color: var(--pe-ink);
 }
 
+.pe-cost-warn,
+.pe-cost-ok {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+.pe-cost-warn {
+    color: var(--pe-warn);
+}
+
+.pe-cost-ok {
+    color: var(--pe-ok);
+}
+
+.pe-warn-icon {
+    display: inline-flex;
+}
+
+.pe-warn-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 方向パッド（2 列 × 3 行、各 56 × 48 px）。区域の幅 90 px 以上は盤面の矢印を使うので出さない。盤面の操作具として例外（014 §1.2） */
 .pe-dpad {
     display: grid;
     grid-template-columns: repeat(2, 56px);
@@ -1813,16 +1883,27 @@ html[data-theme="dark"] .pe-tip-facts dt {
     gap: 6px;
 }
 
+[data-hex-size="large"] .pe-dpad {
+    display: none;
+}
+
 .pe-dpad-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--pe-line-strong);
     border-radius: 2px;
     background: var(--pe-mat);
-    font-size: 24px;
     color: var(--pe-ink);
     cursor: pointer;
 }
 
-.pe-dpad-btn.pe-selected {
+.pe-dpad-btn .pe-dir-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.pe-dpad-btn.pe-picked {
     border-color: var(--pe-pick);
     background: var(--pe-pick);
     color: #0a1122;
@@ -1832,14 +1913,77 @@ html[data-theme="dark"] .pe-tip-facts dt {
     opacity: 0.35;
 }
 
+/* 欄（トレイの 1 行。ラベル + 今の値。選択中の欄は pe-picked。選択中でない欄に [Choose from hand] / [Choose]。014 §5.1） */
+.pe-field {
+    position: relative;
+    padding: 4px 10px;
+    border: 1px solid var(--pe-line);
+    border-radius: 2px;
+}
+
+.pe-field-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    align-items: center;
+    min-height: 36px;
+}
+
+.pe-field-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--pe-ink);
+}
+
+.pe-field-label::after {
+    content: ":";
+}
+
+.pe-field-value {
+    flex: 1 1 120px;
+    min-width: 0;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+    color: var(--pe-ink);
+}
+
+.pe-field-empty {
+    color: var(--pe-ink-dim);
+}
+
+.pe-field-tools {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.pe-field-tools:empty {
+    display: none;
+}
+
+.pe-field-off {
+    opacity: 0.6;
+}
+
+.pe-field.pe-picked {
+    padding-left: 40px;
+    border-color: transparent;
+}
+
+.pe-field.pe-picked::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border: 3px solid var(--pe-pick);
+    border-radius: 2px;
+    background: var(--pe-check) no-repeat left 8px center / 22px 22px;
+    pointer-events: none;
+}
+
 /* ホバー専用のスタイルは .notouch-device を前置する（必須の情報はホバーだけに置かない。012 §10 教訓 9） */
 .notouch-device .pe-chip:hover,
 .notouch-device .pe-strip:hover {
     outline: 2px solid var(--pe-can);
-}
-
-.notouch-device .pe-selectable:hover {
-    transform: translateY(-4px);
 }
 
 /* ---- narrow（スマホ・縦長タブレット。ゲーム領域の幅 640 px 未満） ---- */
@@ -1849,57 +1993,23 @@ html[data-theme="dark"] .pe-tip-facts dt {
     min-height: 32px;
 }
 
-/* ---- 13 操作 UI（仕様書 008、012 §6）。選択パネル・衛星の選択・効果の問い・名声の内訳 ---- */
+/* ---- 13 操作 UI（仕様書 008、012 §6）。カードの行・衛星の選択・効果の問い・名声の内訳 ---- */
 
-/* 選択パネル: 盤面の下のトレイに出す。箱なし（レールとラベル）。PR 4 でトレイに統合する */
-.pe-choice {
-    margin: 0;
-    padding: 0;
-}
-
-.pe-choice-hint,
-.pe-choice-label {
-    margin: 2px 0 4px;
-    font-size: 13px;
-    color: var(--pe-ink-dim);
-}
-
-.pe-choice-label {
-    font-weight: bold;
-    color: var(--pe-ink);
-}
-
-.pe-choice-section {
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid var(--pe-line);
-}
-
-.pe-choice-error {
-    margin-top: 8px;
-    color: var(--pe-warn);
-    font-weight: bold;
-}
-
-.pe-choice-subject {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 6px;
-    font-weight: bold;
-}
-
-/* カードを並べて選ぶ部品 */
+/* カードを並べて選ぶ部品（ドラフト・企画の引いたカードなど。手札と同じ大きさ + 英語名のキャプション。014 §5） */
 .pe-picker {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px 10px;
+}
+
+.pe-picker-hand {
+    --pe-picker-w: var(--pe-hand-w);
 }
 
 .pe-picker-slot {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     align-items: center;
     width: var(--pe-picker-w, 84px);
 }
@@ -1910,35 +2020,19 @@ html[data-theme="dark"] .pe-tip-facts dt {
 }
 
 .pe-picker-name {
-    max-width: 100%;
+    width: 100%;
+    max-height: 30px;
     overflow: hidden;
     font-size: 12px;
+    line-height: 15px;
     text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
     color: var(--pe-ink-dim);
 }
 
 .pe-picker-empty {
     font-size: 13px;
     color: var(--pe-ink-dim);
-}
-
-.pe-sellprompt {
-    margin-top: 10px;
-    padding: 6px 8px;
-    border: 2px dashed var(--pe-warn);
-    border-radius: 2px;
-}
-
-.pe-sellprompt-ok {
-    border-color: var(--pe-ok);
-}
-
-.pe-sellprompt-text {
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: bold;
 }
 
 /* 起動の修正・企画のオプション */
@@ -1969,86 +2063,75 @@ html[data-theme="dark"] .pe-tip-facts dt {
     opacity: 0.5;
 }
 
-/* 衛星の選択（配備先・打ち上げ / 転回・通信確立）。枠はロケット全体ではなく土台の衛星カードに付ける（配備カードの積みの上にも出す）。枠は形（実線・破線・太線）でも区別する */
-.pe-sat-pickable {
+/* 衛星の選択（配備先・打ち上げ / 転回・通信確立）。5 つのクラスはロケット全体ではなく土台の衛星カードに付ける（配備カードの積みの上にも出す。014 §6.1）。
+   選べないロケットは暗くするだけ（理由は押したとき・ツールチップ）。選べる・選択中のロケットは、土台の衛星カードの右上にコストの札 */
+.pe-sat[data-pick] {
     cursor: pointer;
 }
 
-.pe-sat-selectable .pe-sat-card::after,
-.pe-sat-sellable .pe-sat-card::after,
-.pe-sat-selected .pe-sat-card::after,
-.pe-sat-subject .pe-sat-card::after {
-    content: "";
+.pe-sat[data-pick="blocked"] {
+    cursor: default;
+}
+
+.pe-sat[data-pick="blocked"] > .pe-sat-paper {
+    filter: brightness(0.55) saturate(0.6);
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- ロケットの根の状態で暗くする規則。キャプションの幅などの規則とは別の性質 */
+.pe-sat[data-pick="blocked"] > .pe-sat-caption {
+    filter: brightness(0.55) saturate(0.6);
+}
+
+.pe-sat-card.pe-off {
+    filter: none;
+}
+
+.pe-sat-card.pe-picked::after {
+    background-position: left 4px bottom 4px;
+}
+
+.pe-sat-card.pe-can-sell::after {
+    background-image: none;
+}
+
+.notouch-device .pe-sat[data-pick="selected"]:hover .pe-sat-card::after {
+    box-shadow: 0 0 0 3px var(--pe-pick);
+}
+
+.notouch-device .pe-sat[data-pick]:not([data-pick="blocked"]):hover .pe-sat-card::after {
+    box-shadow: 0 0 0 2px var(--pe-can), 0 0 16px 6px var(--pe-can-glow);
+}
+
+.pe-cost-tag {
     position: absolute;
-    inset: -4px;
-    z-index: 2;
-    border: 3px solid var(--pe-can);
-    border-radius: 3px;
+    top: 4px;
+    right: 4px;
+    z-index: 3;
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    padding: 1px 6px 1px 3px;
+    border-radius: 2px;
+    background: var(--pe-mat);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--pe-ink);
     pointer-events: none;
 }
 
-.pe-sat-selectable .pe-sat-card::after {
-    box-shadow: 0 0 10px 2px var(--pe-can-glow);
+.pe-cost-tag .pe-icon-maya {
+    width: 16px;
+    height: 16px;
 }
 
-.pe-sat-sellable .pe-sat-card::after {
-    border-style: dashed;
-}
-
-.pe-sat-selected .pe-sat-card::after {
-    border: 5px solid var(--pe-pick);
-}
-
-.pe-sat-blocked > :not(.pe-sat-note) {
-    filter: grayscale(0.7) brightness(0.8);
-}
-
-.pe-sat-note {
-    padding: 2px 6px;
-    border-radius: 2px;
-    background: var(--pe-mat);
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--pe-ink);
-}
-
-.pe-sat-note-blocked {
-    color: var(--pe-warn);
-}
-
-.pe-sat-note-selected {
-    background: var(--pe-pick);
-    color: #0a1122;
-}
-
-/* 効果の問いの対象の衛星（盤面のコマと同じ金色。選択の枠とは太さと札で区別する） */
-.pe-sat-subject .pe-sat-card::after {
-    border: 4px double var(--pe-pick);
-}
-
-.pe-sat-subject-tag {
+/* 効果の問いの対象の衛星（土台の衛星カードの pe-subject。札は問いの文脈を補う） */
+.pe-subject-tag {
     padding: 2px 6px;
     border-radius: 2px;
     background: var(--pe-pick);
     font-size: 12px;
     font-weight: bold;
     color: #0a1122;
-}
-
-/* 付け替えの配備カード（押して選ぶ） */
-.pe-card-pickable {
-    cursor: pointer;
-    outline: 2px solid var(--pe-can);
-    outline-offset: 1px;
-}
-
-.pe-card-picked {
-    outline: 4px solid var(--pe-pick);
-    outline-offset: 1px;
-}
-
-.notouch-device .pe-sat-pickable:hover .pe-sat-card::after {
-    border-color: var(--pe-pick);
 }
 
 /* 効果の問い */
@@ -2110,7 +2193,7 @@ html[data-theme="dark"] .pe-tip-facts dt {
     cursor: pointer;
 }
 
-.pe-chip-btn.pe-selected {
+.pe-chip-btn.pe-picked {
     border-color: var(--pe-pick);
     background: var(--pe-pick);
     font-weight: bold;
@@ -2254,8 +2337,8 @@ html[data-theme="dark"] .pe-tip-facts dt {
     font-size: 15px;
 }
 
-.pe-root[data-layout="narrow"] .pe-picker-slot,
-.pe-root[data-layout="narrow"] .pe-picker-card {
+.pe-root[data-layout="narrow"] .pe-picker:not(.pe-picker-hand) .pe-picker-slot,
+.pe-root[data-layout="narrow"] .pe-picker:not(.pe-picker-hand) .pe-picker-card {
     width: var(--pe-picker-w-narrow, 72px);
 }
 
@@ -2306,54 +2389,17 @@ html[data-theme="dark"] .pe-tip-facts dt {
     pointer-events: none;
 }
 
-/* 手札を選ぶ欄（見出し + 選んだカードの一覧。選択中の欄だけが手札のゾーンを使う。012 追補 2026-11-14 B-2） */
-.pe-handfield {
-    padding: 4px 6px;
-    border: 1px solid var(--pe-line);
-    border-radius: 2px;
+/* 効果の窓の節（PR 5 で作り替える）。今の一覧の中身をトレイの 1 つの節として載せる */
+.pe-effect-sec {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--pe-line);
 }
 
-.pe-handfield-active {
-    border-color: var(--pe-ok);
-    box-shadow: 0 0 0 1px var(--pe-ok);
-}
-
-.pe-handfield-off {
-    opacity: 0.6;
-}
-
-.pe-handfield-head {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.pe-handfield-note {
-    font-size: 12px;
-    color: var(--pe-ink-dim);
-}
-
-.pe-handfield-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin: 4px 0 0;
-    padding: 0;
-    list-style: none;
-}
-
-.pe-handfield-item {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    padding: 2px 4px 2px 8px;
-    border: 1px solid var(--pe-line);
-    border-radius: 2px;
+.pe-effect-label {
+    margin: 2px 0 4px;
     font-size: 13px;
+    font-weight: bold;
+    color: var(--pe-ink);
 }
 
-.pe-handfield-slot .pe-picker {
-    margin-top: 6px;
-}

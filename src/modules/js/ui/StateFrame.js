@@ -2,12 +2,14 @@
  * 状態ごとの操作 UI の枠（仕様書 012 §3.9、§6、009 の args、010 §13）。
  * 細部は状態機械（I-07）の状態クラスとのつなぎ込みで仕上げる。ここでは次を用意する。
  *   - 同時選択の args（`participants`・`confirmed`・`_private`）から確定済みかどうかを持つ（アクションカードの `Planned` に使う）
- *   - 区域を選ぶ（ハイライト + タップ）、アクションカード・手札を選ぶ、コストの内訳と方向パッド（ボトムシート）を出す
+ *   - 区域を選ぶ（ハイライト + タップ。選べない区域は暗くし、押すと理由を出す）、方向を選ぶ（矢印 / トレイの方向パッド）
  * ステータスバーのボタン（[Confirm]・[Pass]・[Change my choice]）は状態クラスが `bga.statusBar` に出す。
  * © だんじり協奏曲 (Danjiri Concerto) https://x.com/danjiriconcerto
  */
 import { cellRowCol } from '../board/geometry.js';
 import { int } from './dom.js';
+import { refuse } from './refuse.js';
+import { costLine, directionPad } from './Tray.js';
 
 /**
  * 009 / 010 §13 の args の形（使うキーだけ。無いものは省略されうる）。
@@ -29,6 +31,8 @@ export class StateFrame {
         this.baseHighlights = [];
         /** @type {((cell: number) => void) | null} */
         this.pickHandler = null;
+        /** @type {string | undefined} 選べない区域を押したときの理由（無ければ一般の文） */
+        this.offReason = undefined;
         this.selecting = false;
     }
 
@@ -69,10 +73,11 @@ export class StateFrame {
     leaveSelection() {
         this.selecting = false;
         this.pickHandler = null;
+        this.offReason = undefined;
         this.baseHighlights = [];
         this.view.highlights.clear();
         this.view.highlights.clearArrows();
-        this.view.sheet.hide();
+        this.view.tray.hide();
         this.view.pieces.setPreview(null);
     }
 
@@ -80,11 +85,13 @@ export class StateFrame {
      * 区域を選べるようにする（ハイライト + タップ）。スマホでは選べる区域が収まる段階に自動で切り替え、その位置までスクロールする。
      * @param {{ cell: number, kind: import('../board/Highlights.js').HighlightKind }[]} list
      * @param {(cell: number) => void} [onPick]
+     * @param {string} [offReason] 選べない区域を押したときの理由
      */
-    selectCells(list, onPick) {
+    selectCells(list, onPick, offReason) {
         this.selecting = true;
         this.baseHighlights = list;
         this.pickHandler = onPick ?? null;
+        this.offReason = offReason;
         this.view.highlights.set(list);
         const data = this.view.board.data;
         if (data !== null && list.length > 0) {
@@ -100,15 +107,18 @@ export class StateFrame {
     }
 
     /**
-     * 盤面のタップ。選べる区域のときだけ受ける（選べない区域は何も起きない。012 §3.9）。
+     * 盤面のタップ。選べる区域なら選ぶ。選べない区域なら理由を出す（014 §6.3。選択中でないときは何も出さない）。
      * @param {number} cell
      */
     handleCellPick(cell) {
         if (!this.selecting || this.pickHandler === null) {
             return;
         }
-        if (this.view.highlights.pickable().includes(cell)) {
+        const highlights = this.view.highlights;
+        if (highlights.pickable().includes(cell)) {
             this.pickHandler(cell);
+        } else if (highlights.pickable().length > 0 && highlights.kindOf(cell) === undefined) {
+            refuse(this.view.env, this.offReason);
         }
     }
 
@@ -125,10 +135,11 @@ export class StateFrame {
     }
 
     /**
-     * 方向の選択。区域の幅 90 px 以上は区域の周囲の矢印、それ未満はボトムシートの 2 × 2 パッド（012 §3.9）。
+     * 方向の選択。区域の幅 90 px 以上は区域の周囲の矢印、それ未満はトレイの方向パッド（012 §3.9、014 §5・§6.4）。
+     * 矢印とパッドは同じ向きの選択を指す。トレイにはパッドとコストの行などを出すので、呼び出し側が `sections` で足す。
      * @param {number} cell
      * @param {(dir: string) => void} onPick
-     * @param {{ title?: string, lines?: string[], selected?: string | null, disabled?: string[] }} [opts]
+     * @param {{ title?: string, lines?: string[], selected?: string | null, disabled?: string[], extra?: import('./Tray.js').TraySection[] }} [opts]
      */
     chooseDirection(cell, onPick, opts = {}) {
         const handler = (/** @type {string} */ dir) => {
@@ -136,19 +147,18 @@ export class StateFrame {
             onPick(dir);
         };
         this.view.highlights.showArrows(cell, handler, opts);
-        this.view.sheet.show({
-            title: opts.title,
-            lines: opts.lines,
-            pad: { onPick: handler, selected: opts.selected, disabled: opts.disabled },
-        });
+        this.view.tray.show([
+            { label: opts.title, body: [directionPad({ onPick: handler, selected: opts.selected, disabled: opts.disabled }), ...(opts.lines ?? []).map((line) => costLine([line]))] },
+            ...(opts.extra ?? []),
+        ]);
     }
 
     /**
-     * コストの内訳を出す（サーバーが計算した args の値を並べるだけ。クライアントでは計算しない。012 §6）。
+     * コストの行を出す（サーバーが計算した args の値を並べるだけ。クライアントでは計算しない。012 §6）。
      * @param {string} title
      * @param {string[]} lines
      */
     showCost(title, lines) {
-        this.view.sheet.show({ title, lines });
+        this.view.tray.show([{ label: title, body: [costLine(lines)] }]);
     }
 }

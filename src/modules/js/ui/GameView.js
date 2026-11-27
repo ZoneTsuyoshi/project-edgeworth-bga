@@ -11,8 +11,6 @@ import { FieldView } from '../cards/FieldView.js';
 import { fuelGauge, satelliteName } from '../cards/SatelliteView.js';
 import { format } from '../states/logic/common.js';
 import { COLOR_LETTERS } from '../cards/sprite-layout.js';
-import { BottomSheet } from './BottomSheet.js';
-import { ChoicePanel } from './ChoicePanel.js';
 import { el } from './dom.js';
 import { Layout } from './Layout.js';
 import { normalizeGamedatas } from './normalize.js';
@@ -75,9 +73,6 @@ export class GameView {
             },
         });
         this.tray = new Tray(this.trayBox, env);
-        // PR 4 で、選択パネルとボトムシートはトレイ（Tray）に統合する。それまでは同じ場所（#pe-tray）に置く
-        this.sheet = new BottomSheet(this.tray.sheetBox, () => this.tray.sync());
-        this.panel = new ChoicePanel(this.tray.panelBox, () => this.tray.sync());
         this.score = new ScoreSheet(this.scoreBox, () => this.m, (satId) => this.satName(satId));
         /** 見出しで枠を出す人を選んだか（選んだら自動の切り替えをやめる） */
         this.outlineChosen = false;
