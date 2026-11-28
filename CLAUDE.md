@@ -124,6 +124,7 @@ git fetch --prune && git pull --ff-only origin main
 - BGA Studio のプロジェクト名は **`projectedgeworth`**（作成済み・変更不可）。BGA のファイル名・クラス名・名前空間はこの名前に従う。
 - UI 文言は英語を原文とし、BGA の翻訳機構で日本語化する（BGA の標準作法）。
 - BGA のフレームワークのクラス（`Table`、`GameState` など）を継承するクラスに独自のメソッドを足すときは、名前に `pe` の接頭辞を付ける（例: `peSendNotifications`）。フレームワークに同名のメソッドがあると Studio で致命的エラーになり、開発用スタブが古いため PHPStan では検出できない（minimum-journey-bga で 2026-10-15 に発生）。
+- 画面（UI）を変えるときは [docs/development/ui-conventions.md](docs/development/ui-conventions.md) の決まりに従う（仕様書 014。2026-11-27 に BGA の Public Alpha の審査で UI が差し戻された）。PR の前に `npm run preview:shots` の画像を自分で見て、`npm run check:ui` を通す。
 
 ## CI/CD
 
