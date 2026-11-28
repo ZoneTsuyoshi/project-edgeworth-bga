@@ -19,6 +19,7 @@ PROJECT EDGEWORTH の BGA 実装に関する開発用ドキュメントの索引
 | [publishing/rules-summary.md](publishing/rules-summary.md) | BGA のルール概要（wiki の Gamehelp）の英語・日本語の文面と掲載手順 |
 | [publishing/rulebook-en.md](publishing/rulebook-en.md) | 英語版ルールブック（PDF）の翻訳の方針・用語集・作り方（原稿とビルドは `tools/rulebook-en/`） |
 | [publishing/alpha-review-response.md](publishing/alpha-review-response.md) | BGA の Public Alpha の審査への再審査の依頼の文面（英語）と日本語の説明 |
+| [publishing/card-images-consultation.md](publishing/card-images-consultation.md) | BGA へのカード画像の差し替え（文字なしの画像 + 翻訳できる文字の重ね）の相談の文面（英語）と日本語訳 |
 
 ## 一次情報
 
